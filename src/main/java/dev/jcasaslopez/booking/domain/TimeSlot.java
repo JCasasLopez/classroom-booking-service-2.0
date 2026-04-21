@@ -48,50 +48,53 @@ public class TimeSlot implements Comparable<TimeSlot>{
 	}
 
 	private void validateSlot(LocalDateTime start) {
-	    DayOfWeek day = start.getDayOfWeek();
-	    OpeningHours hours = weeklySchedule.getWeeklySchedule().get(day);
+		DayOfWeek day = start.getDayOfWeek();
+		OpeningHours hours = weeklySchedule.getWeeklySchedule().get(day);
 
-	    if (!hours.isOpen()) {
-	    	logger.warn("Slot validation failed: business is closed on {}", day);
-	        throw new SlotOutOfOpeningHoursException("Business is closed on this day");
-	    }
+		if (!hours.isOpen()) {
+			logger.warn("Slot validation failed: business is closed on {}", day);
+			throw new SlotOutOfOpeningHoursException("Center is closed on this day");
+		}
 
-	    long minutesSinceOpening = ChronoUnit.MINUTES.between(hours.openingTime(), start.toLocalTime());
+		long minutesSinceOpening = ChronoUnit.MINUTES.between(hours.openingTime(), start.toLocalTime());
+		if (start.toLocalTime().isBefore(hours.openingTime())) {
+			logger.warn("Slot validation failed: slot starting at {} is before opening time {}", start.toLocalTime(), hours.openingTime());
+			throw new SlotOutOfOpeningHoursException("Slot starts before opening time");
+		}
 
 		// Let us say slot duration is 15 minutes, then, only slots starting at :00, :15, :30 and :45 would be valid.
-	    if (minutesSinceOpening < 0 || minutesSinceOpening % slotDuration != 0) {
-	        logger.warn("Slot validation failed: invalid start time {} ({}min since opening)", start, minutesSinceOpening);
-	        throw new SlotNotValidException("Slot does not start at a valid interval");
-	    }
-
-	    if (start.plusMinutes(slotDuration).toLocalTime().isAfter(hours.closingTime())) {
-	    	logger.warn("Slot validation failed: slot ending at {} exceeds closing time {}", start.plusMinutes(slotDuration).toLocalTime(), hours.closingTime());
-	        throw new SlotOutOfOpeningHoursException("Slot exceeds closing time");
-	    }
+		if (minutesSinceOpening % slotDuration != 0) {
+			logger.warn("Slot validation failed: invalid start time {} ({}min since opening)", start, minutesSinceOpening);
+			throw new SlotNotValidException("Slot does not start at a valid interval");
+		}
+		if (start.plusMinutes(slotDuration).toLocalTime().isAfter(hours.closingTime())) {
+			logger.warn("Slot validation failed: slot ending at {} exceeds closing time {}", start.plusMinutes(slotDuration).toLocalTime(), hours.closingTime());
+			throw new SlotOutOfOpeningHoursException("Slot exceeds closing time");
+		}
 	}
 
 
 	@Override
 	public int compareTo(TimeSlot anotherTimeSlot) {
-	    return this.start.compareTo(anotherTimeSlot.start);
+		return this.start.compareTo(anotherTimeSlot.start);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-	    if (this == obj) return true;
-	    if (obj == null || getClass() != obj.getClass()) return false;
-	    TimeSlot slot = (TimeSlot) obj;
-	    return Objects.equals(start, slot.start);
+		if (this == obj) return true;
+		if (obj == null || getClass() != obj.getClass()) return false;
+		TimeSlot slot = (TimeSlot) obj;
+		return Objects.equals(start, slot.start);
 	}
 
 	@Override
 	public int hashCode() {
-	    return Objects.hash(start);
+		return Objects.hash(start);
 	}
 
 	@Override
 	public String toString() {
-	    return "Start: " + start + " Finish: " + finish;
+		return "Start: " + start + " Finish: " + finish;
 	}
 
 }
