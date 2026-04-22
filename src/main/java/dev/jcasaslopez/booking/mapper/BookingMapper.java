@@ -1,0 +1,69 @@
+package dev.jcasaslopez.booking.mapper;
+
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import dev.jcasaslopez.booking.domain.Booking;
+import dev.jcasaslopez.booking.domain.TimeSlot;
+import dev.jcasaslopez.booking.domain.WeeklySchedule;
+import dev.jcasaslopez.booking.dto.BookingRequestDto;
+import dev.jcasaslopez.booking.dto.BookingResponseDto;
+import dev.jcasaslopez.booking.enums.BookingStatus;
+import dev.jcasaslopez.booking.exception.NoSuchClassroomException;
+import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
+
+@Component
+public class BookingMapper {
+	
+	@Value("${time-slot.duration}") private int slotDuration; 
+	private static final Logger logger = LoggerFactory.getLogger(BookingMapper.class);
+	
+	public Booking toEntity(BookingRequestDto booking, WeeklySchedule weeklySchedule) {
+		logger.debug("Mapping BookingRequestDto to Booking: idUser={}, idClassroom={}, slots={}", 
+		        booking.idUser(), booking.idClassroom(), booking.startTimeSlotList().size());
+		List<TimeSlot> timeSlots = convertStartToTimeSlots (booking, weeklySchedule);
+		return new Booking(0,
+							booking.idUser(),
+							booking.idClassroom(),
+							timeSlots.get(0).getStart(),
+							timeSlots.get(timeSlots.size()-1).getFinish(),
+							LocalDateTime.now(),
+							BookingStatus.ACTIVE);		
+	}
+	
+	public BookingResponseDto toResponseDto (Booking booking, List<ClassroomEvent> classroomsStore) {
+		logger.debug("Mapping Booking to BookingResponseDto: idBooking={}", booking.getIdBooking());
+		return new BookingResponseDto(findClassroomName(booking, classroomsStore), 
+				booking.getStart(),
+				booking.getFinish());
+	}
+	
+	private List<TimeSlot> convertStartToTimeSlots (BookingRequestDto booking, WeeklySchedule weeklySchedule) {
+		Collections.sort(booking.startTimeSlotList());
+		
+		// By converting the start times of every slot into an TimeSlot object, we are validating that the booking times 
+		// are within opening hours, etc (see TimeSlot for validations).
+		return booking.startTimeSlotList().stream()
+				.map(b -> new TimeSlot(b, weeklySchedule, slotDuration))
+				.toList();
+	}
+	
+	private String findClassroomName (Booking booking, List<ClassroomEvent> classroomsStore) {
+		int targetIdClassroom = booking.getIdClassroom();
+		ClassroomEvent targetClassroom = classroomsStore.stream()
+		        .filter(c -> c.getIdClassroom() == targetIdClassroom)
+		        .findFirst()
+		        .orElseGet(() -> {
+		        	logger.warn("Classroom not found: idClassroom={}", targetIdClassroom);
+		        	throw new NoSuchClassroomException(String.format("No classrooms with id:%s were found", targetIdClassroom));
+        });
+		return targetClassroom.getName();
+	}
+
+}
