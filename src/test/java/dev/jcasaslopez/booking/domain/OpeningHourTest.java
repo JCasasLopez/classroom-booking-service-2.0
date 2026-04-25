@@ -1,4 +1,4 @@
-package dev.jcasaslopez.domain;
+package dev.jcasaslopez.booking.domain;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
