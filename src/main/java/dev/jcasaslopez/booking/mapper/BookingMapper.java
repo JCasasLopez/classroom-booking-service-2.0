@@ -15,7 +15,7 @@ import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.exception.NoSuchClassroomException;
+import dev.jcasaslopez.booking.util.ClassroomUtils;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
 @Component
@@ -39,7 +39,7 @@ public class BookingMapper {
 	
 	public BookingResponseDto toResponseDto (Booking booking, List<ClassroomEvent> classroomsStore) {
 		logger.debug("Mapping Booking to BookingResponseDto: idBooking={}", booking.getIdBooking());
-		return new BookingResponseDto(findClassroomName(booking, classroomsStore), 
+		return new BookingResponseDto(ClassroomUtils.findClassroomName(booking, classroomsStore), 
 				booking.getStart(),
 				booking.getFinish());
 	}
@@ -52,18 +52,6 @@ public class BookingMapper {
 		return booking.startTimeSlotList().stream()
 				.map(b -> new TimeSlot(b, weeklySchedule, slotDuration))
 				.toList();
-	}
-	
-	private String findClassroomName (Booking booking, List<ClassroomEvent> classroomsStore) {
-		int targetIdClassroom = booking.getIdClassroom();
-		ClassroomEvent targetClassroom = classroomsStore.stream()
-		        .filter(c -> c.getIdClassroom() == targetIdClassroom)
-		        .findFirst()
-		        .orElseGet(() -> {
-		        	logger.warn("Classroom not found: idClassroom={}", targetIdClassroom);
-		        	throw new NoSuchClassroomException(String.format("No classrooms with id:%s were found", targetIdClassroom));
-        });
-		return targetClassroom.getName();
 	}
 
 }
