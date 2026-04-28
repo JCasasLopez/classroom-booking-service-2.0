@@ -18,7 +18,6 @@ import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.NoSuchClassroomException;
-import dev.jcasaslopez.booking.mapper.BookingMapper;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
 public class BookingMapperTest {

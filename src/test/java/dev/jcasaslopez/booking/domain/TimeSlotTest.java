@@ -9,8 +9,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import dev.jcasaslopez.booking.domain.TimeSlot;
-import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.exception.SlotNotValidException;
 import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
 
