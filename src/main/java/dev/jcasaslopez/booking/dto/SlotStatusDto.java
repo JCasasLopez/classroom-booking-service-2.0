@@ -6,4 +6,4 @@ import java.time.LocalDateTime;
 // idBooking is null when the slot is available, or holds the associated booking ID
 // when occupied — allowing the front-end to create a WatchAlert on that booking.
 
-public record SlotStatusSDto(LocalDateTime start, LocalDateTime finish, boolean available, Long idBooking) {}
+public record SlotStatusDto(LocalDateTime start, LocalDateTime finish, boolean available, Long idBooking) {}
