@@ -42,8 +42,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 			""", nativeQuery = true)
 	List<Integer> findOccupiedClassroomsbyPeriod(LocalDateTime queryStart, LocalDateTime queryFinish);
 
-	// Retrieves all bookings made by a user, including active, cancelled, and completed ones,
-	// ordered from most recent to oldest.
+	// Here, we are after the COMPLETE history of booking for a user, including active, cancelled, and complete ones,
+	// Later, we will filter depending on our needs.
 	@Query("""
 			SELECT b FROM Booking b
 			WHERE b.idUser = :queryIdUser
