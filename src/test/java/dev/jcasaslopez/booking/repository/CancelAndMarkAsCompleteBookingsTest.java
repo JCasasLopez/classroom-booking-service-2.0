@@ -29,7 +29,7 @@ public class CancelAndMarkAsCompleteBookingsTest {
         Long bookingId = savedBooking.getIdBooking();
 
         // Act
-        executeFlushAndClear(() -> bookingRepository.cancelBooking(bookingId, BookingStatus.CANCELLED));
+        executeFlushAndClear(() -> bookingRepository.modifyBookingStatus(bookingId, BookingStatus.CANCELLED));
         
         // Assert
         assertBookingStatus(bookingId, BookingStatus.CANCELLED, "The booking status should be CANCELLED");
