@@ -3,11 +3,16 @@ package dev.jcasaslopez.booking.domain;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import dev.jcasaslopez.booking.exception.SlotNotValidException;
 import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
@@ -24,41 +29,67 @@ public class TimeSlotTest {
 		assertThrows(IllegalArgumentException.class, () -> new TimeSlot(null, weeklySchedule, 30));
 	}
 
-	@Test
-	void nextSlot_returns_the_expected_slot_when_passed_a_valid_start() {
+	// Verify open slots (including edge cases) do not throw exception (via instatiation) and nextSlot() works as expected.
+	@ParameterizedTest
+	@MethodSource("openSlots")
+	void nextSlot_returns_the_expected_slot_when_passed_a_valid_start(LocalDateTime slotStart, LocalDateTime nextSlotStart, 
+			LocalDateTime nextSlotFinish) {
 		// Arrange
-		TimeSlot timeSlot = new TimeSlot(LocalDateTime.of(2026, 4, 21, 9, 0), weeklySchedule, 30);
+		TimeSlot timeSlot = new TimeSlot(slotStart, weeklySchedule, 30);
 
 		// Act
 		TimeSlot nextTimeSlot = timeSlot.nextSlot();
 
 		// Assert
-		assertAll(() -> assertEquals(nextTimeSlot.getStart(), (LocalDateTime.of(2026, 4, 21, 9, 30))),
-				() -> assertEquals(nextTimeSlot.getFinish(), (LocalDateTime.of(2026, 4, 21, 10, 00)))
+		assertAll(() -> assertEquals(nextTimeSlot.getStart(), nextSlotStart),
+				() -> assertEquals(nextTimeSlot.getFinish(), nextSlotFinish)
+				);
+	}
+	
+	private static Stream<Arguments> openSlots() {
+		return Stream.of(
+				// On opening time
+				Arguments.of(LocalDateTime.of(2026, 4, 21, 9, 0), LocalDateTime.of(2026, 4, 21, 9, 30), LocalDateTime.of(2026, 4, 21, 10, 0)),	
+				// After opening time
+				Arguments.of(LocalDateTime.of(2026, 4, 21, 11, 0), LocalDateTime.of(2026, 4, 21, 11, 30), LocalDateTime.of(2026, 4, 21, 12, 0)),
+				// Just before closing time
+				Arguments.of(LocalDateTime.of(2026, 4, 21, 20, 0), LocalDateTime.of(2026, 4, 21, 20, 30), LocalDateTime.of(2026, 4, 21, 21, 0))				
 				);
 	}
 
-	@Test
-	void validation_throws_SlotOutOfOpeningHoursException_when_that_day_is_closed () {
-		// Act & Assert
-		assertThrows(SlotOutOfOpeningHoursException.class, () -> new TimeSlot(LocalDateTime.of(2026, 4, 25, 9, 0), weeklySchedule, 30));
-	}
-	
-	@Test
-	void validation_throws_SlotOutOfOpeningHoursException_when_it_is_before_opening_time () {
-		// Act & Assert
-		assertThrows(SlotOutOfOpeningHoursException.class, () -> new TimeSlot(LocalDateTime.of(2026, 4, 21, 7, 0), weeklySchedule, 30));
-	}
+	// Verify the exception message introduces a certain degree of coupling with the implementation, but it is necessary 
+	// to make sure the cause of the exception is the right one. 
+	@ParameterizedTest
+	@MethodSource("closedSlots")
+	void validation_fails_when_slots_is_out_of_opening_hours (LocalDateTime start, String exceptionMessage) {
+		// Arrange
 
-	@Test
-	void validation_throws_SlotOutOfOpeningHoursException_when_it_is_after_closing_time () {
 		// Act & Assert
-		assertThrows(SlotOutOfOpeningHoursException.class, () -> new TimeSlot(LocalDateTime.of(2026, 4, 21, 23, 0), weeklySchedule, 30));
+		SlotOutOfOpeningHoursException ex = assertThrows(SlotOutOfOpeningHoursException.class, () -> new TimeSlot(start, weeklySchedule, 30));
+		assertTrue(ex.getMessage().equals(exceptionMessage));
 	}
 	
+	private static Stream<Arguments> closedSlots() {
+		return Stream.of(
+				// Saturday
+				Arguments.of(LocalDateTime.of(2026, 5, 9, 11, 0),  "Center is closed on this day"),  
+				// Sunday
+				Arguments.of(LocalDateTime.of(2026, 5, 10, 11, 0), "Center is closed on this day"),  
+				// Open day, before opening time 
+				Arguments.of(LocalDateTime.of(2026, 5, 7, 7, 0),   "Slot starts before opening time"),	
+				// Open day, on closing time 
+				Arguments.of(LocalDateTime.of(2026, 5, 7, 21, 0),  "Slot exceeds closing time"),
+				// Open day, after closing time 
+				Arguments.of(LocalDateTime.of(2026, 5, 7, 23, 0),  "Slot exceeds closing time"),
+				// Open day, just before next day
+				Arguments.of(LocalDateTime.of(2026, 5, 7, 23, 30), "Slot exceeds closing time")
+				);
+	}
+		
 	@Test
 	void validation_throws_SlotNotValidException_when_start_is_not_valid () {
 		// Act & Assert
 		assertThrows(SlotNotValidException.class, () -> new TimeSlot(LocalDateTime.of(2026, 4, 21, 11, 17), weeklySchedule, 30));
 	}
-}
+
+}	
