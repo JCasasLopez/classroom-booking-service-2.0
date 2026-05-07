@@ -2,6 +2,7 @@ package dev.jcasaslopez.booking.domain;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
@@ -67,12 +68,17 @@ public class TimeSlot implements Comparable<TimeSlot>{
 			logger.warn("Slot validation failed: invalid start time {} ({}min since opening)", start, minutesSinceOpening);
 			throw new SlotNotValidException("Slot does not start at a valid interval");
 		}
-		if (start.plusMinutes(slotDuration).toLocalTime().isAfter(hours.closingTime())) {
-			logger.warn("Slot validation failed: slot ending at {} exceeds closing time {}", start.plusMinutes(slotDuration).toLocalTime(), hours.closingTime());
-			throw new SlotOutOfOpeningHoursException("Slot exceeds closing time");
+		
+		LocalTime slotEnd = start.toLocalTime().plusMinutes(slotDuration);
+		if (slotEnd.isBefore(start.toLocalTime()) || slotEnd.equals(LocalTime.MIDNIGHT)) {
+		    logger.warn("Slot validation failed: slot ending at {} exceeds closing time {}", slotEnd, hours.closingTime());
+		    throw new SlotOutOfOpeningHoursException("Slot exceeds closing time");
 		}
+		if (slotEnd.isAfter(hours.closingTime())) {
+		    logger.warn("Slot validation failed: slot ending at {} exceeds closing time {}", slotEnd, hours.closingTime());
+		    throw new SlotOutOfOpeningHoursException("Slot exceeds closing time");
+		}	
 	}
-
 
 	@Override
 	public int compareTo(TimeSlot anotherTimeSlot) {
