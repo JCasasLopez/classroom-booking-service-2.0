@@ -17,6 +17,9 @@ public class WeeklySchedule {
 	private Map<DayOfWeek, OpeningHours> weeklySchedule;
 
 	public WeeklySchedule(List<String> weeklyHours) {
+		if (weeklyHours.size() != DayOfWeek.values().length) {
+			throw new IllegalArgumentException("weeklyHours must contain exactly 7 entries, one per day of the week");
+		}
 		this.weeklySchedule = addOpeningHours(weeklyHours);
 	}
 
