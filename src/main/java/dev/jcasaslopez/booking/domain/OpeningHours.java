@@ -17,6 +17,9 @@ public record OpeningHours(LocalTime openingTime, LocalTime closingTime) {
             openingTime != null && closingTime == null) {
             throw new IllegalArgumentException("Both fields have to be null (closed) or both have values (open)");
         }
+        if (openingTime != null && !closingTime.isAfter(openingTime)) {
+            throw new IllegalArgumentException("Closing time must be after opening time");
+        }
     }
 	
 	public boolean isOpen() {

@@ -17,15 +17,25 @@ class OpeningHourTest {
 	@Test
 	void openingHours_with_null_start_throws_IllegalArgumentException() {
 		// Act & Assert
-		assertThrows(IllegalArgumentException.class, () -> new OpeningHours (null, LocalTime.of(9, 0)));
-		
+		assertThrows(IllegalArgumentException.class, () -> new OpeningHours (null, LocalTime.of(9, 0)));	
 	}
 	
 	@Test
 	void openingHours_with_null_finish_throws_IllegalArgumentException() {
 		// Act & Assert
-		assertThrows(IllegalArgumentException.class, () -> new OpeningHours (LocalTime.of(9, 0), null));
-		
+		assertThrows(IllegalArgumentException.class, () -> new OpeningHours (LocalTime.of(9, 0), null));	
+	}
+	
+	@Test
+	void openingHours_with_finish_time_before_opening_time_throws_exception() {
+		// Act & Assert
+		assertThrows(IllegalArgumentException.class, () -> new OpeningHours (LocalTime.of(10, 0), LocalTime.of(9, 0)));	
+	}
+	
+	@Test
+	void openingHours_with_finish_time_same_as_opening_time_throws_exception() {
+		// Act & Assert
+		assertThrows(IllegalArgumentException.class, () -> new OpeningHours (LocalTime.of(10, 0), LocalTime.of(10, 0)));	
 	}
 	
 	@Test
