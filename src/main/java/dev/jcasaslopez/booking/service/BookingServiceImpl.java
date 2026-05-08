@@ -63,17 +63,17 @@ public class BookingServiceImpl implements BookingService {
 				BookingStatus.ACTIVE)
 				);
 		
-		eventPublisher.bookEventPublisher(UserContext.getEmail());
+		eventPublisher.bookEventPublisher(savedBooking, UserContext.getEmail());
 		return savedBooking;
 	}
 
 	@Override
 	public void cancel(Long idBooking, BookingStatus bookingStatus) {
 		logger.debug("Cancel request received for booking {}", idBooking);
-		bookingRepository.findById(idBooking)
+		Booking booking = bookingRepository.findById(idBooking)
 					.orElseThrow(() -> new NoSuchBookingException("Booking {} was not found in the database: " + idBooking));
 		bookingRepository.modifyBookingStatus(idBooking, BookingStatus.CANCELLED);
-		eventPublisher.cancelBookingEventPublisher(UserContext.getEmail());
+		eventPublisher.cancelBookingEventPublisher(booking, UserContext.getEmail());
 	}
 
 	@Override

@@ -75,11 +75,11 @@ public class BookingServiceTest {
 															new ArrayList<> (List.of(START, SLOT_2, SLOT_3)));
 
 		// Act
-		bookingService.book(request);
+		Booking booking = bookingService.book(request);
 		
 		// Assert
 		verify(classroomValidator).validateClassroomExists(CLASSROOM_ID);	
-		verify(eventPublisher).bookEventPublisher(USER_EMAIL);	
+		verify(eventPublisher).bookEventPublisher(booking, USER_EMAIL);	
 		
 		ArgumentCaptor<Booking> bookingCaptor = ArgumentCaptor.forClass(Booking.class);
 		verify(bookingRepository).save(bookingCaptor.capture());
@@ -166,14 +166,15 @@ public class BookingServiceTest {
 	void cancels_booking_if_the_booking_exists_in_the_database() {
 		// Arrange
 		long idBooking = 3L;
-		when(bookingRepository.findById(idBooking)).thenReturn(Optional.of(new Booking()));
+		Booking booking = new Booking();
+		when(bookingRepository.findById(idBooking)).thenReturn(Optional.of(booking));
 		
 		// Act
 		bookingService.cancel(idBooking, BookingStatus.CANCELLED);
 
 		// Assert
 		verify(bookingRepository).modifyBookingStatus(idBooking, BookingStatus.CANCELLED);
-		verify(eventPublisher).cancelBookingEventPublisher(UserContext.getEmail());
+		verify(eventPublisher).cancelBookingEventPublisher(booking, UserContext.getEmail());
 	}
 	
 	@Test
