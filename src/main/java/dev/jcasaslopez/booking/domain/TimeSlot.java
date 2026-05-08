@@ -53,29 +53,29 @@ public class TimeSlot implements Comparable<TimeSlot>{
 		OpeningHours hours = weeklySchedule.getWeeklySchedule().get(day);
 
 		if (!hours.isOpen()) {
-			logger.warn("Slot validation failed: business is closed on {}", day);
+			logger.debug("Slot validation failed: business is closed on {}", day);
 			throw new SlotOutOfOpeningHoursException("Center is closed on this day");
 		}
 
 		long minutesSinceOpening = ChronoUnit.MINUTES.between(hours.openingTime(), start.toLocalTime());
 		if (start.toLocalTime().isBefore(hours.openingTime())) {
-			logger.warn("Slot validation failed: slot starting at {} is before opening time {}", start.toLocalTime(), hours.openingTime());
+			logger.debug("Slot validation failed: slot starting at {} is before opening time {}", start.toLocalTime(), hours.openingTime());
 			throw new SlotOutOfOpeningHoursException("Slot starts before opening time");
 		}
 
 		// Let us say slot duration is 15 minutes, then, only slots starting at :00, :15, :30 and :45 would be valid.
 		if (minutesSinceOpening % slotDuration != 0) {
-			logger.warn("Slot validation failed: invalid start time {} ({}min since opening)", start, minutesSinceOpening);
+			logger.debug("Slot validation failed: invalid start time {} ({}min since opening)", start, minutesSinceOpening);
 			throw new SlotNotValidException("Slot does not start at a valid interval");
 		}
 		
 		LocalTime slotEnd = start.toLocalTime().plusMinutes(slotDuration);
 		if (slotEnd.isBefore(start.toLocalTime()) || slotEnd.equals(LocalTime.MIDNIGHT)) {
-		    logger.warn("Slot validation failed: slot ending at {} exceeds closing time {}", slotEnd, hours.closingTime());
+		    logger.debug("Slot validation failed: slot ending at {} exceeds closing time {}", slotEnd, hours.closingTime());
 		    throw new SlotOutOfOpeningHoursException("Slot exceeds closing time");
 		}
 		if (slotEnd.isAfter(hours.closingTime())) {
-		    logger.warn("Slot validation failed: slot ending at {} exceeds closing time {}", slotEnd, hours.closingTime());
+		    logger.debug("Slot validation failed: slot ending at {} exceeds closing time {}", slotEnd, hours.closingTime());
 		    throw new SlotOutOfOpeningHoursException("Slot exceeds closing time");
 		}	
 	}
