@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import dev.jcasaslopez.booking.classroom.ClassroomValidator;
 import dev.jcasaslopez.booking.domain.Booking;
@@ -12,6 +13,7 @@ import dev.jcasaslopez.booking.dto.SlotStatusDto;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
+@Service
 public class SearchServiceImpl implements SearchService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(SearchServiceImpl.class);
