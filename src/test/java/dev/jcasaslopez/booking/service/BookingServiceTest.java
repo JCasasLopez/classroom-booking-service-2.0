@@ -25,6 +25,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import dev.jcasaslopez.booking.classroom.ClassroomValidator;
 import dev.jcasaslopez.booking.domain.Booking;
+import dev.jcasaslopez.booking.domain.WatchAlert;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.enums.BookingStatus;
@@ -32,6 +33,7 @@ import dev.jcasaslopez.booking.event.EventPublisher;
 import dev.jcasaslopez.booking.exception.InvalidBookingException;
 import dev.jcasaslopez.booking.exception.NoSuchBookingException;
 import dev.jcasaslopez.booking.repository.BookingRepository;
+import dev.jcasaslopez.booking.repository.WatchAlertRepository;
 import dev.jcasaslopez.classroom.shared.utility.UserContext;
 
 // NOTE: time slot validity (opening hours, slot alignment) is tested in TimeSlotTest. No need to duplicate those tests here.
@@ -39,6 +41,7 @@ import dev.jcasaslopez.classroom.shared.utility.UserContext;
 public class BookingServiceTest {
 	
 	@Mock BookingRepository bookingRepository;
+	@Mock WatchAlertRepository watchAlertRepository;
 	@Mock WeeklySchedule weeklySchedule;
 	@Mock ClassroomValidator classroomValidator;
 	@Mock EventPublisher eventPublisher;
@@ -166,8 +169,14 @@ public class BookingServiceTest {
 	void cancels_booking_if_the_booking_exists_in_the_database() {
 		// Arrange
 		long idBooking = 3L;
-		Booking booking = new Booking();
+		Booking booking = new Booking(idBooking, 1, 9, LocalDateTime.of(2026, 5, 11, 10, 0), 
+				LocalDateTime.of(2026, 5, 11, 11, 0), LocalDateTime.now(), BookingStatus.ACTIVE); 
 		when(bookingRepository.findById(idBooking)).thenReturn(Optional.of(booking));
+		when(watchAlertRepository.findWatchAlertsByBooking(idBooking)).thenReturn(
+			    List.of(
+			        new WatchAlert(1L, idBooking, USER_EMAIL),
+			        new WatchAlert(2L, idBooking, "other@gmail.com")
+			    ));
 		
 		// Act
 		bookingService.cancel(idBooking, BookingStatus.CANCELLED);
@@ -175,6 +184,8 @@ public class BookingServiceTest {
 		// Assert
 		verify(bookingRepository).modifyBookingStatus(idBooking, BookingStatus.CANCELLED);
 		verify(eventPublisher).cancelBookingEventPublisher(booking, UserContext.getEmail());
+	    verify(eventPublisher).watchAlertTriggeredEventPublisher(booking, USER_EMAIL);
+	    verify(eventPublisher).watchAlertTriggeredEventPublisher(booking, "other@gmail.com");
 	}
 	
 	@Test
