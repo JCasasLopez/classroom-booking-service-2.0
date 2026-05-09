@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import dev.jcasaslopez.booking.classroom.ClassroomValidator;
 import dev.jcasaslopez.booking.domain.Booking;
 import dev.jcasaslopez.booking.domain.TimeSlot;
+import dev.jcasaslopez.booking.domain.WatchAlert;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.enums.BookingStatus;
@@ -23,6 +24,7 @@ import dev.jcasaslopez.booking.event.EventPublisher;
 import dev.jcasaslopez.booking.exception.InvalidBookingException;
 import dev.jcasaslopez.booking.exception.NoSuchBookingException;
 import dev.jcasaslopez.booking.repository.BookingRepository;
+import dev.jcasaslopez.booking.repository.WatchAlertRepository;
 import dev.jcasaslopez.classroom.shared.utility.UserContext;
 
 @Service
@@ -30,6 +32,7 @@ public class BookingServiceImpl implements BookingService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(BookingServiceImpl.class);
 	private BookingRepository bookingRepository;
+	private WatchAlertRepository watchAlertRepository;
 	private WeeklySchedule weeklySchedule;
 	private ClassroomValidator classroomValidator;
 	private EventPublisher eventPublisher;
@@ -37,9 +40,10 @@ public class BookingServiceImpl implements BookingService {
 	@Value("${booking.maximum-duration}") private int bookingMaxDuration; 
 	@Value("${booking.maximum-number-per-week}") private int maxNumberBookings; 
 	
-	public BookingServiceImpl(BookingRepository bookingRepository, WeeklySchedule weeklySchedule,
-			ClassroomValidator classroomValidator, EventPublisher eventPublisher) {
+	public BookingServiceImpl(BookingRepository bookingRepository, WatchAlertRepository watchAlertRepository,
+			WeeklySchedule weeklySchedule, ClassroomValidator classroomValidator, EventPublisher eventPublisher) {
 		this.bookingRepository = bookingRepository;
+		this.watchAlertRepository = watchAlertRepository;
 		this.weeklySchedule = weeklySchedule;
 		this.classroomValidator = classroomValidator;
 		this.eventPublisher = eventPublisher;
@@ -74,6 +78,7 @@ public class BookingServiceImpl implements BookingService {
 					.orElseThrow(() -> new NoSuchBookingException("Booking {} was not found in the database: " + idBooking));
 		bookingRepository.modifyBookingStatus(idBooking, BookingStatus.CANCELLED);
 		eventPublisher.cancelBookingEventPublisher(booking, UserContext.getEmail());
+		triggerWatchAlerts(booking);
 	}
 
 	@Override
@@ -167,4 +172,10 @@ public class BookingServiceImpl implements BookingService {
 			throw new InvalidBookingException("User has reached the maximum number of weekly bookings");
 	    }
 	}
+	
+	private void triggerWatchAlerts(Booking cancelledBooking) {
+		List<WatchAlert> watchAlertsForBooking = watchAlertRepository.findWatchAlertsByBooking(cancelledBooking.getIdBooking());
+		watchAlertsForBooking.forEach(watchAlert -> eventPublisher.watchAlertTriggeredEventPublisher(cancelledBooking, watchAlert.getUserEmail()));
+	}
+
 }

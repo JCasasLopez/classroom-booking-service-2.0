@@ -18,5 +18,8 @@ public interface WatchAlertRepository extends JpaRepository<WatchAlert, Long> {
 		    AND b.finish >= :start
 		    """)
 	List<WatchAlert> findWatchAlertsByUserAndTimePeriod(String userEmail, LocalDateTime start, LocalDateTime finish);
+	
+	@Query("SELECT w FROM WatchAlert w WHERE w.idBooking = :idBooking")
+	List<WatchAlert> findWatchAlertsByBooking(long idBooking);
 
 }
