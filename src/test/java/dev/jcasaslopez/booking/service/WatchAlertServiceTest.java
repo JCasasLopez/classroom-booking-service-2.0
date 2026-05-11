@@ -23,12 +23,13 @@ import dev.jcasaslopez.booking.domain.Booking;
 import dev.jcasaslopez.booking.domain.WatchAlert;
 import dev.jcasaslopez.booking.dto.WatchAlertRequestDto;
 import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.event.EventPublisher;
 import dev.jcasaslopez.booking.exception.NoSuchBookingException;
 import dev.jcasaslopez.booking.exception.NoSuchClassroomException;
+import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.mapper.WatchAlertMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.repository.WatchAlertRepository;
+import dev.jcasaslopez.classroom.shared.enums.NotificationType;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 import dev.jcasaslopez.classroom.shared.utility.UserContext;
 
@@ -99,7 +100,7 @@ public class WatchAlertServiceTest {
         // Act & Assert
         assertDoesNotThrow(() -> watchAlertService.addWatchAlert(watchAlertDto));
         verify(watchAlertRepository).save(watchAlert);
-        verify(eventPublisher).watchAlertEventPublisher(watchAlert, UserContext.getEmail());
+        verify(eventPublisher).publishBookingRelatedEvent(NotificationType.WATCH_ALERT_CONFIRMED, watchAlert, UserContext.getEmail());
     }
 
 }

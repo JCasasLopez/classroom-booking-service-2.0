@@ -12,11 +12,12 @@ import dev.jcasaslopez.booking.domain.Booking;
 import dev.jcasaslopez.booking.domain.WatchAlert;
 import dev.jcasaslopez.booking.dto.WatchAlertRequestDto;
 import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
-import dev.jcasaslopez.booking.event.EventPublisher;
 import dev.jcasaslopez.booking.exception.NoSuchBookingException;
+import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.mapper.WatchAlertMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.repository.WatchAlertRepository;
+import dev.jcasaslopez.classroom.shared.enums.NotificationType;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 import dev.jcasaslopez.classroom.shared.utility.UserContext;
 
@@ -51,7 +52,7 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 		classroomValidator.validateClassroomExists(booking.getIdClassroom());
 				
 		WatchAlert savedWatchAlert = watchAlertRepository.save(watchAlert);
-		eventPublisher.watchAlertEventPublisher(savedWatchAlert, UserContext.getEmail());
+		eventPublisher.publishBookingRelatedEvent(NotificationType.WATCH_ALERT_CONFIRMED, savedWatchAlert, UserContext.getEmail());
 	
 		logger.info("Watch alert created: Classroom ID= {}, User ID= {}, Start= {}, Finish= {}", 
 				booking.getIdClassroom(), booking.getIdUser(), booking.getStart(), booking.getFinish());

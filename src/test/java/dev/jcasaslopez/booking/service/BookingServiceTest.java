@@ -29,11 +29,12 @@ import dev.jcasaslopez.booking.domain.WatchAlert;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.event.EventPublisher;
 import dev.jcasaslopez.booking.exception.InvalidBookingException;
 import dev.jcasaslopez.booking.exception.NoSuchBookingException;
+import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.repository.WatchAlertRepository;
+import dev.jcasaslopez.classroom.shared.enums.NotificationType;
 import dev.jcasaslopez.classroom.shared.utility.UserContext;
 
 // NOTE: time slot validity (opening hours, slot alignment) is tested in TimeSlotTest. No need to duplicate those tests here.
@@ -82,7 +83,7 @@ public class BookingServiceTest {
 		
 		// Assert
 		verify(classroomValidator).validateClassroomExists(CLASSROOM_ID);	
-		verify(eventPublisher).bookEventPublisher(booking, USER_EMAIL);	
+		verify(eventPublisher).publishBookingRelatedEvent(NotificationType.BOOKING_CONFIRMED, booking, USER_EMAIL);	
 		
 		ArgumentCaptor<Booking> bookingCaptor = ArgumentCaptor.forClass(Booking.class);
 		verify(bookingRepository).save(bookingCaptor.capture());
@@ -183,9 +184,9 @@ public class BookingServiceTest {
 
 		// Assert
 		verify(bookingRepository).modifyBookingStatus(idBooking, BookingStatus.CANCELLED);
-		verify(eventPublisher).cancelBookingEventPublisher(booking, UserContext.getEmail());
-	    verify(eventPublisher).watchAlertTriggeredEventPublisher(booking, USER_EMAIL);
-	    verify(eventPublisher).watchAlertTriggeredEventPublisher(booking, "other@gmail.com");
+		verify(eventPublisher).publishBookingRelatedEvent(NotificationType.BOOKING_CANCELLED, booking, UserContext.getEmail());
+	    verify(eventPublisher).publishBookingRelatedEvent(NotificationType.WATCH_ALERT_TRIGGERED, booking, USER_EMAIL);
+	    verify(eventPublisher).publishBookingRelatedEvent(NotificationType.WATCH_ALERT_TRIGGERED, booking, "other@gmail.com");
 	}
 	
 	@Test

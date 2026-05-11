@@ -20,11 +20,12 @@ import dev.jcasaslopez.booking.domain.WatchAlert;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.event.EventPublisher;
 import dev.jcasaslopez.booking.exception.InvalidBookingException;
 import dev.jcasaslopez.booking.exception.NoSuchBookingException;
+import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.repository.WatchAlertRepository;
+import dev.jcasaslopez.classroom.shared.enums.NotificationType;
 import dev.jcasaslopez.classroom.shared.utility.UserContext;
 
 @Service
@@ -67,7 +68,7 @@ public class BookingServiceImpl implements BookingService {
 				BookingStatus.ACTIVE)
 				);
 		
-		eventPublisher.bookEventPublisher(savedBooking, UserContext.getEmail());
+		eventPublisher.publishBookingRelatedEvent(NotificationType.BOOKING_CONFIRMED, savedBooking, UserContext.getEmail());
 		return savedBooking;
 	}
 
@@ -77,7 +78,7 @@ public class BookingServiceImpl implements BookingService {
 		Booking booking = bookingRepository.findById(idBooking)
 					.orElseThrow(() -> new NoSuchBookingException("Booking {} was not found in the database: " + idBooking));
 		bookingRepository.modifyBookingStatus(idBooking, BookingStatus.CANCELLED);
-		eventPublisher.cancelBookingEventPublisher(booking, UserContext.getEmail());
+		eventPublisher.publishBookingRelatedEvent(NotificationType.BOOKING_CANCELLED, booking, UserContext.getEmail());
 		triggerWatchAlerts(booking);
 	}
 
@@ -175,7 +176,8 @@ public class BookingServiceImpl implements BookingService {
 	
 	private void triggerWatchAlerts(Booking cancelledBooking) {
 		List<WatchAlert> watchAlertsForBooking = watchAlertRepository.findWatchAlertsByBooking(cancelledBooking.getIdBooking());
-		watchAlertsForBooking.forEach(watchAlert -> eventPublisher.watchAlertTriggeredEventPublisher(cancelledBooking, watchAlert.getUserEmail()));
+		watchAlertsForBooking.forEach(watchAlert -> eventPublisher.publishBookingRelatedEvent 
+						(NotificationType.WATCH_ALERT_TRIGGERED, cancelledBooking, watchAlert.getUserEmail()));
 	}
 
 }
