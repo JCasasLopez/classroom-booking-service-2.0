@@ -73,7 +73,7 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	@Override
-	public void cancel(Long idBooking, BookingStatus bookingStatus) {
+	public void cancel(Long idBooking) {
 		logger.debug("Cancel request received for booking {}", idBooking);
 		Booking booking = bookingRepository.findById(idBooking)
 					.orElseThrow(() -> new NoSuchBookingException("Booking {} was not found in the database: " + idBooking));

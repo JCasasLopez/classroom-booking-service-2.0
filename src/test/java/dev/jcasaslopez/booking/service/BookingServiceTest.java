@@ -180,7 +180,7 @@ public class BookingServiceTest {
 			    ));
 		
 		// Act
-		bookingService.cancel(idBooking, BookingStatus.CANCELLED);
+		bookingService.cancel(idBooking);
 
 		// Assert
 		verify(bookingRepository).modifyBookingStatus(idBooking, BookingStatus.CANCELLED);
@@ -196,6 +196,6 @@ public class BookingServiceTest {
 		when(bookingRepository.findById(idBooking)).thenReturn(Optional.empty());
 		
 		// Act & Assert
-		assertThrows(NoSuchBookingException.class, () -> bookingService.cancel(idBooking, BookingStatus.CANCELLED));
+		assertThrows(NoSuchBookingException.class, () -> bookingService.cancel(idBooking));
 	}
 }
