@@ -6,6 +6,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+// idBooking references an existing booking but there is no JPA relationship with Booking.
+// WatchAlert has a completely independent lifecycle: it is never created, updated,
+// or deleted through Booking.
 @Entity
 @Table(name="watch_alerts")
 public class WatchAlert {

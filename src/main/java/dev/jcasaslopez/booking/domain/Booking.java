@@ -1,21 +1,20 @@
 package dev.jcasaslopez.booking.domain;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
+// No JPA relationship with WatchAlert, even though WatchAlert references this entity
+// via idBooking. The relationship is purely at the data level, not at the ORM level.
+// The only use case that links them (fetching WatchAlerts for a given booking)
+// is handled in WatchAlertRepository via an explicit query.
 @Entity
 @Table(name="bookings")
 public class Booking {
@@ -31,14 +30,7 @@ public class Booking {
 	
 	@Enumerated(EnumType.STRING)
 	private BookingStatus status;
-	
-	// Unidirectional one-to-many with no cascade: WatchAlert has its own independent
-	// lifecycle (it is never created, updated, or removed through Reserva), so this
-	// is an association, not a composition. WatchAlert entities are managed separately.
-	@OneToMany(fetch = FetchType.LAZY)
-	@JoinColumn(name = "idBooking")	
-	private List<WatchAlert> watchAlerts = new ArrayList<>();
-	
+		
 	public Booking(long idBooking, int idUser, int idClassroom, LocalDateTime start, LocalDateTime finish,
 			LocalDateTime timestamp, BookingStatus status) {
 		
@@ -110,13 +102,4 @@ public class Booking {
 	public void setStatus(BookingStatus status) {
 		this.status = status;
 	}
-
-	public List<WatchAlert> getWatchAlerts() {
-		return watchAlerts;
-	}
-
-	public void setWatchAlerts(List<WatchAlert> watchAlerts) {
-		this.watchAlerts = watchAlerts;
-	}
-	
 }
