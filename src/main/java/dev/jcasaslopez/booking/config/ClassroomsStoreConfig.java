@@ -11,7 +11,7 @@ import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 // This bean represents the list of classrooms that obtains the classrooms 
 // by reading the corresponding Kafka topic (see 'listener' folder).
 @Configuration
-public class ClassroomStoreConfig {
+public class ClassroomsStoreConfig {
 
 	// ClassroomEvent doubles as a DTO here: it carries exactly the classroom
 	// data this service needs, with no divergence expected.

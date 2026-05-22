@@ -31,7 +31,7 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 	private BookingRepository bookingRepository;
 	private ClassroomValidator classroomValidator;
 	private EventPublisher eventPublisher;
-	private List<ClassroomEvent> classroomStore;
+	private List<ClassroomEvent> classroomsStore;
 	
 	public WatchAlertServiceImpl(WatchAlertMapper watchAlertMapper, WatchAlertRepository watchAlertRepository,
 			BookingRepository bookingRepository, ClassroomValidator classroomValidator, EventPublisher eventPublisher) {
@@ -64,7 +64,7 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 	public List<WatchAlertResponseDto> watchAlertsListByUserAndTimePeriod(LocalDateTime startSearch, LocalDateTime finishSearch) {
 		return watchAlertRepository.findWatchAlertsByUserAndTimePeriod(UserContext.getEmail(), startSearch, finishSearch)
 						.stream()
-						.map(watchAlert -> watchAlertMapper.toResponseDto(watchAlert, classroomStore, bookingRepository))
+						.map(watchAlert -> watchAlertMapper.toResponseDto(watchAlert, classroomsStore, bookingRepository))
 						.toList();
 	}
 }
