@@ -73,10 +73,11 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	@Override
+	@Transactional
 	public void cancel(Long idBooking) {
 		logger.debug("Cancel request received for booking {}", idBooking);
 		Booking booking = bookingRepository.findById(idBooking)
-					.orElseThrow(() -> new NoSuchBookingException("Booking {} was not found in the database: " + idBooking));
+				.orElseThrow(() -> new NoSuchBookingException(String.format("Booking %s was not found in the database", idBooking)));		
 		bookingRepository.modifyBookingStatus(idBooking, BookingStatus.CANCELLED);
 		eventPublisher.publishBookingRelatedEvent(NotificationType.BOOKING_CANCELLED, booking, UserContext.getEmail());
 		triggerWatchAlerts(booking);
