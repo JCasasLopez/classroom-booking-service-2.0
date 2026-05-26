@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import dev.jcasaslopez.booking.domain.Booking;
 import dev.jcasaslopez.booking.domain.WatchAlert;
@@ -17,6 +18,7 @@ import dev.jcasaslopez.classroom.shared.enums.NotificationType;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 import dev.jcasaslopez.classroom.shared.event.NotificationEvent;
 
+@Component
 public class EventPublisherImpl implements EventPublisher {
 
 	private static final Logger logger = LoggerFactory.getLogger(EventPublisherImpl.class);
