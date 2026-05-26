@@ -40,7 +40,7 @@ public class ClassroomsStoreListener implements ConsumerSeekAware {
 		int classroomId = classroom.getIdClassroom();
 	    for (int i = 0; i < classroomsStore.size(); i++) {
 	        if (classroomsStore.get(i).getIdClassroom() == classroomId) {
-	            logger.info("Updating classroom {} in classroomsStore", classroomId);
+	            logger.info("Updating classroom {} ({}) in classroomsStore", classroomId, classroom.getName());
 	            classroomsStore.set(i, classroom);
 	            return;
 	        }
