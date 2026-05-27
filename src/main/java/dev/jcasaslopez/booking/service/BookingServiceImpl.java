@@ -19,39 +19,48 @@ import dev.jcasaslopez.booking.domain.TimeSlot;
 import dev.jcasaslopez.booking.domain.WatchAlert;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
+import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.InvalidBookingException;
 import dev.jcasaslopez.booking.exception.NoSuchBookingException;
 import dev.jcasaslopez.booking.kafka.event.EventPublisher;
+import dev.jcasaslopez.booking.mapper.BookingMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.repository.WatchAlertRepository;
 import dev.jcasaslopez.classroom.shared.enums.NotificationType;
+import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 import dev.jcasaslopez.classroom.shared.utility.UserContext;
 
 @Service
 public class BookingServiceImpl implements BookingService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(BookingServiceImpl.class);
-	private BookingRepository bookingRepository;
-	private WatchAlertRepository watchAlertRepository;
-	private WeeklySchedule weeklySchedule;
-	private ClassroomValidator classroomValidator;
-	private EventPublisher eventPublisher;
+	private final BookingRepository bookingRepository;
+	private final WatchAlertRepository watchAlertRepository;
+	private final WeeklySchedule weeklySchedule;
+	private final ClassroomValidator classroomValidator;
+	private final EventPublisher eventPublisher;
+	private final BookingMapper mapper;
+	private final List<ClassroomEvent> classroomsStore;
+	
 	@Value("${time-slot.duration}") private int slotDuration; 
 	@Value("${booking.maximum-duration}") private int bookingMaxDuration; 
 	@Value("${booking.maximum-number-per-week}") private int maxNumberBookings; 
 	
 	public BookingServiceImpl(BookingRepository bookingRepository, WatchAlertRepository watchAlertRepository,
-			WeeklySchedule weeklySchedule, ClassroomValidator classroomValidator, EventPublisher eventPublisher) {
+			WeeklySchedule weeklySchedule, ClassroomValidator classroomValidator, EventPublisher eventPublisher,
+			BookingMapper mapper, List<ClassroomEvent> classroomsStore) {
 		this.bookingRepository = bookingRepository;
 		this.watchAlertRepository = watchAlertRepository;
 		this.weeklySchedule = weeklySchedule;
 		this.classroomValidator = classroomValidator;
 		this.eventPublisher = eventPublisher;
+		this.mapper = mapper;
+		this.classroomsStore = classroomsStore;
 	}
 
 	@Override
-	public Booking book(BookingRequestDto booking) {
+	public BookingResponseDto book(BookingRequestDto booking) {
 		logger.debug("Booking request received for user {} in classroom {}", booking.idUser(), booking.idClassroom());
 		classroomValidator.validateClassroomExists(booking.idClassroom());
 
@@ -69,7 +78,7 @@ public class BookingServiceImpl implements BookingService {
 				);
 		
 		eventPublisher.publishBookingRelatedEvent(NotificationType.BOOKING_CONFIRMED, savedBooking, UserContext.getEmail());
-		return savedBooking;
+		return mapper.toResponseDto(savedBooking, classroomsStore);
 	}
 
 	@Override
@@ -84,10 +93,10 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	@Override
-	public List<Booking> bookingsByUser(int idUser) {
+	public List<BookingResponseDto> bookingsByUser(int idUser) {
 		// No user existence check needed: this end-point requires JWT authentication, which is only issued to existing users. 
 		logger.debug("Searching booking history for user {}", idUser);
-		return bookingRepository.findBookingsByUser(idUser);
+		return bookingRepository.findBookingsByUser(idUser).stream().map(booking -> mapper.toResponseDto(booking, classroomsStore)).toList();
 	}
 
 	@Transactional

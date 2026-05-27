@@ -17,7 +17,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,13 +27,16 @@ import dev.jcasaslopez.booking.domain.Booking;
 import dev.jcasaslopez.booking.domain.WatchAlert;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
+import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.InvalidBookingException;
 import dev.jcasaslopez.booking.exception.NoSuchBookingException;
 import dev.jcasaslopez.booking.kafka.event.EventPublisher;
+import dev.jcasaslopez.booking.mapper.BookingMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.repository.WatchAlertRepository;
 import dev.jcasaslopez.classroom.shared.enums.NotificationType;
+import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 import dev.jcasaslopez.classroom.shared.utility.UserContext;
 
 // NOTE: time slot validity (opening hours, slot alignment) is tested in TimeSlotTest. No need to duplicate those tests here.
@@ -46,6 +48,8 @@ public class BookingServiceTest {
 	@Mock WeeklySchedule weeklySchedule;
 	@Mock ClassroomValidator classroomValidator;
 	@Mock EventPublisher eventPublisher;
+	@Mock BookingMapper mapper;
+	@Mock List<ClassroomEvent> classroomsStore;
 	@InjectMocks BookingServiceImpl bookingService;
 	
 	private static final int USER_ID = 1;
@@ -61,6 +65,11 @@ public class BookingServiceTest {
 	    return new WeeklySchedule(hours);
 	}
 	
+	private static List<ClassroomEvent> allClassrooms = List.of(
+		    new ClassroomEvent(1, "Main Auditorium", 150, true, true),
+		    new ClassroomEvent(2, "Standard Seminar Room", 30, true, false)
+		);
+	
 	// Must run AFTER Mockito has injected the mocks (i.e. not at field-initialization time),
 	// otherwise bookingService would still be null.
 	@BeforeEach
@@ -69,32 +78,30 @@ public class BookingServiceTest {
 	    ReflectionTestUtils.setField(bookingService, "bookingMaxDuration", 120);
 	    ReflectionTestUtils.setField(bookingService, "maxNumberBookings", 3);
 	    ReflectionTestUtils.setField(bookingService, "weeklySchedule", buildTestWeeklySchedule());
+	    ReflectionTestUtils.setField(bookingService, "classroomsStore", allClassrooms);
 	    UserContext.setEmail(USER_EMAIL);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	void if_the_booking_is_valid_persists_the_correct_booking_entity() {
 		// Arrange
-		BookingRequestDto request = new BookingRequestDto(USER_ID, CLASSROOM_ID, 
-															new ArrayList<> (List.of(START, SLOT_2, SLOT_3)));
-
+		BookingRequestDto request = new BookingRequestDto(USER_ID, CLASSROOM_ID, new ArrayList<> (List.of(START, SLOT_2, SLOT_3)));
+		Booking bookingEntity = new Booking(0, USER_ID, CLASSROOM_ID, START, EXPECTED_FINISH, LocalDateTime.now(), BookingStatus.ACTIVE);
+		String classroomName = allClassrooms.get(CLASSROOM_ID).getName();
+		when(bookingRepository.save(any(Booking.class))).thenReturn(bookingEntity);
+		when(mapper.toResponseDto(any(Booking.class), any(List.class))).thenReturn(new BookingResponseDto(classroomName, START, EXPECTED_FINISH));
+		
 		// Act
-		Booking booking = bookingService.book(request);
+		BookingResponseDto booking = bookingService.book(request);
 		
 		// Assert
 		verify(classroomValidator).validateClassroomExists(CLASSROOM_ID);	
-		verify(eventPublisher).publishBookingRelatedEvent(NotificationType.BOOKING_CONFIRMED, booking, USER_EMAIL);	
-		
-		ArgumentCaptor<Booking> bookingCaptor = ArgumentCaptor.forClass(Booking.class);
-		verify(bookingRepository).save(bookingCaptor.capture());
-		Booking savedBooking = bookingCaptor.getValue();
-		
+		verify(eventPublisher).publishBookingRelatedEvent(NotificationType.BOOKING_CONFIRMED, bookingEntity, USER_EMAIL);		
 		assertAll(
-				() -> assertEquals(USER_ID, savedBooking.getIdUser()),
-				() -> assertEquals(CLASSROOM_ID, savedBooking.getIdClassroom()),
-				() -> assertEquals(START, savedBooking.getStart()),
-				() -> assertEquals(EXPECTED_FINISH, savedBooking.getFinish()),
-				() -> assertEquals(BookingStatus.ACTIVE, savedBooking.getStatus())
+				() -> assertEquals(classroomName, booking.name()),
+				() -> assertEquals(START, booking.start()),
+				() -> assertEquals(EXPECTED_FINISH, booking.finish())
 				);
 	}
 	

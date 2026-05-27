@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import dev.jcasaslopez.booking.domain.Booking;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
+import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.service.BookingService;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 import jakarta.validation.Valid;
@@ -38,7 +38,7 @@ public class BookingController {
 	@PostMapping(value="/bookings", consumes=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<StandardResponse> book(@Valid @NotNull @RequestBody BookingRequestDto booking){
 		logger.info("POST /bookings - idUser={}, idClassroom={}", booking.idUser(), booking.idClassroom());
-		Booking bookingConfirmed = bookingService.book(booking);
+		BookingResponseDto bookingConfirmed = bookingService.book(booking);
 		
 		String message = String.format("Classroom %s booked successfully", booking.idClassroom());
 		StandardResponse response = new StandardResponse(message, bookingConfirmed, HttpStatus.CREATED);
@@ -60,7 +60,7 @@ public class BookingController {
 	@GetMapping(value="/bookings")
 	public ResponseEntity<StandardResponse> bookingsByUser(@RequestParam @Positive int idUser){
 		logger.info("GET /bookings - idUser={}", idUser);
-		List<Booking> bookings = bookingService.bookingsByUser(idUser);
+		List<BookingResponseDto> bookings = bookingService.bookingsByUser(idUser);
 		
 		String message = String.format("Bookings by user %s retrieved successfully", idUser);
 		StandardResponse response = new StandardResponse(message, bookings, HttpStatus.OK);
