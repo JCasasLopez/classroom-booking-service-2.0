@@ -41,7 +41,8 @@ public class BookingMapper {
 		logger.debug("Mapping Booking to BookingResponseDto: idBooking={}", booking.getIdBooking());
 		return new BookingResponseDto(ClassroomUtils.findClassroomName(booking, classroomsStore), 
 				booking.getStart(),
-				booking.getFinish());
+				booking.getFinish(),
+				booking.getStatus());
 	}
 	
 	private List<TimeSlot> convertStartToTimeSlots (BookingRequestDto booking, WeeklySchedule weeklySchedule) {
