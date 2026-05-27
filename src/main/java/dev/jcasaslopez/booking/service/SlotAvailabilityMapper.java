@@ -43,7 +43,8 @@ public class SlotAvailabilityMapper {
 
 	public Optional<Booking> findBookingForSlot(TimeSlot slot, List<Booking> bookings) {
 		return bookings.stream()
-				.filter(booking -> slot.getStart().equals(booking.getStart()))
+				.filter(booking -> slot.getStart().equals(booking.getStart()) || slot.getFinish().equals(booking.getFinish())
+						|| (slot.getStart().isAfter(booking.getStart()) && slot.getFinish().isBefore(booking.getFinish())))
 				.findAny();
 	}
 
