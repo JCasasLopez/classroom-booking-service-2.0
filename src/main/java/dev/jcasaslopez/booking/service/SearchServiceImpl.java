@@ -18,11 +18,19 @@ public class SearchServiceImpl implements SearchService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(SearchServiceImpl.class);
 	
-	private BookingRepository bookingRepository;
-	private ClassroomValidator classroomValidator;
-	private SlotAvailabilityMapper slotAvailabilityMapper;
-	private List<ClassroomEvent> classroomsStore;
+	private final BookingRepository bookingRepository;
+	private final ClassroomValidator classroomValidator;
+	private final SlotAvailabilityMapper slotAvailabilityMapper;
+	private final List<ClassroomEvent> classroomsStore;
 	
+	public SearchServiceImpl(BookingRepository bookingRepository, ClassroomValidator classroomValidator,
+			SlotAvailabilityMapper slotAvailabilityMapper, List<ClassroomEvent> classroomsStore) {
+		this.bookingRepository = bookingRepository;
+		this.classroomValidator = classroomValidator;
+		this.slotAvailabilityMapper = slotAvailabilityMapper;
+		this.classroomsStore = classroomsStore;
+	}
+
 	@Override
 	public List<SlotStatusDto> availabilityCalendarByClassroom(int idClassroom, LocalDateTime start, LocalDateTime finish) {
 	    logger.info("Fetching availability calendar for classroom {} from {} to {}", idClassroom, start, finish);
