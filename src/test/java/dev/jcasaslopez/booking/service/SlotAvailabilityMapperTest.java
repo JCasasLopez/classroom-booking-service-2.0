@@ -31,8 +31,8 @@ public class SlotAvailabilityMapperTest {
 	void buildAvailabilityGrid_returns_correct_availability_for_each_slot() {
 	    // Arrange
 	    Booking booking = new Booking(1L, 1, 1, 
-	    	    LocalDateTime.of(2026, 5, 7, 9, 0),
 	    	    LocalDateTime.of(2026, 5, 7, 9, 30),
+	    	    LocalDateTime.of(2026, 5, 7, 10, 30),
 	    	    LocalDateTime.now(), 
 	    	    BookingStatus.ACTIVE);
 	    
@@ -42,16 +42,19 @@ public class SlotAvailabilityMapperTest {
 	    List<SlotStatusDto> grid = mapper.buildAvailabilityGrid(
 	        bookings,
 	        LocalDateTime.of(2026, 5, 7, 9, 0),
-	        LocalDateTime.of(2026, 5, 7, 10, 0)  
+	        LocalDateTime.of(2026, 5, 7, 11, 0)  
 	    );
 
 	    // Assert
 	    assertAll(
-	        () -> assertEquals(2, grid.size()),
-	        () -> assertFalse(grid.get(0).available()),
-	        () -> assertEquals(booking.getIdBooking(), grid.get(0).idBooking()),
-	        () -> assertTrue(grid.get(1).available()),
-	        () -> assertNull(grid.get(1).idBooking())
+	        () -> assertTrue(grid.get(0).available()),
+	        () -> assertNull(grid.get(0).idBooking()),
+	        () -> assertFalse(grid.get(1).available()),
+	        () -> assertEquals(booking.getIdBooking(), grid.get(1).idBooking()),
+	        () -> assertFalse(grid.get(2).available()),
+	        () -> assertEquals(booking.getIdBooking(), grid.get(2).idBooking()),
+	        () -> assertTrue(grid.get(3).available()),
+	        () -> assertNull(grid.get(3).idBooking())
 	    );
 	}
 	
