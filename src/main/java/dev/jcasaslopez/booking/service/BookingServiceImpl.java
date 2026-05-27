@@ -102,7 +102,7 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional
 	@Override
 	// Past bookings are set to COMPLETE automatically every hour.
-	@Scheduled(fixedRate = 360_000)
+	@Scheduled(fixedRate = 3_600_000)
 	public void markBookingsAsCompleted() {
 		LocalDateTime now = LocalDateTime.now();
 	    logger.debug("Marking all past bookings as COMPLETE from: {}", now);
