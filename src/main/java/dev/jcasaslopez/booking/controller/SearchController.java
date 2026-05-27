@@ -53,7 +53,8 @@ public class SearchController {
 	public ResponseEntity<StandardResponse> classroomsAvailable(
 	        @RequestParam @NotNull LocalDateTime start,
 	        @RequestParam @NotNull LocalDateTime finish,
-	        @RequestParam @Positive int seats,
+	        // If you do not want to filter by seats, set at 0.
+	        @RequestParam int seats,
 	        @RequestParam @NotNull boolean projector,
 	        @RequestParam @NotNull boolean speakers) {
 		logger.debug("GET /searches/classrooms-available - start={}, finish={}, seats={}, projector={}, speakers={}", start, finish, seats, projector, speakers);
