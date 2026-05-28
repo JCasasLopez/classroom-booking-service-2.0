@@ -44,17 +44,14 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 	}
 
 	@Override
-	public WatchAlertResponseDto addWatchAlert(WatchAlertRequestDto watchAlertDto) {
-		WatchAlert watchAlert = mapper.toEntity(watchAlertDto);
-		long idBooking = watchAlert.getIdBooking();
+	public WatchAlertResponseDto addWatchAlert(Long idBooking) {
+		WatchAlert watchAlert = mapper.toEntity(new WatchAlertRequestDto(idBooking));
 		
 		Booking booking = bookingRepository.findById(idBooking)
 									.orElseThrow(() -> new NoSuchBookingException("Booking {} was not found in the database: " + idBooking));
 		
-		if(booking.getStatus() != BookingStatus.ACTIVE) {
-			throw new IllegalStateException("Watch alerts can only be added when they reference an active booking");
-		}
-		
+		if(booking.getStatus() != BookingStatus.ACTIVE) throw new IllegalStateException("Watch alerts can only be added when they reference an active booking");
+				
 		classroomValidator.validateClassroomExists(booking.getIdClassroom());
 				
 		WatchAlert savedWatchAlert = watchAlertRepository.save(watchAlert);
@@ -68,6 +65,8 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 
 	@Override
 	public List<WatchAlertResponseDto> watchAlertsListByUserAndTimePeriod(LocalDateTime startSearch, LocalDateTime finishSearch) {
+		if(!startSearch.isBefore(finishSearch)) throw new IllegalArgumentException("Start time has to be before finish time");
+		
 		return watchAlertRepository.findWatchAlertsByUserAndTimePeriod(UserContext.getEmail(), startSearch, finishSearch)
 						.stream()
 						.map(watchAlert -> mapper.toResponseDto(watchAlert, classroomsStore, bookingRepository))
