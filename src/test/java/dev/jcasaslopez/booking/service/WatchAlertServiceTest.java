@@ -68,7 +68,7 @@ public class WatchAlertServiceTest {
         when(bookingRepository.findById(idBooking)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(NoSuchBookingException.class, () -> watchAlertService.addWatchAlert(watchAlertDto));
+        assertThrows(NoSuchBookingException.class, () -> watchAlertService.addWatchAlert(idBooking));
         verifyNoInteractions(watchAlertRepository);
     }
 
@@ -82,7 +82,7 @@ public class WatchAlertServiceTest {
         when(bookingRepository.findById(idBooking)).thenReturn(Optional.of(bookingWithNonExistingClassroom));
 
         // Act & Assert
-        assertThrows(NoSuchClassroomException.class, () -> watchAlertService.addWatchAlert(watchAlertDto));
+        assertThrows(NoSuchClassroomException.class, () -> watchAlertService.addWatchAlert(idBooking));
         verifyNoInteractions(watchAlertRepository);
     }
     
@@ -98,7 +98,7 @@ public class WatchAlertServiceTest {
         when(watchAlertRepository.save(watchAlert)).thenReturn(watchAlert);
 
         // Act & Assert
-        assertDoesNotThrow(() -> watchAlertService.addWatchAlert(watchAlertDto));
+        assertDoesNotThrow(() -> watchAlertService.addWatchAlert(idBooking));
         verify(watchAlertRepository).save(watchAlert);
         verify(eventPublisher).publishBookingRelatedEvent(NotificationType.WATCH_ALERT_CONFIRMED, watchAlert, UserContext.getEmail());
     }
