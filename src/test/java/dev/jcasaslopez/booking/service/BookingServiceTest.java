@@ -9,7 +9,10 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -55,9 +58,16 @@ public class BookingServiceTest {
 	private static final int USER_ID = 1;
 	private static final int CLASSROOM_ID = 1;
 	private static final String USER_EMAIL = "test@gmail.com";
-	private static final LocalDateTime START = LocalDateTime.of(2026, 5, 4, 9, 0);
-	private static final LocalDateTime SLOT_2 = LocalDateTime.of(2026, 5, 4, 9, 30);
-	private static final LocalDateTime SLOT_3 = LocalDateTime.of(2026, 5, 4, 10, 0);
+	
+	private static LocalDateTime nextMonday() {
+	    LocalDate today = LocalDate.now();
+	    LocalDate nextMonday = today.with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+	    return nextMonday.atTime(9, 0);
+	}
+	
+	private static final LocalDateTime START = nextMonday();
+	private static final LocalDateTime SLOT_2 = START.plusMinutes(30);
+	private static final LocalDateTime SLOT_3 = START.plusMinutes(60);
 	private static final LocalDateTime EXPECTED_FINISH = SLOT_3.plusMinutes(30);
 	
 	private WeeklySchedule buildTestWeeklySchedule() {
@@ -106,6 +116,22 @@ public class BookingServiceTest {
 	}
 	
 	@Test
+	void if_the_booking_slots_are_in_the_past_throws_exception() {
+		// Arrange
+		LocalDateTime pastStart = LocalDateTime.of(2026, 5, 4, 9, 0);
+		LocalDateTime pastSlot2 = LocalDateTime.of(2026, 5, 4, 10, 0);
+		BookingRequestDto request = new BookingRequestDto(USER_ID, CLASSROOM_ID, 
+														new ArrayList<> (List.of(pastStart, pastSlot2)));
+		
+		// Act & Assert
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> bookingService.book(request));	
+		verify(classroomValidator).validateClassroomExists(CLASSROOM_ID);	
+		
+		// The exception message must be checked to identify the exact cause, since all validation failures throw InvalidBookingException		
+		assertTrue(ex.getMessage().equals("Booking a past period is not allowed"));
+	}
+	
+	@Test
 	void if_the_booking_slots_are_not_consecutive_throws_exception() {
 		// Arrange
 		// Skips SLOT 2, so slots are not consecutive
@@ -123,8 +149,8 @@ public class BookingServiceTest {
 	@Test
 	void if_the_booking_exceeds_maximum_length_throws_exception() {
 		// Arrange
-		LocalDateTime SLOT_4 = LocalDateTime.of(2026, 5, 4, 10, 30);
-		LocalDateTime SLOT_5 = LocalDateTime.of(2026, 5, 4, 11, 0);
+		LocalDateTime SLOT_4 = START.plusMinutes(90);
+		LocalDateTime SLOT_5 = START.plusMinutes(120);
 		
 		// 5 slots -> 150' exceed the maximum length set of 120'
 		BookingRequestDto request = new BookingRequestDto(USER_ID, CLASSROOM_ID, 
