@@ -121,6 +121,10 @@ public class BookingServiceImpl implements BookingService {
 		LocalDateTime bookingStart = listStartTimeSlots.get(0);
 		LocalDateTime bookingFinish = listStartTimeSlots.get(listStartTimeSlots.size()-1).plusMinutes(slotDuration);
 		
+		if(bookingStart.isBefore(LocalDateTime.now()) || bookingFinish.isBefore(LocalDateTime.now())) {
+			throw new IllegalArgumentException("Booking a past period is not allowed");
+		}
+		
 		checkTimeSlotsAreValid(listStartTimeSlots);
 		checkSlotsAreConsecutive(listStartTimeSlots);
 		checkBookDoesNotExceedMaxAllowedTime(listStartTimeSlots);
