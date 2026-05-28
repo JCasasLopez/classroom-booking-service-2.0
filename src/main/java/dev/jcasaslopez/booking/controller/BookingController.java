@@ -37,34 +37,31 @@ public class BookingController {
 
 	@PostMapping(value="/bookings", consumes=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<StandardResponse> book(@Valid @NotNull @RequestBody BookingRequestDto booking){
-		logger.info("POST /bookings - idUser={}, idClassroom={}", booking.idUser(), booking.idClassroom());
+		logger.debug("POST /bookings - idUser={}, idClassroom={}", booking.idUser(), booking.idClassroom());
 		BookingResponseDto bookingConfirmed = bookingService.book(booking);
 		
 		String message = String.format("Classroom %s booked successfully", booking.idClassroom());
 		StandardResponse response = new StandardResponse(message, bookingConfirmed, HttpStatus.CREATED);
-		logger.info("Booking confirmed - idUser={}, idClassroom={}", booking.idUser(), booking.idClassroom());
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 	
 	@PatchMapping("/bookings/cancel")
 	public ResponseEntity<StandardResponse> cancelBooking(@RequestParam @Positive Long idBooking) {
-		logger.info("PATCH /bookings/cancel - idBooking={}", idBooking);
+		logger.debug("PATCH /bookings/cancel - idBooking={}", idBooking);
 		bookingService.cancel(idBooking);
 		
 		String message = String.format("Booking %s cancelled successfully", idBooking);
 		StandardResponse response = new StandardResponse(message, null, HttpStatus.OK);
-		logger.info("Booking {} cancelled successfully", idBooking);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@GetMapping(value="/bookings")
 	public ResponseEntity<StandardResponse> bookingsByUser(@RequestParam @Positive int idUser){
-		logger.info("GET /bookings - idUser={}", idUser);
+		logger.debug("GET /bookings - idUser={}", idUser);
 		List<BookingResponseDto> bookings = bookingService.bookingsByUser(idUser);
 		
 		String message = String.format("Bookings by user %s retrieved successfully", idUser);
 		StandardResponse response = new StandardResponse(message, bookings, HttpStatus.OK);
-		logger.info("Bookings retrieved for user {} - count={}", idUser, bookings.size());
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }

@@ -45,7 +45,6 @@ public class SearchController {
 		List<SlotStatusDto> classroomsAvailable = searchService.availabilityCalendarByClassroom(idClassroom, start, finish);
 		String message = String.format("Availability calendar for classroom %s retrieved successfully", idClassroom);
 		StandardResponse response = new StandardResponse (message, classroomsAvailable, HttpStatus.OK);
-		logger.info("Availability calendar retrieved for classroom {}", idClassroom);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
@@ -67,7 +66,6 @@ public class SearchController {
 		String message = String.format("Available classrooms between %s and %s (seats: %s - projector: %s - speakers: %s) retrieved successfully", 
 				start, finish, seats, projector, speakers);
 		StandardResponse response = new StandardResponse (message, classroomsAvailableByPeriod, HttpStatus.OK);
-		logger.info("Classrooms available retrieved - count={}", classroomsAvailableByPeriod.size());
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }
