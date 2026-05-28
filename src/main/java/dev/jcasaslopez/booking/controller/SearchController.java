@@ -64,7 +64,8 @@ public class SearchController {
 	    }
 		
 		List<ClassroomEvent> classroomsAvailableByPeriod = searchService.classroomsAvailableByPeriodAndFeatures(start, finish, seats, projector, speakers);
-		String message = String.format("Available classrooms between %s and %s retrieved successfully", start, finish);
+		String message = String.format("Available classrooms between %s and %s (seats: %s - projector: %s - speakers: %s) retrieved successfully", 
+				start, finish, seats, projector, speakers);
 		StandardResponse response = new StandardResponse (message, classroomsAvailableByPeriod, HttpStatus.OK);
 		logger.info("Classrooms available retrieved - count={}", classroomsAvailableByPeriod.size());
 		return ResponseEntity.status(HttpStatus.OK).body(response);
