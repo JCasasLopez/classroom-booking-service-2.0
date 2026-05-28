@@ -35,12 +35,14 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 	private List<ClassroomEvent> classroomsStore;
 	
 	public WatchAlertServiceImpl(WatchAlertMapper mapper, WatchAlertRepository watchAlertRepository,
-			BookingRepository bookingRepository, ClassroomValidator classroomValidator, EventPublisher eventPublisher) {
+			BookingRepository bookingRepository, ClassroomValidator classroomValidator, EventPublisher eventPublisher,
+			List<ClassroomEvent> classroomsStore) {
 		this.mapper = mapper;
 		this.watchAlertRepository = watchAlertRepository;
 		this.bookingRepository = bookingRepository;
 		this.classroomValidator = classroomValidator;
 		this.eventPublisher = eventPublisher;
+		this.classroomsStore = classroomsStore;
 	}
 
 	@Override
@@ -48,9 +50,11 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 		WatchAlert watchAlert = mapper.toEntity(new WatchAlertRequestDto(idBooking));
 		
 		Booking booking = bookingRepository.findById(idBooking)
-									.orElseThrow(() -> new NoSuchBookingException("Booking {} was not found in the database: " + idBooking));
+							.orElseThrow(() -> new NoSuchBookingException(String.format("Booking %s was not found in the database", idBooking)));
 		
-		if(booking.getStatus() != BookingStatus.ACTIVE) throw new IllegalStateException("Watch alerts can only be added when they reference an active booking");
+		if(booking.getStatus() != BookingStatus.ACTIVE) {
+			throw new IllegalStateException(String.format("Booking %s is not an active booking", idBooking));
+		}
 				
 		classroomValidator.validateClassroomExists(booking.getIdClassroom());
 				
@@ -65,7 +69,7 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 
 	@Override
 	public List<WatchAlertResponseDto> watchAlertsListByUserAndTimePeriod(LocalDateTime startSearch, LocalDateTime finishSearch) {
-		if(!startSearch.isBefore(finishSearch)) throw new IllegalArgumentException("Start time has to be before finish time");
+		if(!startSearch.isBefore(finishSearch)) throw new IllegalArgumentException("Start time has to preced finish time");
 		
 		return watchAlertRepository.findWatchAlertsByUserAndTimePeriod(UserContext.getEmail(), startSearch, finishSearch)
 						.stream()
