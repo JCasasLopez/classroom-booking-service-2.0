@@ -12,6 +12,7 @@ import dev.jcasaslopez.booking.domain.Booking;
 import dev.jcasaslopez.booking.domain.WatchAlert;
 import dev.jcasaslopez.booking.dto.WatchAlertRequestDto;
 import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
+import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.NoSuchBookingException;
 import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.mapper.WatchAlertMapper;
@@ -26,16 +27,16 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(WatchAlertServiceImpl.class);
 	
-	private WatchAlertMapper watchAlertMapper; 
+	private WatchAlertMapper mapper; 
 	private WatchAlertRepository watchAlertRepository;
 	private BookingRepository bookingRepository;
 	private ClassroomValidator classroomValidator;
 	private EventPublisher eventPublisher;
 	private List<ClassroomEvent> classroomsStore;
 	
-	public WatchAlertServiceImpl(WatchAlertMapper watchAlertMapper, WatchAlertRepository watchAlertRepository,
+	public WatchAlertServiceImpl(WatchAlertMapper mapper, WatchAlertRepository watchAlertRepository,
 			BookingRepository bookingRepository, ClassroomValidator classroomValidator, EventPublisher eventPublisher) {
-		this.watchAlertMapper = watchAlertMapper;
+		this.mapper = mapper;
 		this.watchAlertRepository = watchAlertRepository;
 		this.bookingRepository = bookingRepository;
 		this.classroomValidator = classroomValidator;
@@ -43,12 +44,17 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 	}
 
 	@Override
-	public WatchAlert addWatchAlert(WatchAlertRequestDto watchAlertDto) {
-		WatchAlert watchAlert = watchAlertMapper.toEntity(watchAlertDto);
-		
+	public WatchAlertResponseDto addWatchAlert(WatchAlertRequestDto watchAlertDto) {
+		WatchAlert watchAlert = mapper.toEntity(watchAlertDto);
 		long idBooking = watchAlert.getIdBooking();
+		
 		Booking booking = bookingRepository.findById(idBooking)
 									.orElseThrow(() -> new NoSuchBookingException("Booking {} was not found in the database: " + idBooking));
+		
+		if(booking.getStatus() != BookingStatus.ACTIVE) {
+			throw new IllegalStateException("Watch alerts can only be added when they reference an active booking");
+		}
+		
 		classroomValidator.validateClassroomExists(booking.getIdClassroom());
 				
 		WatchAlert savedWatchAlert = watchAlertRepository.save(watchAlert);
@@ -57,14 +63,14 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 		logger.info("Watch alert created: Classroom ID= {}, User ID= {}, Start= {}, Finish= {}", 
 				booking.getIdClassroom(), booking.getIdUser(), booking.getStart(), booking.getFinish());
 		
-		return savedWatchAlert;
+		return mapper.toResponseDto(savedWatchAlert, classroomsStore, bookingRepository);
 	}
 
 	@Override
 	public List<WatchAlertResponseDto> watchAlertsListByUserAndTimePeriod(LocalDateTime startSearch, LocalDateTime finishSearch) {
 		return watchAlertRepository.findWatchAlertsByUserAndTimePeriod(UserContext.getEmail(), startSearch, finishSearch)
 						.stream()
-						.map(watchAlert -> watchAlertMapper.toResponseDto(watchAlert, classroomsStore, bookingRepository))
+						.map(watchAlert -> mapper.toResponseDto(watchAlert, classroomsStore, bookingRepository))
 						.toList();
 	}
 }

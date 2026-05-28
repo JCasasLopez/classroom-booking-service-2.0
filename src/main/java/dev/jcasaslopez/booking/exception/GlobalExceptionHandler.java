@@ -15,7 +15,8 @@ import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 @ControllerAdvice	
 public class GlobalExceptionHandler {
 		
-	@ExceptionHandler({InvalidBookingException.class, SlotNotValidException.class, SlotOutOfOpeningHoursException.class})
+	@ExceptionHandler({InvalidBookingException.class, SlotNotValidException.class, SlotOutOfOpeningHoursException.class, 
+		IllegalStateException.class})
 	public ResponseEntity<StandardResponse> handleBadRequest (RuntimeException ex){
 		StandardResponse response = new StandardResponse (ex.getMessage(), null, HttpStatus.BAD_REQUEST);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
