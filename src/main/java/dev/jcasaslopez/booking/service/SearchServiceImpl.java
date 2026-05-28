@@ -41,7 +41,7 @@ public class SearchServiceImpl implements SearchService {
 	@Override
 	public List<SlotStatusDto> availabilityCalendarByClassroom(int idClassroom, LocalDateTime start, LocalDateTime finish) {
 	    logger.info("Fetching availability calendar for classroom {} from {} to {}", idClassroom, start, finish);
-	    validateStartAndFinishAreWithinOpeningHours(start, finish);
+	    validateStartAndFinish(start, finish);
 		classroomValidator.validateClassroomExists(idClassroom);
 		List<Booking> bookingsForPeriod = bookingRepository.findActiveBookingsForClassroomByPeriod(idClassroom, start, finish);
 		return slotAvailabilityMapper.buildAvailabilityGrid(bookingsForPeriod, start, finish);
@@ -51,7 +51,7 @@ public class SearchServiceImpl implements SearchService {
 	@Override
 	public List<ClassroomEvent> classroomsAvailableByPeriod(LocalDateTime start, LocalDateTime finish) {
 	    logger.info("Fetching available classrooms from {} to {}", start, finish);
-	    validateStartAndFinishAreWithinOpeningHours(start, finish);
+	    validateStartAndFinish(start, finish);
 	    List<Integer> occupiedClassrooms = bookingRepository.findOccupiedClassroomsbyPeriod(start, finish);
 		return classroomsStore.stream()
 	            .filter(classroom -> !occupiedClassrooms.contains(classroom.getIdClassroom()))
@@ -74,7 +74,7 @@ public class SearchServiceImpl implements SearchService {
 	// we need a specific validation method here, as TimeSlot validates slot alignment, which is too strict here 
 	// — a search period like 11:15–14:00 is valid even if it doesn't align with slot boundaries.
 	// Also, start and finish must be on the same day to avoid closed days and out of opening hours slots in between.	
-	private void validateStartAndFinishAreWithinOpeningHours(LocalDateTime start, LocalDateTime finish) {
+	private void validateStartAndFinish(LocalDateTime start, LocalDateTime finish) {
 		if(start.isBefore(LocalDateTime.now()) || finish.isBefore(LocalDateTime.now())) {
 			throw new IllegalArgumentException("Search range cannot be in the past");
 		}
