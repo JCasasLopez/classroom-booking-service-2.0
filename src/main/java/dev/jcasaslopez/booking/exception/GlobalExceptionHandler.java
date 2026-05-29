@@ -1,9 +1,10 @@
 package dev.jcasaslopez.booking.exception;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -12,11 +13,16 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 @ControllerAdvice	
 public class GlobalExceptionHandler {
+	
+	private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 		
 	@ExceptionHandler({InvalidBookingException.class, SlotNotValidException.class, SlotOutOfOpeningHoursException.class, 
-		IllegalStateException.class})
+		IllegalStateException.class, IllegalArgumentException.class})
 	public ResponseEntity<StandardResponse> handleBadRequest (RuntimeException ex){
 		StandardResponse response = new StandardResponse (ex.getMessage(), null, HttpStatus.BAD_REQUEST);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -36,8 +42,15 @@ public class GlobalExceptionHandler {
 				.map(error -> error.getField() + ": " + error.getDefaultMessage())
 				.collect(Collectors.toList());
 
-		StandardResponse response = new StandardResponse(LocalDateTime.now(), "Validation failed for one or more fields", errors.toString(), HttpStatus.BAD_REQUEST);
+		StandardResponse response = new StandardResponse("Validation failed for one or more fields", errors.toString(), HttpStatus.BAD_REQUEST);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
+	
+	@ExceptionHandler({JsonMappingException.class, JsonProcessingException.class})
+    public ResponseEntity<StandardResponse> handleJsonExceptions(JsonProcessingException ex) {
+		logger.error("JsonProcessingException: {}", ex.getMessage(), ex);
+    	StandardResponse response = new StandardResponse ("Error serializing or deserializing JSON data", null, HttpStatus.INTERNAL_SERVER_ERROR);
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
 	
 }
