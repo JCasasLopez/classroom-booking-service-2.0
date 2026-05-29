@@ -37,7 +37,6 @@ public class EventPublisherImpl implements EventPublisher {
 	public void publishBookingRelatedEvent(NotificationType type, Booking booking, String email) {
 		if (!Set.of(NotificationType.BOOKING_CONFIRMED, NotificationType.BOOKING_CANCELLED, 
 				NotificationType.WATCH_ALERT_TRIGGERED).contains(type)) {	
-			logger.warn("Invalid notification type {} for booking event", type);
 			throw new IllegalArgumentException("Invalid notification type for booking event: " + type);
 		}
 		NotificationEvent notification = createNotificationEvent(type, booking, email);
@@ -47,7 +46,6 @@ public class EventPublisherImpl implements EventPublisher {
 	@Override
 	public void publishBookingRelatedEvent(NotificationType type, WatchAlert watchAlert, String email) {
 		if (!Set.of(NotificationType.WATCH_ALERT_CONFIRMED).contains(type)) {
-			logger.warn("Invalid notification type {} for booking event", type);
 			throw new IllegalArgumentException("Invalid notification type for booking event: " + type);
 		}
 		Booking booking = bookingRepository.findById(watchAlert.getIdBooking())

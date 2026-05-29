@@ -146,7 +146,6 @@ public class BookingServiceImpl implements BookingService {
 	private void checkSlotsAreConsecutive(List<LocalDateTime> listSlots) {
 		for(int i=0; i < listSlots.size() - 1; i++) {
 			if(!listSlots.get(i).plusMinutes(slotDuration).equals(listSlots.get(i+1))) {
-				logger.warn("Booking slots:{} are not consecutive", listSlots.toString());
 				throw new InvalidBookingException("Booking slots are not consecutive");
 			}
 		}
@@ -155,14 +154,12 @@ public class BookingServiceImpl implements BookingService {
 	private void checkBookDoesNotExceedMaxAllowedTime(List<LocalDateTime> listSlots) {
 		int intendedBookingDuration = listSlots.size() * slotDuration;
 		if(intendedBookingDuration >  bookingMaxDuration) {
-			logger.warn("Maximum duration allowed is {} min. Trying to book {} min", bookingMaxDuration, intendedBookingDuration);
 			throw new InvalidBookingException("Booking exceeds maximum duration allowed");
 		}
 	}
 	
 	private void checkclassroomIsAvailable (int idClassroom, LocalDateTime start, LocalDateTime finish) {
 		if(bookingRepository.findActiveBookingsForClassroomByPeriod(idClassroom, start, finish).size() != 0) {
-	    	logger.warn("Classroom {} is not available between {} and {}", idClassroom, start, finish);
 			throw new InvalidBookingException("Classroom is not available for this time period");
 		}
 	}
@@ -183,7 +180,6 @@ public class BookingServiceImpl implements BookingService {
 	    					.count();
 	    
 	    if(bookingsForUserThatWeek >= maxNumberBookings) {
-	    	logger.warn("User has reached {}, the maximum number of weekly bookings", maxNumberBookings);
 			throw new InvalidBookingException("User has reached the maximum number of weekly bookings");
 	    }
 	}

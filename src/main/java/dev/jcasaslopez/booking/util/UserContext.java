@@ -16,8 +16,7 @@ public class UserContext {
     public static String getEmail() {
         String email = emailHolder.get();
         if (email == null) {
-        	logger.warn("No email found in UserContext for thread {}", Thread.currentThread().getName());
-        }
+        	 throw new IllegalStateException("No email present in UserContext for thread: " + Thread.currentThread().getName());        }
         return email;
     }
 
