@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.service.BookingService;
+import dev.jcasaslopez.booking.util.Endpoints;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -35,7 +36,7 @@ public class BookingController {
 		this.bookingService = bookingService;
 	}
 
-	@PostMapping(value="/bookings", consumes=MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value=Endpoints.BOOK, consumes=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<StandardResponse> book(@Valid @NotNull @RequestBody BookingRequestDto booking){
 		logger.debug("POST /bookings - idUser={}, idClassroom={}", booking.idUser(), booking.idClassroom());
 		BookingResponseDto bookingConfirmed = bookingService.book(booking);
@@ -45,7 +46,7 @@ public class BookingController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 	
-	@PatchMapping("/bookings/cancel")
+	@PatchMapping(Endpoints.CANCEL)
 	public ResponseEntity<StandardResponse> cancelBooking(@RequestParam @Positive Long idBooking) {
 		logger.debug("PATCH /bookings/cancel - idBooking={}", idBooking);
 		bookingService.cancel(idBooking);
@@ -55,7 +56,7 @@ public class BookingController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
-	@GetMapping(value="/bookings")
+	@GetMapping(value=Endpoints.USER_BOOKINGS)
 	public ResponseEntity<StandardResponse> bookingsByUser(@RequestParam @Positive int idUser){
 		logger.debug("GET /bookings - idUser={}", idUser);
 		List<BookingResponseDto> bookings = bookingService.bookingsByUser(idUser);

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
 import dev.jcasaslopez.booking.service.WatchAlertService;
+import dev.jcasaslopez.booking.util.Endpoints;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -31,7 +32,7 @@ private static final Logger logger = LoggerFactory.getLogger(WatchAlertControlle
 		this.service = service;
 	}
 
-	@PostMapping(value="/watch-alerts")
+	@PostMapping(value=Endpoints.ADD_WATCH_ALERT)
 	public ResponseEntity<StandardResponse> addWatchAlert(@RequestParam @NotNull @Positive Long idBooking) {
 		logger.debug("POST /watch-alerts - idBooking={}", idBooking);
 		WatchAlertResponseDto watchAlert = service.addWatchAlert(idBooking);
@@ -42,7 +43,7 @@ private static final Logger logger = LoggerFactory.getLogger(WatchAlertControlle
 	
 	// No need to pass any user information as a parameter, as the endpoint needs the user to be authenticated, 
 	// and the user's email is held in UserContext.
-	@GetMapping(value="/watch-alerts")
+	@GetMapping(value=Endpoints.USER_WATCH_ALERTS)
 	public ResponseEntity<StandardResponse> getWatchAlertsByUser(@RequestParam @NotNull LocalDateTime startSearch, 
 			@RequestParam @NotNull LocalDateTime finishSearch) {
 		logger.debug("GET /watch-alerts - start={} - finish={}", startSearch, finishSearch);

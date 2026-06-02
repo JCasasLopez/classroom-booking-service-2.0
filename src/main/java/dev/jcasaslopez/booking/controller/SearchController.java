@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import dev.jcasaslopez.booking.dto.SlotStatusDto;
 import dev.jcasaslopez.booking.service.SearchService;
+import dev.jcasaslopez.booking.util.Endpoints;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 import jakarta.validation.constraints.NotNull;
@@ -31,7 +32,7 @@ public class SearchController {
 		this.searchService = searchService;
 	}
 
-	@GetMapping(value="/searches/availability-calendar")
+	@GetMapping(value=Endpoints.AVAILABILITY_CALENDAR)
 	public ResponseEntity<StandardResponse> availabilityCalendar(
 			@RequestParam @NotNull LocalDateTime start,
 	        @RequestParam @NotNull LocalDateTime finish,
@@ -48,7 +49,7 @@ public class SearchController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
-	@GetMapping(value="/searches/classrooms-available")
+	@GetMapping(value=Endpoints.CLASSROOMS_AVAILABILITY)
 	public ResponseEntity<StandardResponse> classroomsAvailable(
 	        @RequestParam @NotNull LocalDateTime start,
 	        @RequestParam @NotNull LocalDateTime finish,
