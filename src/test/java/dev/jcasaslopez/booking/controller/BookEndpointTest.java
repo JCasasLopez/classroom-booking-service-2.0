@@ -47,9 +47,6 @@ public class BookEndpointTest extends BaseIntegrationTest {
 		LocalDateTime bookingStart = nextMonday.atTime(start);
 		LocalDateTime bookingFinish = nextMonday.atTime(start.plusMinutes(slotDuration * startTimeSlotList.size()));
 		
-		// Wait until the classrooms Kafka topic is available before running the test.
-		TestHelper.waitForClassroomStore(classroomStore);
-		
 		String classroomName = classroomStore.stream()
 				.filter(c -> c.getIdClassroom() == classroomId)
 				.map(c -> c.getName())
