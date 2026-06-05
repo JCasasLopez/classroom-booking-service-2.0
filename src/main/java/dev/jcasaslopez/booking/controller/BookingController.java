@@ -46,7 +46,7 @@ public class BookingController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 	
-	@PatchMapping(Endpoints.CANCEL)
+	@PatchMapping(value=Endpoints.CANCEL)
 	public ResponseEntity<StandardResponse> cancelBooking(@RequestParam @Positive Long idBooking) {
 		logger.debug("PATCH /bookings/cancel - idBooking={}", idBooking);
 		bookingService.cancel(idBooking);
