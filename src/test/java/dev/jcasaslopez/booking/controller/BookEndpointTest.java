@@ -28,7 +28,7 @@ import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
-public class BookingControllerTest extends BaseIntegrationTest {
+public class BookEndpointTest extends BaseIntegrationTest {
 
     @Value("${time-slot.duration}") private int slotDuration;
     
