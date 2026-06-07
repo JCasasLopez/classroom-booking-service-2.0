@@ -73,7 +73,7 @@ public class BookingMapperTest {
 		BookingResponseDto mappedBooking = mapper.toResponseDto(booking, classroomsStore);
 		
 		// Assert
-		assertAll(() -> assertEquals("Blue Whale Auditorium", mappedBooking.name()),
+		assertAll(() -> assertEquals("Blue Whale Auditorium", mappedBooking.classroomName()),
 				() -> assertEquals(LocalDateTime.of(2026, 4, 22, 10, 0), mappedBooking.start()),
 				() -> assertEquals(LocalDateTime.of(2026, 4, 22, 11, 30), mappedBooking.finish())
 				);

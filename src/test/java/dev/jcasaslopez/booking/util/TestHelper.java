@@ -8,8 +8,6 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.Comparator;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
@@ -18,9 +16,6 @@ import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 public final class TestHelper {
 	
-	@Autowired
-	static List<ClassroomEvent> classroomsStore;
-		
 	// The system only allows bookings in a future date, so we look for next Monday's date
 	public static List<LocalDateTime> generateBookingSlots(int slotDuration) {
 		LocalTime start = LocalTime.of(10, 0);
@@ -40,7 +35,7 @@ public final class TestHelper {
                 .plusMinutes(slotDuration);
 	}
 	
-	public static String findClassroomName(int classroomId) {
+	public static String findClassroomName(int classroomId, List<ClassroomEvent> classroomsStore) {
 		return classroomsStore.stream()
 				.filter(c -> c.getIdClassroom() == classroomId)
 				.map(c -> c.getName())

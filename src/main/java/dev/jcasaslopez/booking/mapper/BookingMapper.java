@@ -39,7 +39,8 @@ public class BookingMapper {
 	
 	public BookingResponseDto toResponseDto (Booking booking, List<ClassroomEvent> classroomsStore) {
 		logger.debug("Mapping Booking to BookingResponseDto: idBooking={}", booking.getIdBooking());
-		return new BookingResponseDto(ClassroomUtils.findClassroomName(booking, classroomsStore), 
+		return new BookingResponseDto(booking.getIdBooking(),
+				ClassroomUtils.findClassroomName(booking, classroomsStore), 
 				booking.getStart(),
 				booking.getFinish(),
 				booking.getStatus());

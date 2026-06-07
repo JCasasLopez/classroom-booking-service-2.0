@@ -10,7 +10,7 @@ import javax.crypto.SecretKey;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
-public class AuthTestHelper {
+public final class AuthTestHelper {
 	
 	public static String generateTestJwt() {
 		String base64SecretKey = "MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaMDEyMzQ1Njc4OTA=";

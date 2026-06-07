@@ -31,7 +31,7 @@ public class BookEndpointTest extends BaseIntegrationTest {
 	void book_endpoint_returns_the_expected_response() {
 		// Arrange
 		int classroomId = 1;
-		String classroomName = TestHelper.findClassroomName(classroomId);
+		String classroomName = TestHelper.findClassroomName(classroomId, classroomsStore);
 
 		List<LocalDateTime> bookingSlots = TestHelper.generateBookingSlots(slotDuration);	
 		LocalDateTime bookingStart = TestHelper.getBookingStart(bookingSlots);
@@ -49,7 +49,7 @@ public class BookEndpointTest extends BaseIntegrationTest {
 		BookingResponseDto bookingResult = TestHelper.extractBookingResponse(httpResponse .getBody(), objectMapper);
 		assertAll(
 				() -> assertEquals(HttpStatus.CREATED, httpResponse.getStatusCode()),
-				() -> assertEquals(classroomName, bookingResult.name()),
+				() -> assertEquals(classroomName, bookingResult.classroomName()),
 				() -> assertEquals(BookingStatus.ACTIVE, bookingResult.status()),
 				() -> assertEquals(bookingStart, bookingResult.start()),
 				() -> assertEquals(bookingFinish, bookingResult.finish())

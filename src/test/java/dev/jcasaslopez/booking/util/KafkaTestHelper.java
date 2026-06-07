@@ -13,7 +13,7 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
-public class KafkaTestHelper {
+public final class KafkaTestHelper {
 
 	// Wait until the classrooms Kafka topic is available before running the test.
 	public static void waitForClassroomStore(List<?> classroomsStore) {

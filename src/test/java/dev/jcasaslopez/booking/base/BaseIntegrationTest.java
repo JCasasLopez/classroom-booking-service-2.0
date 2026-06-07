@@ -26,7 +26,7 @@ import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 public abstract class BaseIntegrationTest {
 
     @Autowired protected TestRestTemplate testRestTemplate;
-    @Autowired protected List<ClassroomEvent> classroomStore;
+    @Autowired protected List<ClassroomEvent> classroomsStore;
     @Autowired protected ObjectMapper objectMapper;
 
     @ServiceConnection
@@ -49,6 +49,6 @@ public abstract class BaseIntegrationTest {
     
     @BeforeEach
     void waitForStore() {
-    	KafkaTestHelper.waitForClassroomStore(classroomStore);
+    	KafkaTestHelper.waitForClassroomStore(classroomsStore);
     }
 }

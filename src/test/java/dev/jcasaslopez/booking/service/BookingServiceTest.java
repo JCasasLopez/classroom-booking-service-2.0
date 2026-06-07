@@ -100,7 +100,8 @@ public class BookingServiceTest {
 		Booking bookingEntity = new Booking(0, USER_ID, CLASSROOM_ID, START, EXPECTED_FINISH, LocalDateTime.now(), BookingStatus.ACTIVE);
 		String classroomName = allClassrooms.get(CLASSROOM_ID).getName();
 		when(bookingRepository.save(any(Booking.class))).thenReturn(bookingEntity);
-		when(mapper.toResponseDto(any(Booking.class), any(List.class))).thenReturn(new BookingResponseDto(classroomName, START, EXPECTED_FINISH, BookingStatus.ACTIVE));
+		when(mapper.toResponseDto(any(Booking.class), any(List.class))).thenReturn
+								(new BookingResponseDto(4, classroomName, START, EXPECTED_FINISH, BookingStatus.ACTIVE));
 		
 		// Act
 		BookingResponseDto booking = bookingService.book(request);
@@ -109,7 +110,7 @@ public class BookingServiceTest {
 		verify(classroomValidator).validateClassroomExists(CLASSROOM_ID);	
 		verify(eventPublisher).publishBookingRelatedEvent(NotificationType.BOOKING_CONFIRMED, bookingEntity, USER_EMAIL);		
 		assertAll(
-				() -> assertEquals(classroomName, booking.name()),
+				() -> assertEquals(classroomName, booking.classroomName()),
 				() -> assertEquals(START, booking.start()),
 				() -> assertEquals(EXPECTED_FINISH, booking.finish())
 				);
