@@ -1,12 +1,12 @@
 package dev.jcasaslopez.booking.controller;
 
-import dev.jcasaslopez.booking.base.BaseIntegrationTest;
-import dev.jcasaslopez.booking.dto.BookingRequestDto;
-import dev.jcasaslopez.booking.dto.BookingResponseDto;
-import dev.jcasaslopez.booking.enums.BookingStatus;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -14,19 +14,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-import dev.jcasaslopez.booking.testHelper.TestHelper;
+import dev.jcasaslopez.booking.base.BaseIntegrationTest;
+import dev.jcasaslopez.booking.dto.BookingRequestDto;
+import dev.jcasaslopez.booking.dto.BookingResponseDto;
+import dev.jcasaslopez.booking.enums.BookingStatus;
+import dev.jcasaslopez.booking.util.AuthTestHelper;
 import dev.jcasaslopez.booking.util.Endpoints;
+import dev.jcasaslopez.booking.util.TestHelper;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.temporal.TemporalAdjusters;
-import java.util.List;
 
 public class BookEndpointTest extends BaseIntegrationTest {
 
@@ -35,47 +30,36 @@ public class BookEndpointTest extends BaseIntegrationTest {
     @Test
 	void book_endpoint_returns_the_expected_response() {
 		// Arrange
-		LocalTime start = LocalTime.of(10, 0);
 		int classroomId = 1;
+		String classroomName = TestHelper.findClassroomName(classroomId);
+
+		List<LocalDateTime> bookingSlots = TestHelper.generateBookingSlots(slotDuration);	
+		LocalDateTime bookingStart = TestHelper.getBookingStart(bookingSlots);
+		LocalDateTime bookingFinish = TestHelper.getBookingFinish(bookingSlots, slotDuration);
 		
-		LocalDate nextMonday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY));
-		List<LocalDateTime> startTimeSlotList = List.of(
-				nextMonday.atTime(start),
-				nextMonday.atTime(start.plusMinutes(slotDuration))
-			);
-		
-		LocalDateTime bookingStart = nextMonday.atTime(start);
-		LocalDateTime bookingFinish = nextMonday.atTime(start.plusMinutes(slotDuration * startTimeSlotList.size()));
-		
-		String classroomName = classroomStore.stream()
-				.filter(c -> c.getIdClassroom() == classroomId)
-				.map(c -> c.getName())
-				.findFirst()
-			    .orElseThrow(() -> new RuntimeException("Classroom not found with id: " + classroomId));
-		
-		BookingRequestDto bookingRequest = new BookingRequestDto (1, classroomId, startTimeSlotList);
+		BookingRequestDto bookingDto = new BookingRequestDto(1, classroomId, bookingSlots);
 		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(TestHelper.generateTestJwt());
-		HttpEntity<BookingRequestDto> request = new HttpEntity<>(bookingRequest, headers);
+		headers.setBearerAuth(AuthTestHelper.generateTestJwt());
+		HttpEntity<BookingRequestDto> httpRequest = new HttpEntity<>(bookingDto, headers);
 		
 		// Act
-		ResponseEntity<StandardResponse> response = testRestTemplate.postForEntity(Endpoints.BOOK, request, StandardResponse.class);
-		BookingResponseDto bookingResponse = TestHelper.extractBookingResponse(response.getBody(), objectMapper);
+		ResponseEntity<StandardResponse> httpResponse = testRestTemplate.postForEntity(Endpoints.BOOK, httpRequest, StandardResponse.class);
 
 		// Assert
+		BookingResponseDto bookingResult = TestHelper.extractBookingResponse(httpResponse .getBody(), objectMapper);
 		assertAll(
-				() -> assertEquals(HttpStatus.CREATED, response.getStatusCode()),
-				() -> assertEquals(classroomName, bookingResponse.name()),
-				() -> assertEquals(BookingStatus.ACTIVE, bookingResponse.status()),
-				() -> assertEquals(bookingStart, bookingResponse.start()),
-				() -> assertEquals(bookingFinish, bookingResponse.finish())
+				() -> assertEquals(HttpStatus.CREATED, httpResponse.getStatusCode()),
+				() -> assertEquals(classroomName, bookingResult.name()),
+				() -> assertEquals(BookingStatus.ACTIVE, bookingResult.status()),
+				() -> assertEquals(bookingStart, bookingResult.start()),
+				() -> assertEquals(bookingFinish, bookingResult.finish())
 				);
 	}
 
     @Test
     void book_endpoint_returns_400_when_body_is_missing() {
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(TestHelper.generateTestJwt());
+        headers.setBearerAuth(AuthTestHelper.generateTestJwt());
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<Void> request = new HttpEntity<>(headers);
 
@@ -98,7 +82,7 @@ public class BookEndpointTest extends BaseIntegrationTest {
             """;
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(TestHelper.generateTestJwt());
+        headers.setBearerAuth(AuthTestHelper.generateTestJwt());
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> request = new HttpEntity<>(body, headers);
 

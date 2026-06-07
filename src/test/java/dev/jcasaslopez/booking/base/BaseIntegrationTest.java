@@ -18,7 +18,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import dev.jcasaslopez.booking.testHelper.TestHelper;
+import dev.jcasaslopez.booking.util.KafkaTestHelper;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
 @Testcontainers
@@ -44,11 +44,11 @@ public abstract class BaseIntegrationTest {
 
     @BeforeAll
     static void setup() throws Exception {
-        TestHelper.produceClassroomEvents(kafkaContainer.getBootstrapServers());
+    	KafkaTestHelper.produceClassroomEvents(kafkaContainer.getBootstrapServers());
     }
     
     @BeforeEach
     void waitForStore() {
-        TestHelper.waitForClassroomStore(classroomStore);
+    	KafkaTestHelper.waitForClassroomStore(classroomStore);
     }
 }
