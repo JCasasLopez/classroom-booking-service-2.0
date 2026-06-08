@@ -13,6 +13,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
@@ -23,6 +25,7 @@ import dev.jcasaslopez.booking.util.Endpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS)
 public class BookEndpointTest extends BaseIntegrationTest {
 
     @Value("${time-slot.duration}") private int slotDuration;
@@ -46,7 +49,7 @@ public class BookEndpointTest extends BaseIntegrationTest {
 		ResponseEntity<StandardResponse> httpResponse = testRestTemplate.postForEntity(Endpoints.BOOK, httpRequest, StandardResponse.class);
 
 		// Assert
-		BookingResponseDto bookingResult = TestHelper.extractBookingResponse(httpResponse .getBody(), objectMapper);
+		BookingResponseDto bookingResult = TestHelper.extractBookingResponse(httpResponse.getBody(), objectMapper);
 		assertAll(
 				() -> assertEquals(HttpStatus.CREATED, httpResponse.getStatusCode()),
 				() -> assertEquals(classroomName, bookingResult.classroomName()),

@@ -43,9 +43,9 @@ public class SearchController {
 	        throw new IllegalArgumentException("start must be before finish");
 	    }
 		
-		List<SlotStatusDto> classroomsAvailable = searchService.availabilityCalendarByClassroom(idClassroom, start, finish);
+		List<SlotStatusDto> availabilityCalendar = searchService.availabilityCalendarByClassroom(idClassroom, start, finish);
 		String message = String.format("Availability calendar for classroom %s retrieved successfully", idClassroom);
-		StandardResponse response = new StandardResponse (message, classroomsAvailable, HttpStatus.OK);
+		StandardResponse response = new StandardResponse (message, availabilityCalendar, HttpStatus.OK);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
