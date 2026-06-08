@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
+import jakarta.validation.ConstraintViolationException;
 
 @ControllerAdvice	
 public class GlobalExceptionHandler {
@@ -52,6 +53,15 @@ public class GlobalExceptionHandler {
 
 		StandardResponse response = new StandardResponse("Validation failed for one or more fields", errors.toString(), HttpStatus.BAD_REQUEST);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+	}
+	
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ResponseEntity<StandardResponse> handleConstraintViolation(ConstraintViolationException ex) {
+	    String message = ex.getConstraintViolations().stream()
+	            .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+	            .collect(Collectors.joining(", "));
+	    StandardResponse response = new StandardResponse(message, null, HttpStatus.BAD_REQUEST);
+	    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 	
 	@ExceptionHandler({JsonMappingException.class,

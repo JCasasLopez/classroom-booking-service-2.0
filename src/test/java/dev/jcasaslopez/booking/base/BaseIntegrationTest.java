@@ -18,6 +18,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.util.KafkaTestHelper;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
@@ -28,6 +29,7 @@ public abstract class BaseIntegrationTest {
     @Autowired protected TestRestTemplate testRestTemplate;
     @Autowired protected List<ClassroomEvent> classroomsStore;
     @Autowired protected ObjectMapper objectMapper;
+    @Autowired protected BookingRepository repository;;
 
     @ServiceConnection
     @Container
