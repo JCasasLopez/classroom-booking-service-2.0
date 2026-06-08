@@ -8,6 +8,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.Comparator;
 import java.util.List;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
@@ -45,6 +46,10 @@ public final class TestHelper {
 	
 	public static BookingResponseDto extractBookingResponse(StandardResponse body, ObjectMapper mapper) {
 	    return mapper.convertValue(body.details(), BookingResponseDto.class);
+	}
+	
+	public static List<BookingResponseDto> extractBookingList(StandardResponse body, ObjectMapper mapper) {
+	    return mapper.convertValue(body.details(), new TypeReference<List<BookingResponseDto>>() {});
 	}
 
 }
