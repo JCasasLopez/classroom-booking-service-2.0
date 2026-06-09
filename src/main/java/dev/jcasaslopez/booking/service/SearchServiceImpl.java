@@ -40,7 +40,10 @@ public class SearchServiceImpl implements SearchService {
 
 	@Override
 	public List<SlotStatusDto> availabilityCalendarByClassroom(int idClassroom, LocalDateTime start, LocalDateTime finish) {
-	    logger.info("Fetching availability calendar for classroom {} from {} to {}", idClassroom, start, finish);
+		if (!start.isBefore(finish)) {
+	        throw new IllegalArgumentException(String.format("Start %s must precede finish %s", start, finish));
+	    }
+		logger.info("Fetching availability calendar for classroom {} from {} to {}", idClassroom, start, finish);
 	    validateStartAndFinish(start, finish);
 		classroomValidator.validateClassroomExists(idClassroom);
 		List<Booking> bookingsForPeriod = bookingRepository.findActiveBookingsForClassroomByPeriod(idClassroom, start, finish);
@@ -50,7 +53,10 @@ public class SearchServiceImpl implements SearchService {
 	// ClassroomEvent = Classroom 
 	@Override
 	public List<ClassroomEvent> classroomsAvailableByPeriod(LocalDateTime start, LocalDateTime finish) {
-	    logger.info("Fetching available classrooms from {} to {}", start, finish);
+		if (!start.isBefore(finish)) {
+	        throw new IllegalArgumentException(String.format("Start %s must precede finish %s", start, finish));
+	    }
+		logger.info("Fetching available classrooms from {} to {}", start, finish);
 	    validateStartAndFinish(start, finish);
 	    List<Integer> occupiedClassrooms = bookingRepository.findOccupiedClassroomsbyPeriod(start, finish);
 		return classroomsStore.stream()

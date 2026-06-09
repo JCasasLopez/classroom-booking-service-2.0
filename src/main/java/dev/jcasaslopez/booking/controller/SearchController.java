@@ -37,12 +37,7 @@ public class SearchController {
 			@RequestParam @NotNull LocalDateTime start,
 	        @RequestParam @NotNull LocalDateTime finish,
 	        @RequestParam @Positive int idClassroom) {
-		logger.debug("GET /searches/availability-calendar - idClassroom={}, start={}, finish={}", idClassroom, start, finish);
-		
-		if (!start.isBefore(finish)) {
-	        throw new IllegalArgumentException("start must be before finish");
-	    }
-		
+		logger.debug("GET /searches/availability-calendar - idClassroom={}, start={}, finish={}", idClassroom, start, finish);	
 		List<SlotStatusDto> availabilityCalendar = searchService.availabilityCalendarByClassroom(idClassroom, start, finish);
 		String message = String.format("Availability calendar for classroom %s retrieved successfully", idClassroom);
 		StandardResponse response = new StandardResponse (message, availabilityCalendar, HttpStatus.OK);
@@ -58,11 +53,6 @@ public class SearchController {
 	        @RequestParam @NotNull boolean projector,
 	        @RequestParam @NotNull boolean speakers) {
 		logger.debug("GET /searches/classrooms-available - start={}, finish={}, seats={}, projector={}, speakers={}", start, finish, seats, projector, speakers);
-		
-		if (!start.isBefore(finish)) {
-	        throw new IllegalArgumentException("start must be before finish");
-	    }
-		
 		List<ClassroomEvent> classroomsAvailableByPeriod = searchService.classroomsAvailableByPeriodAndFeatures(start, finish, seats, projector, speakers);
 		String message = String.format("Available classrooms between %s and %s (seats: %s - projector: %s - speakers: %s) retrieved successfully", 
 				start, finish, seats, projector, speakers);
