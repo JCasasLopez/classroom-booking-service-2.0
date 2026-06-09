@@ -70,5 +70,9 @@ public final class TestHelper {
 	public static List<?> extractSlotStatusList(StandardResponse body, ObjectMapper mapper) {
 		return mapper.convertValue(body.details(), new TypeReference<List<?>>() {});
 	}
+	
+	public static List<ClassroomEvent> extractAvailableClassroomsList(StandardResponse body, ObjectMapper mapper) {
+	    return mapper.convertValue(body.details(), new TypeReference<List<ClassroomEvent>>() {});
+	}
 
 }
