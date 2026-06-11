@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -17,21 +16,26 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import dev.jcasaslopez.booking.domain.Booking;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import jakarta.persistence.EntityManager;
 
-@Disabled("Transactional isolation issue with MySQL - READ_COMMITTED not being applied correctly")
+@Testcontainers
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Transactional(isolation = Isolation.READ_COMMITTED)
 public class FindOccupiedClassroomsAndUserBookingTest {
 
 	@Autowired private BookingRepository bookingRepository;
 	@Autowired private EntityManager entityManager;
+	
+	@ServiceConnection
+	@Container
+	static final MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.3");
 	
 	@ParameterizedTest
 	@MethodSource("bookingPeriodsAndExpectedResult")
@@ -118,37 +122,37 @@ public class FindOccupiedClassroomsAndUserBookingTest {
 		// │ 2          │ 20:00-21:30   │ 10      │ CANCELLED │
 		// └────────────┴───────────────┴─────────┴───────────┘
 		
-		Booking booking1 = new Booking(0, 1, 10, 
+		Booking booking1 = new Booking(0, 10, 1, 
 				LocalDateTime.of(2025, 3, 2, 14, 0),
 				LocalDateTime.of(2025, 3, 2, 15, 30), LocalDateTime.now(), 
 				BookingStatus.ACTIVE);
 		bookingRepository.save(booking1);
 
-		Booking booking2 = new Booking(0, 1, 8, 
+		Booking booking2 = new Booking(0, 8, 1, 
 				LocalDateTime.of(2025, 3, 2, 17, 0),
 				LocalDateTime.of(2025, 3, 2, 18, 0), LocalDateTime.now(), 
 				BookingStatus.ACTIVE);
 		bookingRepository.save(booking2);
 		
-		Booking booking3 = new Booking(0, 1, 10, 
+		Booking booking3 = new Booking(0, 10, 1, 
 				LocalDateTime.of(2025, 3, 2, 19, 0),
 				LocalDateTime.of(2025, 3, 2, 20, 30), LocalDateTime.now(), 
 				BookingStatus.CANCELLED);
 		bookingRepository.save(booking3);
 
-		Booking booking4 = new Booking(0, 2, 8, 
+		Booking booking4 = new Booking(0, 8, 2, 
 				LocalDateTime.of(2025, 3, 2, 14, 00),
 				LocalDateTime.of(2025, 3, 2, 15, 00), LocalDateTime.now(), 
 				BookingStatus.ACTIVE);
 		bookingRepository.save(booking4);
 
-		Booking booking5 = new Booking(0, 2, 10, 
+		Booking booking5 = new Booking(0, 10, 2, 
 				LocalDateTime.of(2025, 3, 2, 17, 00),
 				LocalDateTime.of(2025, 3, 2, 19, 00), LocalDateTime.now(), 
 				BookingStatus.ACTIVE);
 		bookingRepository.save(booking5);
 
-		Booking booking6 = new Booking(0, 2, 10, 
+		Booking booking6 = new Booking(0, 10, 2, 
 				LocalDateTime.of(2025, 3, 2, 20, 00),
 				LocalDateTime.of(2025, 3, 2, 21, 30), LocalDateTime.now(), 
 				BookingStatus.CANCELLED);
