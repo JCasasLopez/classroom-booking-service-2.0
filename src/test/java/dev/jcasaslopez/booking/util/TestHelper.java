@@ -55,6 +55,9 @@ public final class TestHelper {
 			    .orElseThrow(() -> new RuntimeException("Classroom not found with id: " + classroomId));
 	}
 	
+	// StandardResponse.details() is of type Object. When Jackson deserializes it, it has no type
+	// information to reconstruct the original class, so it produces a LinkedHashMap instead.
+	// These helper methods use convertValue() to map that LinkedHashMap into the intended type.
 	public static BookingResponseDto extractBookingResponse(StandardResponse body, ObjectMapper mapper) {
 	    return mapper.convertValue(body.details(), BookingResponseDto.class);
 	}
@@ -74,5 +77,4 @@ public final class TestHelper {
 	public static List<ClassroomEvent> extractAvailableClassroomsList(StandardResponse body, ObjectMapper mapper) {
 	    return mapper.convertValue(body.details(), new TypeReference<List<ClassroomEvent>>() {});
 	}
-
 }
