@@ -15,29 +15,36 @@ import dev.jcasaslopez.booking.domain.TimeSlot;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.SlotStatusDto;
 import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
+import dev.jcasaslopez.booking.mapper.TimeSlotMapper;
 
 @Component
 public class SlotAvailabilityMapper {
 	
 	private static final Logger logger = LoggerFactory.getLogger(SlotAvailabilityMapper.class);
 	
-	private int slotDuration;
-	private WeeklySchedule weeklySchedule;
+	private final int slotDuration;
+	private final WeeklySchedule weeklySchedule;
+	private final TimeSlotMapper mapper;
 	
-	public SlotAvailabilityMapper(@Value("${time-slot.duration}") int slotDuration, WeeklySchedule weeklySchedule) {
+	public SlotAvailabilityMapper(@Value("${time-slot.duration}") int slotDuration, WeeklySchedule weeklySchedule,
+			TimeSlotMapper mapper) {
 		this.slotDuration = slotDuration;
 		this.weeklySchedule = weeklySchedule;
+		this.mapper = mapper;
 	}
 
-	// SlotStatusDto represents a TimeSlot with the additional information that the classroom is booked or not, and if it is,
+	// SlotStatusDto represents a TimeSlotDto with the additional information that the classroom is booked or not, and if it is,
 	// contains the corresponding idBooking. The reason for this is that when representing the classroom grid
 	// the front-end can use straight this idBooking to cancel a booking or create a watch alert.
+	// SlotStatusDto wraps a flat TimeSlotDto along with the availability status of a classroom.
+	// The domain 'TimeSlot' is mapped to 'TimeSlotDto' here to expose a clean, agnostics contract.
 	public List<SlotStatusDto> buildAvailabilityGrid(List<Booking> bookings, LocalDateTime start, LocalDateTime finish) {
 		List<TimeSlot> slots = generateTimeSlotsForPeriod(start, finish);
+		
 		return slots.stream()
 				.map(slot -> findBookingForSlot(slot, bookings)
-						.map(booking -> new SlotStatusDto(slot, false, booking.getIdBooking()))
-						.orElse(new SlotStatusDto(slot, true, null)))
+						.map(booking -> new SlotStatusDto(mapper.toDto(slot), false, booking.getIdBooking()))
+						.orElse(new SlotStatusDto(mapper.toDto(slot), true, null)))
 				.toList();
 	}
 

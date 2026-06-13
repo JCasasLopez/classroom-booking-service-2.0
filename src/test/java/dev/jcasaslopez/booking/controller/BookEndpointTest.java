@@ -8,8 +8,10 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,12 +48,17 @@ public class BookEndpointTest extends BaseIntegrationTest {
 		HttpEntity<BookingRequestDto> httpRequest = new HttpEntity<>(bookingDto, headers);
 		
 		// Act
-		ResponseEntity<StandardResponse> httpResponse = testRestTemplate.postForEntity(Endpoints.BOOK, httpRequest, StandardResponse.class);
+		ResponseEntity<StandardResponse<BookingResponseDto>> httpResponse = testRestTemplate.exchange(
+		        Endpoints.BOOK, 
+		        HttpMethod.POST, 
+		        httpRequest, 
+		        new ParameterizedTypeReference<StandardResponse<BookingResponseDto>>() {} 
+		);
 
 		// Assert
-		BookingResponseDto bookingResult = TestHelper.extractBookingResponse(httpResponse.getBody(), objectMapper);
+		BookingResponseDto bookingResult = httpResponse.getBody().details();
 		assertAll(
-				() -> assertEquals(HttpStatus.CREATED, httpResponse.getStatusCode()),
+				() -> assertEquals(HttpStatus.CREATED, httpResponse.getBody().status()),
 				() -> assertEquals(classroomName, bookingResult.classroomName()),
 				() -> assertEquals(BookingStatus.ACTIVE, bookingResult.status()),
 				() -> assertEquals(bookingStart, bookingResult.start()),
@@ -64,13 +71,17 @@ public class BookEndpointTest extends BaseIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(AuthTestHelper.generateTestJwt());
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Void> request = new HttpEntity<>(headers);
+        HttpEntity<String> request = new HttpEntity<>(headers);
 
-        ResponseEntity<StandardResponse> response = testRestTemplate.postForEntity(Endpoints.BOOK, request, StandardResponse.class);
-
+        ResponseEntity<StandardResponse<String>> httpResponse = testRestTemplate.exchange(
+		        Endpoints.BOOK, 
+		        HttpMethod.POST, 
+		        request, 
+		        new ParameterizedTypeReference<StandardResponse<String>>() {} 
+		);
         assertAll(
-            () -> assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode()),
-            () -> assertEquals("Malformed or unreadable JSON request",response.getBody().message())
+            () -> assertEquals(HttpStatus.BAD_REQUEST, httpResponse.getStatusCode()),
+            () -> assertEquals("Malformed or unreadable JSON request", httpResponse.getBody().message())
         );
     }
 
@@ -89,11 +100,16 @@ public class BookEndpointTest extends BaseIntegrationTest {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> request = new HttpEntity<>(body, headers);
 
-        ResponseEntity<StandardResponse> response = testRestTemplate.postForEntity(Endpoints.BOOK, request, StandardResponse.class);
-
+        ResponseEntity<StandardResponse<String>> httpResponse = testRestTemplate.exchange(
+		        Endpoints.BOOK, 
+		        HttpMethod.POST, 
+		        request, 
+		        new ParameterizedTypeReference<StandardResponse<String>>() {} 
+		);
+        
         assertAll(
-            () -> assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode()),
-            () -> assertEquals("Validation failed for one or more fields",response.getBody().message())
+            () -> assertEquals(HttpStatus.BAD_REQUEST, httpResponse.getStatusCode()),
+            () -> assertEquals("Validation failed for one or more fields", httpResponse.getBody().message())
         );
     }
 }

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -43,18 +44,25 @@ public class CancelEndpointTest extends BaseIntegrationTest {
 		HttpEntity<BookingRequestDto> httpBookingRequest = new HttpEntity<>(bookingDto, headers);
 		
 		// Put in a booking first, that will be cancelled in the Act section
-		ResponseEntity<StandardResponse> httpBookingResponse = testRestTemplate.postForEntity(Endpoints.BOOK, 
-								httpBookingRequest, StandardResponse.class);
-		BookingResponseDto bookingResult = TestHelper.extractBookingResponse(httpBookingResponse.getBody(), objectMapper);
+		ResponseEntity<StandardResponse<BookingResponseDto>> httpResponse = testRestTemplate.exchange(
+		        Endpoints.BOOK, 
+		        HttpMethod.POST, 
+		        httpBookingRequest, 
+		        new ParameterizedTypeReference<StandardResponse<BookingResponseDto>>() {} 
+		);
 		
 		// Act
-		Long idBooking = bookingResult.idBooking(); 
+		Long idBooking = httpResponse.getBody().details().idBooking(); 
 		String cancelUrl = UriComponentsBuilder.fromPath(Endpoints.CANCEL)
 				.queryParam("idBooking", idBooking)
 				.toUriString();
 		HttpEntity<Void> httpCancelRequest = new HttpEntity<>(headers); 
-		ResponseEntity<StandardResponse> httpCancelResponse = testRestTemplate.exchange(cancelUrl, HttpMethod.PATCH,
-				httpCancelRequest, StandardResponse.class);
+		
+		ResponseEntity<StandardResponse<Void>> httpCancelResponse = testRestTemplate.exchange(
+				cancelUrl, 
+				HttpMethod.PATCH,
+				httpCancelRequest, 
+				new ParameterizedTypeReference<StandardResponse<Void>>() {});
 	
 		// Assert
 		Booking savedBooking = repository.findById(idBooking)
@@ -76,7 +84,12 @@ public class CancelEndpointTest extends BaseIntegrationTest {
 	    HttpEntity<Void> request = new HttpEntity<>(headers);
 
 	    // Act
-	    ResponseEntity<StandardResponse> response = testRestTemplate.exchange(cancelUrl, HttpMethod.PATCH, request, StandardResponse.class);
+	    ResponseEntity<StandardResponse<String>> response = testRestTemplate.exchange(
+	    		cancelUrl, 
+	    		HttpMethod.PATCH, 
+	    		request, 
+	    		new ParameterizedTypeReference<StandardResponse<String>>() {}
+	    	);
 	    
 	    // Assert
 	    assertAll(
@@ -95,8 +108,13 @@ public class CancelEndpointTest extends BaseIntegrationTest {
 	    HttpEntity<Void> request = new HttpEntity<>(headers);
 
 	    // Act
-	    ResponseEntity<StandardResponse> response = testRestTemplate.exchange(cancelUrl, HttpMethod.PATCH, request, StandardResponse.class);
-
+	    ResponseEntity<StandardResponse<String>> response = testRestTemplate.exchange(
+	    		cancelUrl, 
+	    		HttpMethod.PATCH, 
+	    		request, 
+	    		new ParameterizedTypeReference<StandardResponse<String>>() {}
+	    	);
+	    
 	    // Assert
 	    assertAll(
 	    		() -> assertTrue(response.getBody().message().equals("Booking 9999 was not found in the database")),

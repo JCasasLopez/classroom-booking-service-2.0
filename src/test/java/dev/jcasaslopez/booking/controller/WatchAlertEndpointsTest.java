@@ -4,11 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.util.List;
+
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -24,6 +27,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
+import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
 import dev.jcasaslopez.booking.util.AuthTestHelper;
 import dev.jcasaslopez.booking.util.Endpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
@@ -48,13 +52,15 @@ public class WatchAlertEndpointsTest extends BaseIntegrationTest {
 		BookingResponseDto bookingResult = putInBooking();
 		
 		// Act
-		ResponseEntity<StandardResponse> httpAddWatchAlertResponse = addWatchAlert(bookingResult);
+		ResponseEntity<StandardResponse<WatchAlertResponseDto>> httpAddWatchAlertResponse = addWatchAlert(bookingResult);
 
 		// Assert
+		StandardResponse<WatchAlertResponseDto> response = httpAddWatchAlertResponse.getBody();
 		assertAll(
-				() -> assertEquals(HttpStatus.CREATED, httpAddWatchAlertResponse.getBody().status()),
-				() -> assertNotNull(httpAddWatchAlertResponse.getBody().details()),
-				() -> assertEquals("Watch alert created successfully", httpAddWatchAlertResponse.getBody().message())				);
+				() -> assertEquals(HttpStatus.CREATED, response.status()),
+				() -> assertNotNull(response.details()),
+				() -> assertEquals("Watch alert created successfully", response.message())				
+			);
 	}
     
     @Test
@@ -71,8 +77,12 @@ public class WatchAlertEndpointsTest extends BaseIntegrationTest {
     			.toUriString();
     	HttpEntity<Void> httpRequest = new HttpEntity<>(headers); 
     	
-    	ResponseEntity<StandardResponse> httpResponse = testRestTemplate.exchange(
-    			getWatchAlertsUrl, HttpMethod.GET, httpRequest, StandardResponse.class);
+    	ResponseEntity<StandardResponse<List<WatchAlertResponseDto>>> httpResponse = testRestTemplate.exchange(
+    			getWatchAlertsUrl, 
+    			HttpMethod.GET, 
+    			httpRequest, 
+    			new ParameterizedTypeReference<StandardResponse<List<WatchAlertResponseDto>>>() {}
+    		);
     	
     	// Assert
     	assertAll(
@@ -93,14 +103,18 @@ public class WatchAlertEndpointsTest extends BaseIntegrationTest {
 		headers.setBearerAuth(AuthTestHelper.generateTestJwt());
 		HttpEntity<BookingRequestDto> httpBookingRequest = new HttpEntity<>(bookingDto, headers);
 
-		ResponseEntity<StandardResponse> httpBookingResponse = testRestTemplate.postForEntity
-				(Endpoints.BOOK, httpBookingRequest, StandardResponse.class);
-		
-		return TestHelper.extractBookingResponse(httpBookingResponse.getBody(), objectMapper);
+		ResponseEntity<StandardResponse<BookingResponseDto>> httpResponse = testRestTemplate.exchange(
+		        Endpoints.BOOK, 
+		        HttpMethod.POST, 
+		        httpBookingRequest, 
+		        new ParameterizedTypeReference<StandardResponse<BookingResponseDto>>() {} 
+		);
+		return httpResponse.getBody().details();
     }
     
-    private ResponseEntity<StandardResponse> addWatchAlert(BookingResponseDto bookingResult){
+    private ResponseEntity<StandardResponse<WatchAlertResponseDto>> addWatchAlert(BookingResponseDto bookingResult){
     	Long idBooking = bookingResult.idBooking(); 
+    	
 		String addWatchAlertUrl = UriComponentsBuilder.fromPath(Endpoints.ADD_WATCH_ALERT)
 				.queryParam("idBooking", idBooking)
 				.toUriString();
@@ -108,10 +122,12 @@ public class WatchAlertEndpointsTest extends BaseIntegrationTest {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(AuthTestHelper.generateTestJwt());
 		HttpEntity<Void> httpRequest = new HttpEntity<>(headers); 
-		return testRestTemplate.postForEntity(
-		        addWatchAlertUrl,
-		        httpRequest,
-		        StandardResponse.class
+		
+		return testRestTemplate.exchange(
+				addWatchAlertUrl, 
+		        HttpMethod.POST, 
+		        httpRequest, 
+		        new ParameterizedTypeReference<StandardResponse<WatchAlertResponseDto>>() {} 
 		);
     }
 }

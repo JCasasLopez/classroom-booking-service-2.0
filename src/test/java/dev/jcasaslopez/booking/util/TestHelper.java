@@ -8,12 +8,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.Comparator;
 import java.util.List;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
-import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 public final class TestHelper {
 	
@@ -54,27 +49,5 @@ public final class TestHelper {
 				.findFirst()
 			    .orElseThrow(() -> new RuntimeException("Classroom not found with id: " + classroomId));
 	}
-	
-	// StandardResponse.details() is of type Object. When Jackson deserializes it, it has no type
-	// information to reconstruct the original class, so it produces a LinkedHashMap instead.
-	// These helper methods use convertValue() to map that LinkedHashMap into the intended type.
-	public static BookingResponseDto extractBookingResponse(StandardResponse body, ObjectMapper mapper) {
-	    return mapper.convertValue(body.details(), BookingResponseDto.class);
-	}
-	
-	public static List<BookingResponseDto> extractBookingList(StandardResponse body, ObjectMapper mapper) {
-	    return mapper.convertValue(body.details(), new TypeReference<List<BookingResponseDto>>() {});
-	}
-	
-	// SlotStatusDto contains a TimeSlot, whose constructor calls validateSlot(), which requires
-	// WeeklySchedule to be Spring-injected. Since Jackson instantiates objects via reflection,
-	// outside the Spring context, weeklySchedule is null and deserialization fails.
-	// Deserializing to List<?> (LinkedHashMap internally) avoids constructing TimeSlot altogether
-	public static List<?> extractSlotStatusList(StandardResponse body, ObjectMapper mapper) {
-		return mapper.convertValue(body.details(), new TypeReference<List<?>>() {});
-	}
-	
-	public static List<ClassroomEvent> extractAvailableClassroomsList(StandardResponse body, ObjectMapper mapper) {
-	    return mapper.convertValue(body.details(), new TypeReference<List<ClassroomEvent>>() {});
-	}
+
 }

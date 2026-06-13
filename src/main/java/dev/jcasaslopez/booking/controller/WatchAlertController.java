@@ -33,24 +33,24 @@ private static final Logger logger = LoggerFactory.getLogger(WatchAlertControlle
 	}
 
 	@PostMapping(value=Endpoints.ADD_WATCH_ALERT)
-	public ResponseEntity<StandardResponse> addWatchAlert(@RequestParam @NotNull @Positive Long idBooking) {
+	public ResponseEntity<StandardResponse<WatchAlertResponseDto>> addWatchAlert(@RequestParam @NotNull @Positive Long idBooking) {
 		logger.debug("POST /watch-alerts - idBooking={}", idBooking);
 		WatchAlertResponseDto watchAlert = service.addWatchAlert(idBooking);
 		
-		StandardResponse response = new StandardResponse("Watch alert created successfully", watchAlert, HttpStatus.CREATED);
+		StandardResponse<WatchAlertResponseDto> response = new StandardResponse<>("Watch alert created successfully", watchAlert, HttpStatus.CREATED);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 	
-	// No need to pass any user information as a parameter, as the endpoint needs the user to be authenticated, 
+	// No need to pass any user information as a parameter, as the end-point needs the user to be authenticated, 
 	// and the user's email is held in UserContext.
 	@GetMapping(value=Endpoints.USER_WATCH_ALERTS)
-	public ResponseEntity<StandardResponse> getWatchAlertsByUser(@RequestParam @NotNull LocalDateTime startSearch, 
+	public ResponseEntity<StandardResponse<List<WatchAlertResponseDto>>> getWatchAlertsByUser(@RequestParam @NotNull LocalDateTime startSearch, 
 			@RequestParam @NotNull LocalDateTime finishSearch) {
 		logger.debug("GET /watch-alerts - start={} - finish={}", startSearch, finishSearch);
 		
 		List<WatchAlertResponseDto> watchAlerts = service.watchAlertsListByUserAndTimePeriod(startSearch, finishSearch);
 		
-		StandardResponse response = new StandardResponse("Watch alerts retrieved successfully", watchAlerts, HttpStatus.OK);
+		StandardResponse<List<WatchAlertResponseDto>> response = new StandardResponse<>("Watch alerts retrieved successfully", watchAlerts, HttpStatus.OK);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 		

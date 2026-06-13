@@ -20,12 +20,14 @@ import dev.jcasaslopez.booking.domain.TimeSlot;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.SlotStatusDto;
 import dev.jcasaslopez.booking.enums.BookingStatus;
+import dev.jcasaslopez.booking.mapper.TimeSlotMapper;
 
 public class SlotAvailabilityMapperTest {
 
 	private final WeeklySchedule weeklySchedule = 
 			new WeeklySchedule(List.of("9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "CLOSED", "CLOSED"));
-	private final SlotAvailabilityMapper mapper = new SlotAvailabilityMapper(30, weeklySchedule);
+	private final TimeSlotMapper timeSlotMapper = new TimeSlotMapper();
+	private final SlotAvailabilityMapper mapper = new SlotAvailabilityMapper(30, weeklySchedule, timeSlotMapper);
 	
 	@Test
 	void buildAvailabilityGrid_returns_correct_availability_for_each_slot() {

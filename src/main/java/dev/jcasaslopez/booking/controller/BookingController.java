@@ -37,32 +37,32 @@ public class BookingController {
 	}
 
 	@PostMapping(value=Endpoints.BOOK, consumes=MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<StandardResponse> book(@Valid @NotNull @RequestBody BookingRequestDto booking){
+	public ResponseEntity<StandardResponse<BookingResponseDto>> book(@Valid @NotNull @RequestBody BookingRequestDto booking){
 		logger.debug("POST /bookings - idUser={}, idClassroom={}", booking.idUser(), booking.idClassroom());
 		BookingResponseDto bookingConfirmed = bookingService.book(booking);
 		
 		String message = String.format("Classroom %s booked successfully", booking.idClassroom());
-		StandardResponse response = new StandardResponse(message, bookingConfirmed, HttpStatus.CREATED);
+		StandardResponse<BookingResponseDto> response = new StandardResponse<>(message, bookingConfirmed, HttpStatus.CREATED);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 	
 	@PatchMapping(value=Endpoints.CANCEL)
-	public ResponseEntity<StandardResponse> cancelBooking(@RequestParam @Positive Long idBooking) {
+	public ResponseEntity<StandardResponse<Void>> cancelBooking(@RequestParam @Positive Long idBooking) {
 		logger.debug("PATCH /bookings/cancel - idBooking={}", idBooking);
 		bookingService.cancel(idBooking);
 		
 		String message = String.format("Booking %s cancelled successfully", idBooking);
-		StandardResponse response = new StandardResponse(message, null, HttpStatus.OK);
+		StandardResponse<Void> response = new StandardResponse<>(message, null, HttpStatus.OK);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@GetMapping(value=Endpoints.USER_BOOKINGS)
-	public ResponseEntity<StandardResponse> bookingsByUser(@RequestParam @Positive int idUser){
+	public ResponseEntity<StandardResponse<List<BookingResponseDto>>> bookingsByUser(@RequestParam @Positive int idUser){
 		logger.debug("GET /bookings - idUser={}", idUser);
 		List<BookingResponseDto> bookings = bookingService.bookingsByUser(idUser);
 		
 		String message = String.format("Bookings by user %s retrieved successfully", idUser);
-		StandardResponse response = new StandardResponse(message, bookings, HttpStatus.OK);
+		StandardResponse<List<BookingResponseDto>> response = new StandardResponse<>(message, bookings, HttpStatus.OK);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }

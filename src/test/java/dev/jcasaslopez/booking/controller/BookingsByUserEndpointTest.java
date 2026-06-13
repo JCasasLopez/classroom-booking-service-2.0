@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -25,7 +26,6 @@ import dev.jcasaslopez.booking.util.AuthTestHelper;
 import dev.jcasaslopez.booking.util.Endpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
-
 
 // No negative idUser test needed: @Positive validation and its handling by the GlobalExceptionHandler
 // are already covered in CancelEndpointTest. No need to duplicate that coverage here.
@@ -53,15 +53,20 @@ public class BookingsByUserEndpointTest extends BaseIntegrationTest {
 				.queryParam("idUser", idUser)
 				.toUriString();
 		HttpEntity<Void> httpRequest = new HttpEntity<>(headers); 
-		ResponseEntity<StandardResponse> httpResponse = testRestTemplate.exchange(userBookingsUrl, HttpMethod.GET,
-								httpRequest, StandardResponse.class);
-		List<BookingResponseDto> bookingList = TestHelper.extractBookingList(httpResponse.getBody(), objectMapper);
+		ResponseEntity<StandardResponse<List<BookingResponseDto>>> httpResponse = testRestTemplate.exchange(
+				userBookingsUrl, 
+				HttpMethod.GET,
+				httpRequest, 
+				new ParameterizedTypeReference<StandardResponse<List<BookingResponseDto>>>() {});
 		
 		// Assert
+		StandardResponse<List<BookingResponseDto>> responseBody = httpResponse.getBody();
+		List<BookingResponseDto> bookings = httpResponse.getBody().details();
+		
 		assertAll(
-				() -> assertEquals(HttpStatus.OK, httpResponse.getBody().status()),
-				() -> assertNotNull(bookingList),
-				() -> assertTrue(httpResponse.getBody().message().equals(String.format("Bookings by user %s retrieved successfully", idUser)))
+				() -> assertEquals(HttpStatus.OK, responseBody.status()),
+				() -> assertNotNull(bookings),
+				() -> assertTrue(responseBody.message().equals(String.format("Bookings by user %s retrieved successfully", idUser)))
 				);
 	}
 

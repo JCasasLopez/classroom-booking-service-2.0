@@ -33,19 +33,19 @@ public class SearchController {
 	}
 
 	@GetMapping(value=Endpoints.AVAILABILITY_CALENDAR)
-	public ResponseEntity<StandardResponse> availabilityCalendar(
+	public ResponseEntity<StandardResponse<List<SlotStatusDto>>> availabilityCalendar(
 			@RequestParam @NotNull LocalDateTime start,
 	        @RequestParam @NotNull LocalDateTime finish,
 	        @RequestParam @Positive int idClassroom) {
 		logger.debug("GET /searches/availability-calendar - idClassroom={}, start={}, finish={}", idClassroom, start, finish);	
 		List<SlotStatusDto> availabilityCalendar = searchService.availabilityCalendarByClassroom(idClassroom, start, finish);
 		String message = String.format("Availability calendar for classroom %s retrieved successfully", idClassroom);
-		StandardResponse response = new StandardResponse (message, availabilityCalendar, HttpStatus.OK);
+		StandardResponse<List<SlotStatusDto>> response = new StandardResponse<>(message, availabilityCalendar, HttpStatus.OK);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@GetMapping(value=Endpoints.CLASSROOMS_AVAILABILITY)
-	public ResponseEntity<StandardResponse> classroomsAvailable(
+	public ResponseEntity<StandardResponse<List<ClassroomEvent>>> classroomsAvailable(
 	        @RequestParam @NotNull LocalDateTime start,
 	        @RequestParam @NotNull LocalDateTime finish,
 	        // If you do not want to filter by seats, set at 0.
@@ -56,7 +56,7 @@ public class SearchController {
 		List<ClassroomEvent> classroomsAvailableByPeriod = searchService.classroomsAvailableByPeriodAndFeatures(start, finish, seats, projector, speakers);
 		String message = String.format("Available classrooms between %s and %s (seats: %s - projector: %s - speakers: %s) retrieved successfully", 
 				start, finish, seats, projector, speakers);
-		StandardResponse response = new StandardResponse (message, classroomsAvailableByPeriod, HttpStatus.OK);
+		StandardResponse<List<ClassroomEvent>> response = new StandardResponse<>(message, classroomsAvailableByPeriod, HttpStatus.OK);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }

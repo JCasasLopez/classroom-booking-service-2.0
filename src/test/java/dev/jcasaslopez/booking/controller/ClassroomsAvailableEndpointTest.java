@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -45,15 +46,19 @@ public class ClassroomsAvailableEndpointTest extends BaseIntegrationTest {
 		HttpEntity<Void> httpRequest = new HttpEntity<>(headers); 
 		
 		// Act
-		ResponseEntity<StandardResponse> httpResponse = testRestTemplate.exchange(classroomsAvailableUrl, HttpMethod.GET,
-				httpRequest, StandardResponse.class);
-		List<ClassroomEvent> classroomsAvailable = TestHelper.extractAvailableClassroomsList(httpResponse.getBody(), objectMapper);
+		ResponseEntity<StandardResponse<List<ClassroomEvent>>> httpResponse = testRestTemplate.exchange(
+				classroomsAvailableUrl, 
+				HttpMethod.GET,
+				httpRequest, 
+				new ParameterizedTypeReference<StandardResponse<List<ClassroomEvent>>>() {}
+			);
 		
 		// Assert
+		StandardResponse<List<ClassroomEvent>> response = httpResponse.getBody();
 		assertAll(
-				() -> assertEquals(HttpStatus.OK, httpResponse.getBody().status()),
-				() -> assertNotNull(classroomsAvailable),
-				() -> assertTrue(httpResponse.getBody().message()
+				() -> assertEquals(HttpStatus.OK, response.status()),
+				() -> assertNotNull(response.details()),
+				() -> assertTrue(response.message()
 		.contains(String.format("(seats: %s - projector: %s - speakers: %s) retrieved successfully", seats, projector, speakers)))
 				);	
 	}
