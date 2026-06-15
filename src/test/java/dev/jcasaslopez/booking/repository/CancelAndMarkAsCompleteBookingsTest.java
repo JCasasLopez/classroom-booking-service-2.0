@@ -8,28 +8,16 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
+import dev.jcasaslopez.booking.base.BaseRepositoryTest;
 import dev.jcasaslopez.booking.domain.Booking;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import jakarta.persistence.EntityManager;
 
-@Testcontainers
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class CancelAndMarkAsCompleteBookingsTest {
+public class CancelAndMarkAsCompleteBookingsTest extends BaseRepositoryTest{
 	
 	@Autowired private BookingRepository bookingRepository;
 	@Autowired private EntityManager entityManager;
-	
-	@ServiceConnection
-	@Container
-	static final MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.3");
 	
 	@Test
     void repository_cancels_bookings_successfully() {
