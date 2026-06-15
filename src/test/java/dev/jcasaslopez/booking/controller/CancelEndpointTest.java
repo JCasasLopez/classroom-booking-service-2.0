@@ -13,8 +13,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
@@ -28,7 +26,6 @@ import dev.jcasaslopez.booking.util.Endpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
-@DirtiesContext(classMode = ClassMode.AFTER_CLASS)
 public class CancelEndpointTest extends BaseIntegrationTest {
 	
     @Value("${time-slot.duration}") private int slotDuration;

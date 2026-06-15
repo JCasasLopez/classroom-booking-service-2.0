@@ -14,8 +14,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
@@ -30,7 +28,6 @@ import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 // - SlotOutOfOpeningHoursException    → 400
 // - NoSuchClassroomException          → 404
 
-@DirtiesContext(classMode = ClassMode.AFTER_CLASS)
 public class AvailabilityCalendarEndpointTest extends BaseIntegrationTest {
 	
 	@Test

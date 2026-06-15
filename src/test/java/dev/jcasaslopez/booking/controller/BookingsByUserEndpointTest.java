@@ -15,8 +15,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
@@ -30,7 +28,6 @@ import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 // No negative idUser test needed: @Positive validation and its handling by the GlobalExceptionHandler
 // are already covered in CancelEndpointTest. No need to duplicate that coverage here.
 
-@DirtiesContext(classMode = ClassMode.AFTER_CLASS)
 public class BookingsByUserEndpointTest extends BaseIntegrationTest {
 	
     @Value("${time-slot.duration}") private int slotDuration;

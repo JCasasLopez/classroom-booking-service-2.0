@@ -2,6 +2,7 @@ package dev.jcasaslopez.booking.base;
 
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +12,6 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -22,22 +21,22 @@ import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.util.KafkaTestHelper;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
-@Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public abstract class BaseIntegrationTest {
 
     @Autowired protected TestRestTemplate testRestTemplate;
     @Autowired protected List<ClassroomEvent> classroomsStore;
     @Autowired protected ObjectMapper objectMapper;
-    @Autowired protected BookingRepository repository;;
+    @Autowired protected BookingRepository repository;
 
     @ServiceConnection
-    @Container
     static final MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.3");
+    static final KafkaContainer kafkaContainer = new KafkaContainer(DockerImageName.parse("apache/kafka"));
 
-    @Container
-    static final KafkaContainer kafkaContainer = 
-        new KafkaContainer(DockerImageName.parse("apache/kafka"));
+    static {
+        mySQLContainer.start();
+        kafkaContainer.start();
+    }
 
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
@@ -46,11 +45,18 @@ public abstract class BaseIntegrationTest {
 
     @BeforeAll
     static void setup() throws Exception {
-    	KafkaTestHelper.produceClassroomEvents(kafkaContainer.getBootstrapServers());
+        KafkaTestHelper.produceClassroomEvents(kafkaContainer.getBootstrapServers());
     }
     
     @BeforeEach
     void waitForStore() {
-    	KafkaTestHelper.waitForClassroomStore(classroomsStore);
+        if (classroomsStore == null || classroomsStore.isEmpty()) {
+            KafkaTestHelper.waitForClassroomStore(classroomsStore);
+        }
+    }
+
+    @AfterEach
+    void cleanDatabase() {
+        repository.deleteAllInBatch();
     }
 }
