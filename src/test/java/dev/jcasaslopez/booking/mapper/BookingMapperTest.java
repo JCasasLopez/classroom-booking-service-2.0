@@ -8,9 +8,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import dev.jcasaslopez.booking.domain.Booking;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
@@ -22,8 +20,7 @@ import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
 public class BookingMapperTest {
 	
-	// We instantiate BookingMapper by hand instead so we do not need to use Spring and the whole context
-	private final static BookingMapper mapper = new BookingMapper();
+	private static final BookingMapper mapper = new BookingMapper(30);
 	
 	private final WeeklySchedule weeklySchedule = 
 			new WeeklySchedule(List.of("9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "CLOSED", "CLOSED"));
@@ -33,11 +30,6 @@ public class BookingMapperTest {
 		    new ClassroomEvent(2, "201", 200, true, true),
 		    new ClassroomEvent(5, "The Think Tank Room", 8, false, false)
 		);
-	
-	@BeforeAll
-	static void setup() {
-	    ReflectionTestUtils.setField(mapper, "slotDuration", 30);
-	}
 	
 	@Test
 	void when_slots_are_valid_mapper_returns_correct_entity () {

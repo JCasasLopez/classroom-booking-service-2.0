@@ -21,8 +21,13 @@ import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 @Component
 public class BookingMapper {
 	
-	@Value("${time-slot.duration}") private int slotDuration; 
 	private static final Logger logger = LoggerFactory.getLogger(BookingMapper.class);
+	
+	@Value("${time-slot.duration}") private final int slotDuration; 
+	
+	public BookingMapper(@Value("${time-slot.duration}") int slotDuration) {
+		this.slotDuration = slotDuration;
+	}
 	
 	public Booking toEntity(BookingRequestDto booking, WeeklySchedule weeklySchedule) {
 		logger.debug("Mapping BookingRequestDto to Booking: idUser={}, idClassroom={}, slots={}", 
