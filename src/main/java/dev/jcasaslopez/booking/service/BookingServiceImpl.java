@@ -42,14 +42,16 @@ public class BookingServiceImpl implements BookingService {
 	private final EventPublisher eventPublisher;
 	private final BookingMapper mapper;
 	private final List<ClassroomEvent> classroomsStore;
+	private final int slotDuration; 
+	private final int bookingMaxDuration; 
+	private final int maxNumberBookings;
 	
-	@Value("${time-slot.duration}") private int slotDuration; 
-	@Value("${booking.maximum-duration}") private int bookingMaxDuration; 
-	@Value("${booking.maximum-number-per-week}") private int maxNumberBookings; 
 	
 	public BookingServiceImpl(BookingRepository bookingRepository, WatchAlertRepository watchAlertRepository,
 			WeeklySchedule weeklySchedule, ClassroomValidator classroomValidator, EventPublisher eventPublisher,
-			BookingMapper mapper, List<ClassroomEvent> classroomsStore) {
+			BookingMapper mapper, List<ClassroomEvent> classroomsStore, @Value("${time-slot.duration}") int slotDuration, 
+			@Value("${booking.maximum-duration}") int bookingMaxDuration, 
+			@Value("${booking.maximum-number-per-week}") int maxNumberBookings) {
 		this.bookingRepository = bookingRepository;
 		this.watchAlertRepository = watchAlertRepository;
 		this.weeklySchedule = weeklySchedule;
@@ -57,6 +59,9 @@ public class BookingServiceImpl implements BookingService {
 		this.eventPublisher = eventPublisher;
 		this.mapper = mapper;
 		this.classroomsStore = classroomsStore;
+		this.slotDuration = slotDuration;
+		this.bookingMaxDuration = bookingMaxDuration;
+		this.maxNumberBookings = maxNumberBookings;
 	}
 
 	@Override

@@ -20,10 +20,8 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import dev.jcasaslopez.booking.classroom.ClassroomValidator;
 import dev.jcasaslopez.booking.domain.Booking;
@@ -48,12 +46,11 @@ public class BookingServiceTest {
 	
 	@Mock BookingRepository bookingRepository;
 	@Mock WatchAlertRepository watchAlertRepository;
-	@Mock WeeklySchedule weeklySchedule;
 	@Mock ClassroomValidator classroomValidator;
 	@Mock EventPublisher eventPublisher;
 	@Mock BookingMapper mapper;
-	@Mock List<ClassroomEvent> classroomsStore;
-	@InjectMocks BookingServiceImpl bookingService;
+
+	private BookingServiceImpl bookingService;
 	
 	private static final int USER_ID = 1;
 	private static final int CLASSROOM_ID = 1;
@@ -80,15 +77,21 @@ public class BookingServiceTest {
 		    new ClassroomEvent(2, "Standard Seminar Room", 30, true, false)
 		);
 	
-	// Must run AFTER Mockito has injected the mocks (i.e. not at field-initialization time),
-	// otherwise bookingService would still be null.
 	@BeforeEach
 	void setUp() {
-	    ReflectionTestUtils.setField(bookingService, "slotDuration", 30);
-	    ReflectionTestUtils.setField(bookingService, "bookingMaxDuration", 120);
-	    ReflectionTestUtils.setField(bookingService, "maxNumberBookings", 3);
-	    ReflectionTestUtils.setField(bookingService, "weeklySchedule", buildTestWeeklySchedule());
-	    ReflectionTestUtils.setField(bookingService, "classroomsStore", allClassrooms);
+	    bookingService = new BookingServiceImpl(
+	        bookingRepository,
+	        watchAlertRepository,
+	        buildTestWeeklySchedule(), 
+	        classroomValidator,
+	        eventPublisher,
+	        mapper,
+	        allClassrooms,           
+	        30,                        
+	        120,                       
+	        3                          
+	    );
+        
 	    UserContext.setEmail(USER_EMAIL);
 	}
 	
