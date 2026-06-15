@@ -27,12 +27,12 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(WatchAlertServiceImpl.class);
 	
-	private WatchAlertMapper mapper; 
-	private WatchAlertRepository watchAlertRepository;
-	private BookingRepository bookingRepository;
-	private ClassroomValidator classroomValidator;
-	private EventPublisher eventPublisher;
-	private List<ClassroomEvent> classroomsStore;
+	private final WatchAlertMapper mapper; 
+	private final WatchAlertRepository watchAlertRepository;
+	private final BookingRepository bookingRepository;
+	private final ClassroomValidator classroomValidator;
+	private final EventPublisher eventPublisher;
+	private final List<ClassroomEvent> classroomsStore;
 	
 	public WatchAlertServiceImpl(WatchAlertMapper mapper, WatchAlertRepository watchAlertRepository,
 			BookingRepository bookingRepository, ClassroomValidator classroomValidator, EventPublisher eventPublisher,
