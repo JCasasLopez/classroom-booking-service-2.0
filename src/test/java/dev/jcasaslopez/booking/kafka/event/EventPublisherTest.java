@@ -19,10 +19,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import dev.jcasaslopez.booking.domain.Booking;
 import dev.jcasaslopez.booking.domain.WatchAlert;
@@ -38,28 +36,32 @@ public class EventPublisherTest {
 	
 	@Mock NotificationEventProducer notificationEventProducer;
 	@Mock BookingRepository bookingRepository;
-	@InjectMocks EventPublisherImpl eventPublisher;
+
+	private EventPublisherImpl eventPublisher;
 	
-	private static String EMAIL = "test@gmail.com";
+	private static final String EMAIL = "test@gmail.com";
 	
-	private static Booking BOOKING = new Booking(0, 1, 1,
+	private static final Booking BOOKING = new Booking(0, 1, 1,
 			LocalDateTime.of(2026, 5, 11, 11, 0),
 			LocalDateTime.of(2026, 5, 11, 12, 0),
 			LocalDateTime.now(),
 			BookingStatus.ACTIVE);
 	
-	private static WatchAlert WATCH_ALERT = new WatchAlert(1L, BOOKING.getIdBooking(), EMAIL);
-
-	private static List<ClassroomEvent> allClassrooms = List.of(
+	private static final WatchAlert WATCH_ALERT = new WatchAlert(1L, BOOKING.getIdBooking(), EMAIL);
+	
+	private static final List<ClassroomEvent> allClassrooms = List.of(
 		    new ClassroomEvent(1, "Main Auditorium", 150, true, true),
 		    new ClassroomEvent(2, "Standard Seminar Room", 30, true, false)
 		);
 	
 	@BeforeEach
 	void setUp() {
-	    ReflectionTestUtils.setField(eventPublisher, "classroomsStore", allClassrooms);
+	    eventPublisher = new EventPublisherImpl(
+	        allClassrooms,
+	        notificationEventProducer,
+	        bookingRepository
+	    );
 	}
-	
 	
 	@ParameterizedTest
 	@MethodSource("NotificationFieldsProvider")

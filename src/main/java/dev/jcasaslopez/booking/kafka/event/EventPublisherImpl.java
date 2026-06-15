@@ -22,9 +22,10 @@ import dev.jcasaslopez.classroom.shared.event.NotificationEvent;
 public class EventPublisherImpl implements EventPublisher {
 
 	private static final Logger logger = LoggerFactory.getLogger(EventPublisherImpl.class);
-	private List<ClassroomEvent> classroomsStore;
-	private NotificationEventProducer notificationEventProducer;
-	private BookingRepository bookingRepository;
+	
+	private final List<ClassroomEvent> classroomsStore;
+	private final NotificationEventProducer notificationEventProducer;
+	private final BookingRepository bookingRepository;
 
 	public EventPublisherImpl(List<ClassroomEvent> classroomsStore, NotificationEventProducer notificationEventProducer,
 			BookingRepository bookingRepository) {
