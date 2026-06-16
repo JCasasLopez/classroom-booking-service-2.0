@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -27,7 +26,7 @@ import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 public class BookEndpointTest extends BaseIntegrationTest {
 
-    @Value("${time-slot.duration}") private int slotDuration;
+	private static final int SLOT_DURATION = 30;
     
     @Test
 	void book_endpoint_returns_the_expected_response() {
@@ -35,9 +34,9 @@ public class BookEndpointTest extends BaseIntegrationTest {
 		int classroomId = 1;
 		String classroomName = TestHelper.findClassroomName(classroomId, classroomsStore);
 
-		List<LocalDateTime> bookingSlots = TestHelper.generateBookingSlots(slotDuration);	
+		List<LocalDateTime> bookingSlots = TestHelper.generateBookingSlots(SLOT_DURATION);	
 		LocalDateTime bookingStart = TestHelper.getBookingStart(bookingSlots);
-		LocalDateTime bookingFinish = TestHelper.getBookingFinish(bookingSlots, slotDuration);
+		LocalDateTime bookingFinish = TestHelper.getBookingFinish(bookingSlots, SLOT_DURATION);
 		
 		BookingRequestDto bookingDto = new BookingRequestDto(1, classroomId, bookingSlots);
 		HttpHeaders headers = new HttpHeaders();

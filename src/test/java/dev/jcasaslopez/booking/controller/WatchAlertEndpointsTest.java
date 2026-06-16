@@ -10,7 +10,6 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -39,15 +38,15 @@ import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class WatchAlertEndpointsTest extends BaseIntegrationTest {
-	
-    @Value("${time-slot.duration}") private int slotDuration;
-	
-    @Test
-    @Order(1)
+
+	private static final int SLOT_DURATION = 30;
+
+	@Test
+	@Order(1)
 	void add_watch_alert_endpoint_returns_the_expected_response() {
 		// Arrange	
 		BookingResponseDto bookingResult = putInBooking();
-		
+
 		// Act
 		ResponseEntity<StandardResponse<WatchAlertResponseDto>> httpAddWatchAlertResponse = addWatchAlert(bookingResult);
 
@@ -94,7 +93,7 @@ public class WatchAlertEndpointsTest extends BaseIntegrationTest {
     
     private BookingResponseDto putInBooking() {
     	int classroomId = 1;
-		BookingRequestDto bookingDto = new BookingRequestDto(1, classroomId, TestHelper.generateBookingSlots(slotDuration));
+		BookingRequestDto bookingDto = new BookingRequestDto(1, classroomId, TestHelper.generateBookingSlots(SLOT_DURATION));
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(AuthTestHelper.generateTestJwt());

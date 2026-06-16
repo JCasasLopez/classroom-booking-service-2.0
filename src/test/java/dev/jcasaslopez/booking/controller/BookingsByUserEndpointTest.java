@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -30,13 +29,13 @@ import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 public class BookingsByUserEndpointTest extends BaseIntegrationTest {
 	
-    @Value("${time-slot.duration}") private int slotDuration;
+	private static final int SLOT_DURATION = 30;
 	
 	@Test
 	void bookings_by_user_endpoint_returns_the_expected_response() {
 		// Arrange
 		int idUser = 1;
-		BookingRequestDto bookingDto = new BookingRequestDto(idUser, 1, TestHelper.generateBookingSlots(slotDuration));
+		BookingRequestDto bookingDto = new BookingRequestDto(idUser, 1, TestHelper.generateBookingSlots(SLOT_DURATION));
 		
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(AuthTestHelper.generateTestJwt());

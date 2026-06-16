@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -28,13 +27,13 @@ import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 public class CancelEndpointTest extends BaseIntegrationTest {
 	
-    @Value("${time-slot.duration}") private int slotDuration;
+	private static final int SLOT_DURATION = 30;
 	
 	@Test
 	void cancel_endpoint_returns_the_expected_response() {
 		// Arrange
 		int classroomId = 1;
-		BookingRequestDto bookingDto = new BookingRequestDto(1, classroomId, TestHelper.generateBookingSlots(slotDuration));
+		BookingRequestDto bookingDto = new BookingRequestDto(1, classroomId, TestHelper.generateBookingSlots(SLOT_DURATION));
 		
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(AuthTestHelper.generateTestJwt());
