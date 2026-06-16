@@ -16,7 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
-import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.util.AuthTestHelper;
@@ -27,32 +26,25 @@ import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 public class BookEndpointTest extends BaseIntegrationTest {
 
 	private static final int SLOT_DURATION = 30;
+	private static final int CLASSROOM_ID = 1;
+	private static final int USER_ID = 1;
     
     @Test
 	void book_endpoint_returns_the_expected_response() {
 		// Arrange
-		int classroomId = 1;
-		String classroomName = TestHelper.findClassroomName(classroomId, classroomsStore);
+		String classroomName = TestHelper.findClassroomName(CLASSROOM_ID, classroomsStore);
 
 		List<LocalDateTime> bookingSlots = TestHelper.generateBookingSlots(SLOT_DURATION);	
 		LocalDateTime bookingStart = TestHelper.getBookingStart(bookingSlots);
 		LocalDateTime bookingFinish = TestHelper.getBookingFinish(bookingSlots, SLOT_DURATION);
 		
-		BookingRequestDto bookingDto = new BookingRequestDto(1, classroomId, bookingSlots);
-		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(AuthTestHelper.generateTestJwt());
-		HttpEntity<BookingRequestDto> httpRequest = new HttpEntity<>(bookingDto, headers);
-		
 		// Act
-		ResponseEntity<StandardResponse<BookingResponseDto>> httpResponse = testRestTemplate.exchange(
-		        Endpoints.BOOK, 
-		        HttpMethod.POST, 
-		        httpRequest, 
-		        new ParameterizedTypeReference<StandardResponse<BookingResponseDto>>() {} 
-		);
-
+		ResponseEntity<StandardResponse<BookingResponseDto>> httpResponse = TestHelper.createBooking
+													(testRestTemplate, USER_ID, CLASSROOM_ID, SLOT_DURATION);
+		
 		// Assert
 		BookingResponseDto bookingResult = httpResponse.getBody().details();
+
 		assertAll(
 				() -> assertEquals(HttpStatus.CREATED, httpResponse.getBody().status()),
 				() -> assertEquals(classroomName, bookingResult.classroomName()),

@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
-import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.util.AuthTestHelper;
 import dev.jcasaslopez.booking.util.Endpoints;
@@ -30,23 +29,19 @@ import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 public class BookingsByUserEndpointTest extends BaseIntegrationTest {
 	
 	private static final int SLOT_DURATION = 30;
+	private static final int CLASSROOM_ID = 1;
+	private static final int USER_ID = 1;
 	
 	@Test
 	void bookings_by_user_endpoint_returns_the_expected_response() {
 		// Arrange
-		int idUser = 1;
-		BookingRequestDto bookingDto = new BookingRequestDto(idUser, 1, TestHelper.generateBookingSlots(SLOT_DURATION));
-		
-		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(AuthTestHelper.generateTestJwt());
-		HttpEntity<BookingRequestDto> httpBookingRequest = new HttpEntity<>(bookingDto, headers);
-		
-		// Put in a booking first
-		testRestTemplate.postForEntity(Endpoints.BOOK, httpBookingRequest, StandardResponse.class);
+		TestHelper.createBooking(testRestTemplate, USER_ID, CLASSROOM_ID, SLOT_DURATION);
 		
 		// Act
+		HttpHeaders headers = new HttpHeaders();
+		headers.setBearerAuth(AuthTestHelper.generateTestJwt());
 		String userBookingsUrl = UriComponentsBuilder.fromPath(Endpoints.USER_BOOKINGS)
-				.queryParam("idUser", idUser)
+				.queryParam("idUser", USER_ID)
 				.toUriString();
 		HttpEntity<Void> httpRequest = new HttpEntity<>(headers); 
 		ResponseEntity<StandardResponse<List<BookingResponseDto>>> httpResponse = testRestTemplate.exchange(
@@ -62,7 +57,7 @@ public class BookingsByUserEndpointTest extends BaseIntegrationTest {
 		assertAll(
 				() -> assertEquals(HttpStatus.OK, responseBody.status()),
 				() -> assertNotNull(bookings),
-				() -> assertTrue(responseBody.message().equals(String.format("Bookings by user %s retrieved successfully", idUser)))
+				() -> assertTrue(responseBody.message().equals(String.format("Bookings by user %s retrieved successfully", USER_ID)))
 				);
 	}
 

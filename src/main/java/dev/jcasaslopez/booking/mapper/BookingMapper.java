@@ -32,7 +32,7 @@ public class BookingMapper {
 	public Booking toEntity(BookingRequestDto booking, WeeklySchedule weeklySchedule) {
 		logger.debug("Mapping BookingRequestDto to Booking: idUser={}, idClassroom={}, slots={}", 
 		        booking.idUser(), booking.idClassroom(), booking.startTimeSlotList().size());
-		List<TimeSlot> timeSlots = convertStartToTimeSlots (booking, weeklySchedule);
+		List<TimeSlot> timeSlots = convertStartToTimeSlots(booking, weeklySchedule);
 		return new Booking(0,
 							booking.idUser(),
 							booking.idClassroom(),
@@ -55,7 +55,7 @@ public class BookingMapper {
 		Collections.sort(booking.startTimeSlotList());
 		
 		// By converting the start times of every slot into an TimeSlot object, we are validating that the booking times 
-		// are within opening hours, etc (see TimeSlot for validations).
+		// are within opening hours, etc. (see TimeSlot for validations).
 		return booking.startTimeSlotList().stream()
 				.map(b -> new TimeSlot(b, weeklySchedule, slotDuration))
 				.toList();

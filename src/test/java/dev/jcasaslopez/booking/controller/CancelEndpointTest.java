@@ -16,7 +16,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
 import dev.jcasaslopez.booking.domain.Booking;
-import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.NoSuchBookingException;
@@ -28,32 +27,24 @@ import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 public class CancelEndpointTest extends BaseIntegrationTest {
 	
 	private static final int SLOT_DURATION = 30;
+	private static final int CLASSROOM_ID = 1;
+	private static final int USER_ID = 1;
 	
 	@Test
 	void cancel_endpoint_returns_the_expected_response() {
 		// Arrange
-		int classroomId = 1;
-		BookingRequestDto bookingDto = new BookingRequestDto(1, classroomId, TestHelper.generateBookingSlots(SLOT_DURATION));
-		
-		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(AuthTestHelper.generateTestJwt());
-		HttpEntity<BookingRequestDto> httpBookingRequest = new HttpEntity<>(bookingDto, headers);
-		
-		// Put in a booking first, that will be cancelled in the Act section
-		ResponseEntity<StandardResponse<BookingResponseDto>> httpResponse = testRestTemplate.exchange(
-		        Endpoints.BOOK, 
-		        HttpMethod.POST, 
-		        httpBookingRequest, 
-		        new ParameterizedTypeReference<StandardResponse<BookingResponseDto>>() {} 
-		);
+		ResponseEntity<StandardResponse<BookingResponseDto>> httpResponse = TestHelper.createBooking
+													(testRestTemplate, USER_ID, CLASSROOM_ID, SLOT_DURATION);
 		
 		// Act
+		HttpHeaders headers = new HttpHeaders();
+		headers.setBearerAuth(AuthTestHelper.generateTestJwt());
 		Long idBooking = httpResponse.getBody().details().idBooking(); 
 		String cancelUrl = UriComponentsBuilder.fromPath(Endpoints.CANCEL)
 				.queryParam("idBooking", idBooking)
 				.toUriString();
 		HttpEntity<Void> httpCancelRequest = new HttpEntity<>(headers); 
-		
+
 		ResponseEntity<StandardResponse<Void>> httpCancelResponse = testRestTemplate.exchange(
 				cancelUrl, 
 				HttpMethod.PATCH,

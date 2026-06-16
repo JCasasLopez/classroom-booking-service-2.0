@@ -22,7 +22,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
-import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
 import dev.jcasaslopez.booking.util.AuthTestHelper;
@@ -40,12 +39,16 @@ import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 public class WatchAlertEndpointsTest extends BaseIntegrationTest {
 
 	private static final int SLOT_DURATION = 30;
+	private static final int CLASSROOM_ID = 1;
+	private static final int USER_ID = 1;
 
 	@Test
 	@Order(1)
 	void add_watch_alert_endpoint_returns_the_expected_response() {
 		// Arrange	
-		BookingResponseDto bookingResult = putInBooking();
+		ResponseEntity<StandardResponse<BookingResponseDto>> httpResponse = TestHelper.createBooking
+													(testRestTemplate, USER_ID, CLASSROOM_ID, SLOT_DURATION);
+		BookingResponseDto bookingResult = httpResponse.getBody().details();
 
 		// Act
 		ResponseEntity<StandardResponse<WatchAlertResponseDto>> httpAddWatchAlertResponse = addWatchAlert(bookingResult);
@@ -90,23 +93,6 @@ public class WatchAlertEndpointsTest extends BaseIntegrationTest {
     }
   
     // *********************************** AUXILIARY METHODS ***********************************
-    
-    private BookingResponseDto putInBooking() {
-    	int classroomId = 1;
-		BookingRequestDto bookingDto = new BookingRequestDto(1, classroomId, TestHelper.generateBookingSlots(SLOT_DURATION));
-
-		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(AuthTestHelper.generateTestJwt());
-		HttpEntity<BookingRequestDto> httpBookingRequest = new HttpEntity<>(bookingDto, headers);
-
-		ResponseEntity<StandardResponse<BookingResponseDto>> httpResponse = testRestTemplate.exchange(
-		        Endpoints.BOOK, 
-		        HttpMethod.POST, 
-		        httpBookingRequest, 
-		        new ParameterizedTypeReference<StandardResponse<BookingResponseDto>>() {} 
-		);
-		return httpResponse.getBody().details();
-    }
     
     private ResponseEntity<StandardResponse<WatchAlertResponseDto>> addWatchAlert(BookingResponseDto bookingResult){
     	Long idBooking = bookingResult.idBooking(); 
