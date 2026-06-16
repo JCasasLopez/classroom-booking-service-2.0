@@ -59,4 +59,19 @@ public class SearchController {
 		StandardResponse<List<ClassroomEvent>> response = new StandardResponse<>(message, classroomsAvailableByPeriod, HttpStatus.OK);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
+	
+	// When creating a watch alert, user hits an already booked time slot on the front-end. This endpoint returns the idBooking
+	// corresponding to that booking, which is the parameter needed to create a watch alert.
+	@GetMapping(value=Endpoints.BOOKING_BY_SLOT)
+	public ResponseEntity<StandardResponse<Long>> bookingBySlot(
+			@RequestParam @NotNull LocalDateTime start,
+	        @RequestParam @NotNull LocalDateTime finish,
+	        @RequestParam @Positive int idClassroom){
+		logger.debug("GET /searches/booking-by-slot - idClassroom={}, start={}, finish={}", idClassroom, start, finish);	
+		Long idbooking = searchService.findBookingByClassroomAndTimePeriod(idClassroom, start, finish);
+		String message = String.format("Active booking for classroom %s between %s and %s retrieved successfully", idClassroom, start, finish);
+		StandardResponse<Long> response = new StandardResponse<>(message, idbooking, HttpStatus.OK);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+			
 }

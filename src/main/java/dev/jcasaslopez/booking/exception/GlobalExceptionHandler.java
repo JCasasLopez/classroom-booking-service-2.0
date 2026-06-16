@@ -18,7 +18,7 @@ import jakarta.validation.ConstraintViolationException;
 
 @ControllerAdvice	
 public class GlobalExceptionHandler {
-			
+				
 	@ExceptionHandler({InvalidBookingException.class, 
 		SlotNotValidException.class, 
 		SlotOutOfOpeningHoursException.class, 
@@ -68,6 +68,12 @@ public class GlobalExceptionHandler {
 		JsonProcessingException.class})
     public ResponseEntity<StandardResponse<Void>> handleJsonExceptions(JsonProcessingException ex) {
     	StandardResponse<Void> response = new StandardResponse<>("Error serializing or deserializing JSON data", null, HttpStatus.INTERNAL_SERVER_ERROR);
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+	
+	@ExceptionHandler({DataIntegrityException.class})
+    public ResponseEntity<StandardResponse<Void>> handleDataIntegrityException(DataIntegrityException ex) {
+    	StandardResponse<Void> response = new StandardResponse<>(ex.getMessage(), null, HttpStatus.INTERNAL_SERVER_ERROR);
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 	

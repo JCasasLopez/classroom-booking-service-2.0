@@ -13,6 +13,8 @@ import dev.jcasaslopez.booking.domain.Booking;
 import dev.jcasaslopez.booking.domain.OpeningHours;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.SlotStatusDto;
+import dev.jcasaslopez.booking.exception.DataIntegrityException;
+import dev.jcasaslopez.booking.exception.NoSuchBookingException;
 import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
@@ -75,6 +77,18 @@ public class SearchServiceImpl implements SearchService {
 				.filter(c -> projector ? c.getProjector() : true)
 				.filter(c -> speakers ? c.getSpeakers() : true)
 				.toList();
+	}
+	
+	@Override
+	public Long findBookingByClassroomAndTimePeriod(int idClassroom, LocalDateTime start, LocalDateTime finish) {
+		List<Booking> bookings = bookingRepository.findActiveBookingsForClassroomByPeriod(idClassroom, start, finish);
+		if(bookings.isEmpty()) {
+			throw new NoSuchBookingException("No active booking found for classroom " + idClassroom + " between " + start + " and " + finish);
+		} else if(bookings.size() > 1) {
+		    logger.error("Data integrity violation: more than 1 booking for the time period: {}", bookings.toString());
+			throw new DataIntegrityException("An internal data consistency error has occurred");
+		}
+		return bookings.get(0).getIdBooking();
 	}
 	
 	// we need a specific validation method here, as TimeSlot validates slot alignment, which is too strict here 

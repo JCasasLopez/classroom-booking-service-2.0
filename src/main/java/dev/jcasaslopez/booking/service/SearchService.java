@@ -13,4 +13,5 @@ public interface SearchService {
 	List<ClassroomEvent> classroomsAvailableByPeriod(LocalDateTime start, LocalDateTime finish);
 	List<ClassroomEvent> classroomsAvailableByPeriodAndFeatures(LocalDateTime start, LocalDateTime finish,
 																int seats, boolean projector, boolean speakers);
+	Long findBookingByClassroomAndTimePeriod(int idClassroom, LocalDateTime start, LocalDateTime finish);
 }
