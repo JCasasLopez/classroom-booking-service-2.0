@@ -50,6 +50,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 		Optional<String> validationResult = jwtService.validateJwt(authHeader, base64SecretKey, TokenType.ACCESS);
 		try {
 		    if (validationResult.isEmpty()) {
+		    	// The real message that Spring will return is simply "Unauthorized" (see AuthFilterIntegrationTest).
 		        response.sendError(401, "Authentication failed");
 		        return; 
 		    }
