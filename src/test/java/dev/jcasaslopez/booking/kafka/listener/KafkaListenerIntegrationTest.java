@@ -14,7 +14,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
-public class ClassroomsStoreListenerIntegrationTest extends BaseIntegrationTest {
+public class KafkaListenerIntegrationTest extends BaseIntegrationTest {
 	
 	@Value("${kafka.topic.name.classrooms}") private String topicName;
 	

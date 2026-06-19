@@ -18,7 +18,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.any;
 	
 @ExtendWith(MockitoExtension.class)
-class ClassroomsStoreListenerUnitTest {
+class KafkaListenerUnitTest {
 	
 	private static final String TOPIC_NAME = "mock-classrooms-topic";
 	
