@@ -9,9 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import dev.jcasaslopez.booking.util.UserContext;
 import dev.jcasaslopez.classroom.shared.enums.TokenType;
 import dev.jcasaslopez.classroom.shared.security.JwtService;
-import dev.jcasaslopez.classroom.shared.utility.UserContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +23,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 	private static final Logger logger = LoggerFactory.getLogger(AuthenticationFilter.class);
 	private final JwtService jwtService;
 	private final String base64SecretKey;
-
+	
 	public AuthenticationFilter(JwtService jwtService, 	@Value("${jwt.secretKey}") String base64SecretKey) {
 		this.jwtService = jwtService;
 		this.base64SecretKey = base64SecretKey;
@@ -53,10 +53,12 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 		    	// The real message that Spring will return is simply "Unauthorized" (see AuthFilterIntegrationTest).
 		        response.sendError(401, "Authentication failed");
 		        return; 
-		    }
-		    // We need access to user's email address to send notification.
-		    UserContext.setEmail(validationResult.get());
+		    }	    
+		    // We need access to user's email address to send notifications.
+		    
+		    UserContext.setContext(validationResult.get(), jwtService.extractIdUser(authHeader, base64SecretKey));		    
 		    filterChain.doFilter(request, response);
+
 		} finally {
 		    UserContext.clear(); 
 		}

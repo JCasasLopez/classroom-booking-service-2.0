@@ -19,6 +19,7 @@ import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.service.BookingService;
 import dev.jcasaslopez.booking.util.Endpoints;
+import dev.jcasaslopez.booking.util.UserContext;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -57,7 +58,8 @@ public class BookingController {
 	}
 	
 	@GetMapping(value=Endpoints.USER_BOOKINGS)
-	public ResponseEntity<StandardResponse<List<BookingResponseDto>>> bookingsByUser(@RequestParam @Positive int idUser){
+	public ResponseEntity<StandardResponse<List<BookingResponseDto>>> bookingsByUser(){
+		int idUser = UserContext.getIdUser();
 		logger.debug("GET /bookings - idUser={}", idUser);
 		List<BookingResponseDto> bookings = bookingService.bookingsByUser(idUser);
 		

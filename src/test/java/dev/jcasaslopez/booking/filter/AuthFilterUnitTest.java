@@ -1,7 +1,8 @@
 package dev.jcasaslopez.booking.filter;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
@@ -22,8 +23,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import dev.jcasaslopez.booking.util.UserContext;
 import dev.jcasaslopez.classroom.shared.security.JwtService;
-import dev.jcasaslopez.classroom.shared.utility.UserContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -112,17 +113,25 @@ public class AuthFilterUnitTest {
     @MethodSource("provideAuthScenarios")
     void auth_filter_clears_UserContext_whatever_happens(String route, Optional<String> validationResult) throws ServletException, IOException {
     	// Arrange
+    	// Dynamically adjusts stubbing based on the scenario: public routes skip JWT logic, 
+    	// while invalid tokens short-circuit before user ID extraction to prevent Mockito errors.
     	when(request.getRequestURI()).thenReturn(route);
-    	if(validationResult != null) {
-    		when(request.getHeader("Authorization")).thenReturn("anything");
-            when(jwtService.validateJwt(any(), any(), any())).thenReturn(validationResult);
-    		}
+    	if (validationResult != null) {
+    	    when(request.getHeader("Authorization")).thenReturn("anything");
+    	    when(jwtService.validateJwt(any(), any(), any())).thenReturn(validationResult);
+    	        	    if (validationResult.isPresent()) {
+    	        when(jwtService.extractIdUser(any(), any())).thenReturn(1);
+    	    }
+    	}
     	
     	// Act
     	filter.doFilterInternal(request, response, filterChain);
 
     	// Assert
-    	assertNull(UserContext.getEmail());
+    	assertAll(
+    			() -> assertThrows(IllegalStateException.class, () -> UserContext.getEmail()),
+    			() -> assertThrows(IllegalStateException.class,() ->UserContext.getIdUser())
+    			);
     }
     
     private static Stream<Arguments> provideAuthScenarios() {
