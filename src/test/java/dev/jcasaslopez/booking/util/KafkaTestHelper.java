@@ -1,17 +1,29 @@
 package dev.jcasaslopez.booking.util;
 
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.awaitility.Awaitility;
+import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
+import dev.jcasaslopez.classroom.shared.event.NotificationEvent;
 
 public final class KafkaTestHelper {
 
@@ -47,5 +59,28 @@ public final class KafkaTestHelper {
 				new ClassroomEvent(3, "Aula Marie Curie", 45, false, true)
 				);
 	}
+	
+	 public static KafkaConsumer<String, NotificationEvent> createNotificationConsumer(String bootstrapServers, String topic) {
+	        Map<String, Object> props = new HashMap<>();
+	        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+	        props.put(ConsumerConfig.GROUP_ID_CONFIG, "test-notifications-" + UUID.randomUUID());
+	        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+	        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+	        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName());
+	        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+	        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, NotificationEvent.class.getName());
+
+	        KafkaConsumer<String, NotificationEvent> consumer = new KafkaConsumer<>(props);
+	        consumer.subscribe(List.of(topic));
+	        return consumer;
+	    }
+
+	 public static List<ConsumerRecord<String, NotificationEvent>> pollRecords(
+		        KafkaConsumer<String, NotificationEvent> consumer, Duration timeout) {
+		    ConsumerRecords<String, NotificationEvent> records = consumer.poll(timeout);
+		    List<ConsumerRecord<String, NotificationEvent>> result = new ArrayList<>();
+		    records.forEach(result::add);
+		    return result;
+		}
 
 }

@@ -31,7 +31,7 @@ public abstract class BaseIntegrationTest {
 
     @ServiceConnection
     static final MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.3");
-    static final KafkaContainer kafkaContainer = new KafkaContainer(DockerImageName.parse("apache/kafka"));
+    protected static final KafkaContainer kafkaContainer = new KafkaContainer(DockerImageName.parse("apache/kafka"));
 
     static {
         mySQLContainer.start();
