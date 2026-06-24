@@ -19,6 +19,8 @@ public interface WatchAlertRepository extends JpaRepository<WatchAlert, Long> {
 		    """)
 	List<WatchAlert> findWatchAlertsByUserAndTimePeriod(String userEmail, LocalDateTime start, LocalDateTime finish);
 	
+	// This query bypasses ORM-level mappings (@ManyToOne) to keep Booking and WatchAlert lifecycles
+	// strictly independent, avoiding accidental cascading or overhead during booking fetches.
 	@Query("SELECT w FROM WatchAlert w WHERE w.idBooking = :idBooking")
 	List<WatchAlert> findWatchAlertsByBooking(long idBooking);
 
