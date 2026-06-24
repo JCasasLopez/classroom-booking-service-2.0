@@ -18,10 +18,11 @@ public class WatchAlert {
 	private long idWatchAlert;
 	private long idBooking;
 	
-	// We persist the user's email address here to send notifications when a booking is cancelled.
-	// Since the user must be authenticated when creating a watch alert, capturing the email at
-	// creation time is straightforward. This avoids querying the User micro-service, which would
-	// introduce both latency and coupling between micro-services.
+	// We store 'userEmail' instead of 'idUser' because when a booking is cancelled, the current thread belongs 
+	// to the canceller, making it impossible to fetch the watchers' emails from a ThreadLocal context.
+	// This avoids executing a synchronous HTTP request to the User service for each subscriber (preventing HTTP 
+	// N+1 latency and tight service coupling).
+	// Safe to use because once an account is created, the user email cannot be changed.
 	private String userEmail;
 
 	public WatchAlert(long idWatchAlert, long idBooking, String userEmail) {

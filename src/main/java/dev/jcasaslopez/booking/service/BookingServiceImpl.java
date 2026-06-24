@@ -189,6 +189,10 @@ public class BookingServiceImpl implements BookingService {
 	    }
 	}
 	
+    // This is the core enforcement of our pragmatic denormalization strategy (see WatchAlert entity comment over email field).
+	// Since this thread runs under the context  of the user performing the cancellation, we cannot resolve 
+	// the targets' email via ThreadLocal. By reading the email addresses directly from the local DB, 
+    // we publish to Kafka with zero latency and microservices are completely independent from each other.
 	private void triggerWatchAlerts(Booking cancelledBooking) {
 		List<WatchAlert> watchAlertsForBooking = watchAlertRepository.findWatchAlertsByBooking(cancelledBooking.getIdBooking());
 		watchAlertsForBooking.forEach(watchAlert -> eventPublisher.publishBookingRelatedEvent 
