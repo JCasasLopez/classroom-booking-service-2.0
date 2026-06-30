@@ -27,9 +27,9 @@ import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.mapper.BookingMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.repository.WatchAlertRepository;
-import dev.jcasaslopez.booking.util.UserContext;
 import dev.jcasaslopez.classroom.shared.enums.NotificationType;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
+import dev.jcasaslopez.classroom.shared.utility.UserContext;
 
 @Service
 public class BookingServiceImpl implements BookingService {

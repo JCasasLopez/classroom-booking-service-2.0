@@ -36,9 +36,9 @@ import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.mapper.BookingMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.repository.WatchAlertRepository;
-import dev.jcasaslopez.booking.util.UserContext;
 import dev.jcasaslopez.classroom.shared.enums.NotificationType;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
+import dev.jcasaslopez.classroom.shared.utility.UserContext;
 
 // NOTE: time slot validity (opening hours, slot alignment) is tested in TimeSlotTest. No need to duplicate those tests here.
 @ExtendWith(MockitoExtension.class)

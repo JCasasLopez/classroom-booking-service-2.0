@@ -9,9 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import dev.jcasaslopez.booking.util.UserContext;
 import dev.jcasaslopez.classroom.shared.enums.TokenType;
 import dev.jcasaslopez.classroom.shared.security.JwtService;
+import dev.jcasaslopez.classroom.shared.utility.UserContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

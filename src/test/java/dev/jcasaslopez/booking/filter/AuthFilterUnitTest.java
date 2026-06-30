@@ -23,8 +23,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import dev.jcasaslopez.booking.util.UserContext;
 import dev.jcasaslopez.classroom.shared.security.JwtService;
+import dev.jcasaslopez.classroom.shared.utility.UserContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
