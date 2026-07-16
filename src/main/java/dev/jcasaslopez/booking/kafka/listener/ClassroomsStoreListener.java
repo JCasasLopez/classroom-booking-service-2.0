@@ -9,6 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.listener.ConsumerSeekAware;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
@@ -28,16 +31,30 @@ public class ClassroomsStoreListener implements ConsumerSeekAware {
 
 	@Override
 	public void onPartitionsAssigned(Map<TopicPartition, Long> assignments, ConsumerSeekCallback callback) {
-		// Only re-read from the beginning if classroomsStore is empty, meaning the micro-service
-		// has just started after a crash.
+		// Kafka's 'earliest' config is ignored if a valid offset already exists. Since a crash wipes our RAM bean 
+		// but keeps Kafka's offset, we must programmatically force a seek-to-beginning to rebuild the local store.
 		if (classroomsStore.isEmpty()) {
 			callback.seekToBeginning(assignments.keySet());
 		}
 	}
 
 	@KafkaHandler
-	public void classroomListenerHandler(ClassroomEvent classroom) {
-		int classroomId = classroom.getIdClassroom();
+	public void classroomListenerHandler(
+	        @Header(KafkaHeaders.RECEIVED_KEY) Integer classroomId, 
+	        @Payload(required = false) ClassroomEvent classroom) {  
+	    
+		// Handle Kafka tombstone (classroom deletion)
+	    if (classroom == null) {
+	        for (int i = 0; i < classroomsStore.size(); i++) {
+	            if (classroomsStore.get(i).getIdClassroom() == classroomId) {
+	                logger.info("Removing classroom {} from classroomsStore due to Tombstone", classroomId);
+	                classroomsStore.remove(i);
+	                return;
+	            }
+	        }
+	        return; 
+	    }
+
 	    for (int i = 0; i < classroomsStore.size(); i++) {
 	        if (classroomsStore.get(i).getIdClassroom() == classroomId) {
 	            logger.info("Updating classroom {} ({}) in classroomsStore", classroomId, classroom.getName());
