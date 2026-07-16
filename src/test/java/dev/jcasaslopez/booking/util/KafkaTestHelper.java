@@ -38,8 +38,7 @@ public final class KafkaTestHelper {
 	public static void produceClassroomEvents(String bootstrapServers) throws Exception {
 		try (KafkaProducer<String, ClassroomEvent> producer = new KafkaProducer<>(buildProducerProps(bootstrapServers))) {
 			for (ClassroomEvent classroom : buildClassroomEvents()) {
-				producer.send(new ProducerRecord<>("classrooms", classroom)).get();
-			}
+				producer.send(new ProducerRecord<>("classrooms", String.valueOf(classroom.getIdClassroom()), classroom)).get();			}
 		}
 	}
 

@@ -29,7 +29,7 @@ public class KafkaListenerIntegrationTest extends BaseIntegrationTest {
 		ClassroomEvent updatedClassroom = new ClassroomEvent(ID_CLASSROOM, NEW_CLASSROOM_NAME, 150, true, true);
 		
 		// Act
-		kafkaTemplate.send(topicName, updatedClassroom).join();
+		kafkaTemplate.send(topicName, String.valueOf(ID_CLASSROOM), updatedClassroom).join();
 		
 		// Assert
 		waitForClassroomUpdate(classroomsStore, ID_CLASSROOM, NEW_CLASSROOM_NAME);
