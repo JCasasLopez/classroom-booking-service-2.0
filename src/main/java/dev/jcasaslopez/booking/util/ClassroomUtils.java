@@ -2,7 +2,7 @@ package dev.jcasaslopez.booking.util;
 
 import java.util.List;
 
-import dev.jcasaslopez.booking.domain.Booking;
+import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.exception.NoSuchClassroomException;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 

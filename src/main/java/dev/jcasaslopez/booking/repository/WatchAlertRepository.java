@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import dev.jcasaslopez.booking.domain.WatchAlert;
+import dev.jcasaslopez.booking.entity.WatchAlert;
 
 public interface WatchAlertRepository extends JpaRepository<WatchAlert, Long> {
 	

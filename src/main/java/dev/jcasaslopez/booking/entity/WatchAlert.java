@@ -1,4 +1,4 @@
-package dev.jcasaslopez.booking.domain;
+package dev.jcasaslopez.booking.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

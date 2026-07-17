@@ -1,4 +1,4 @@
-package dev.jcasaslopez.booking.domain;
+package dev.jcasaslopez.booking.entity;
 
 import java.time.LocalDateTime;
 

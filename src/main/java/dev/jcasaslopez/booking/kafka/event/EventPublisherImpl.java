@@ -8,8 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import dev.jcasaslopez.booking.domain.Booking;
-import dev.jcasaslopez.booking.domain.WatchAlert;
+import dev.jcasaslopez.booking.entity.Booking;
+import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.exception.NoSuchBookingException;
 import dev.jcasaslopez.booking.exception.NoSuchClassroomException;
 import dev.jcasaslopez.booking.kafka.producer.NotificationEventProducer;

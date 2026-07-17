@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import dev.jcasaslopez.booking.base.BaseRepositoryTest;
-import dev.jcasaslopez.booking.domain.Booking;
+import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import jakarta.persistence.EntityManager;
 

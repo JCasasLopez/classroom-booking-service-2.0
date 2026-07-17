@@ -1,7 +1,7 @@
 package dev.jcasaslopez.booking.kafka.event;
 
-import dev.jcasaslopez.booking.domain.Booking;
-import dev.jcasaslopez.booking.domain.WatchAlert;
+import dev.jcasaslopez.booking.entity.Booking;
+import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.classroom.shared.enums.NotificationType;
 
 public interface EventPublisher {

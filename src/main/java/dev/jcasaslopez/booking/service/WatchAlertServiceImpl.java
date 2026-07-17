@@ -8,10 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import dev.jcasaslopez.booking.classroom.ClassroomValidator;
-import dev.jcasaslopez.booking.domain.Booking;
-import dev.jcasaslopez.booking.domain.WatchAlert;
 import dev.jcasaslopez.booking.dto.WatchAlertRequestDto;
 import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
+import dev.jcasaslopez.booking.entity.Booking;
+import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.NoSuchBookingException;
 import dev.jcasaslopez.booking.kafka.event.EventPublisher;
