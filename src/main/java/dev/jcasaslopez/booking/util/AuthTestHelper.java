@@ -24,7 +24,7 @@ public final class AuthTestHelper {
 	            .claim("roles", List.of("ROLE_USER"))
 	            .claim("idUser", 1)
 	            .claim("purpose", "access")
-	            .claim("email", "jorgecasas78@hotmail.com")
+	            .claim("email", "user@example.com")
 	            .issuedAt(new Date(System.currentTimeMillis()))
 	            .expiration(new Date(System.currentTimeMillis() + 3600_000)) 
 	            .signWith(key, Jwts.SIG.HS256)
