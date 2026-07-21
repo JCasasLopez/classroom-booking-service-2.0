@@ -22,13 +22,15 @@ import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 public final class TestHelper {
+	
+	private static final String email = "user@example.com";
 
 	public static ResponseEntity<StandardResponse<BookingResponseDto>> createBooking
 								(TestRestTemplate restTemplate, int idUser, int classroomId, int slotDuration) {
 		BookingRequestDto bookingDto = new BookingRequestDto(idUser, classroomId, TestHelper.generateBookingSlots(slotDuration));
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(AuthTestHelper.generateTestJwt());
+		headers.setBearerAuth(AuthTestHelper.generateTestJwt(email));
 		HttpEntity<BookingRequestDto> httpBookingRequest = new HttpEntity<>(bookingDto, headers);
 
 		return restTemplate.exchange(

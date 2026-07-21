@@ -29,6 +29,7 @@ public class CancelEndpointTest extends BaseIntegrationTest {
 	private static final int SLOT_DURATION = 30;
 	private static final int CLASSROOM_ID = 1;
 	private static final int USER_ID = 1;
+	private static final String email = "user@example.com";
 	
 	@Test
 	void cancel_endpoint_returns_the_expected_response() {
@@ -38,7 +39,7 @@ public class CancelEndpointTest extends BaseIntegrationTest {
 		
 		// Act
 		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(AuthTestHelper.generateTestJwt());
+		headers.setBearerAuth(AuthTestHelper.generateTestJwt(email));
 		Long idBooking = httpResponse.getBody().details().idBooking(); 
 		String cancelUrl = UriComponentsBuilder.fromPath(Endpoints.CANCEL)
 				.queryParam("idBooking", idBooking)
@@ -67,7 +68,7 @@ public class CancelEndpointTest extends BaseIntegrationTest {
 	            .queryParam("idBooking", -1)
 	            .toUriString();
 	    HttpHeaders headers = new HttpHeaders();
-	    headers.setBearerAuth(AuthTestHelper.generateTestJwt());
+	    headers.setBearerAuth(AuthTestHelper.generateTestJwt(email));
 	    HttpEntity<Void> request = new HttpEntity<>(headers);
 
 	    // Act
@@ -91,7 +92,7 @@ public class CancelEndpointTest extends BaseIntegrationTest {
 	            .queryParam("idBooking", 9999)
 	            .toUriString();
 	    HttpHeaders headers = new HttpHeaders();
-	    headers.setBearerAuth(AuthTestHelper.generateTestJwt());
+	    headers.setBearerAuth(AuthTestHelper.generateTestJwt(email));
 	    HttpEntity<Void> request = new HttpEntity<>(headers);
 
 	    // Act

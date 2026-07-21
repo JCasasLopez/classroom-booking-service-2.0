@@ -41,6 +41,7 @@ public class WatchAlertEndpointsTest extends BaseIntegrationTest {
 	private static final int SLOT_DURATION = 30;
 	private static final int CLASSROOM_ID = 1;
 	private static final int USER_ID = 1;
+	private static final String email = "user@example.com";
 
 	@Test
 	@Order(1)
@@ -69,7 +70,7 @@ public class WatchAlertEndpointsTest extends BaseIntegrationTest {
 
     	// Act
     	HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(AuthTestHelper.generateTestJwt());
+		headers.setBearerAuth(AuthTestHelper.generateTestJwt(email));
     	String getWatchAlertsUrl = UriComponentsBuilder.fromPath(Endpoints.USER_WATCH_ALERTS)
     			.queryParam("startSearch", TestHelper.generateStartSearch())
     			.queryParam("finishSearch", TestHelper.generateFinishSearch(300))
@@ -102,7 +103,7 @@ public class WatchAlertEndpointsTest extends BaseIntegrationTest {
 				.toUriString();
 		
 		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(AuthTestHelper.generateTestJwt());
+		headers.setBearerAuth(AuthTestHelper.generateTestJwt(email));
 		HttpEntity<Void> httpRequest = new HttpEntity<>(headers); 
 		
 		return testRestTemplate.exchange(

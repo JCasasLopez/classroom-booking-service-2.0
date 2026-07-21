@@ -13,4 +13,6 @@ public class Endpoints {
 	public static final String ADD_WATCH_ALERT = "/watch-alerts";
 	public static final String USER_WATCH_ALERTS = "/watch-alerts";
 	
+	public static final String GENERATE_TOKEN = "/generate-token";
+	
 }

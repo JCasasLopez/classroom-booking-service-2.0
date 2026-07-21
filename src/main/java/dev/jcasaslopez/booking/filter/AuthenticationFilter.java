@@ -38,7 +38,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 		String requestURI = request.getRequestURI();
 
 	    // If it is a search, allow the request to go through without verifying the token.
-		if (requestURI.contains("/searches/")) {
+		if (requestURI.contains("/searches/") || requestURI.contains("/generate-token")) {
 		    UserContext.clear();
 		    filterChain.doFilter(request, response);
 		    return;

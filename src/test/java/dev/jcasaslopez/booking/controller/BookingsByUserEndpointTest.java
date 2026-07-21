@@ -31,6 +31,7 @@ public class BookingsByUserEndpointTest extends BaseIntegrationTest {
 	private static final int SLOT_DURATION = 30;
 	private static final int CLASSROOM_ID = 1;
 	private static final int USER_ID = 1;
+	private static final String email = "user@example.com";
 	
 	@Test
 	void bookings_by_user_endpoint_returns_the_expected_response() {
@@ -39,7 +40,7 @@ public class BookingsByUserEndpointTest extends BaseIntegrationTest {
 		
 		// Act
 		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(AuthTestHelper.generateTestJwt());
+		headers.setBearerAuth(AuthTestHelper.generateTestJwt(email));
 		String userBookingsUrl = UriComponentsBuilder.fromPath(Endpoints.USER_BOOKINGS)
 				.queryParam("idUser", USER_ID)
 				.toUriString();

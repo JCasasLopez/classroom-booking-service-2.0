@@ -1,0 +1,31 @@
+package dev.jcasaslopez.booking.controller;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import dev.jcasaslopez.booking.util.AuthTestHelper;
+import dev.jcasaslopez.booking.util.Endpoints;
+import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
+
+@RestController
+@Validated
+public class AuthController {
+
+	private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
+	@GetMapping(value = Endpoints.GENERATE_TOKEN)
+	public ResponseEntity<StandardResponse<String>> generateToken(@RequestParam(defaultValue = "user@example.com") String email) {
+		logger.debug("GET /generate-token - email={}", email);
+
+		String message = String.format("JWT created successfully for email address %s", email);
+		StandardResponse<String> response = new StandardResponse<>(message, AuthTestHelper.generateTestJwt(email), HttpStatus.OK);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+
+}
