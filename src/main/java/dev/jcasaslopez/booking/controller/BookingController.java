@@ -61,7 +61,7 @@ public class BookingController {
 	public ResponseEntity<StandardResponse<List<BookingResponseDto>>> bookingsByUser(){
 		int idUser = UserContext.getIdUser();
 		logger.debug("GET /bookings - idUser={}", idUser);
-		List<BookingResponseDto> bookings = bookingService.bookingsByUser(idUser);
+		List<BookingResponseDto> bookings = bookingService.bookingsByUser();
 		
 		String message = String.format("Bookings by user %s retrieved successfully", idUser);
 		StandardResponse<List<BookingResponseDto>> response = new StandardResponse<>(message, bookings, HttpStatus.OK);

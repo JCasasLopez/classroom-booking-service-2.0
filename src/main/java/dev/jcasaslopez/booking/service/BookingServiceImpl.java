@@ -98,8 +98,9 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	@Override
-	public List<BookingResponseDto> bookingsByUser(int idUser) {
+	public List<BookingResponseDto> bookingsByUser() {
 		// No user existence check needed: this end-point requires JWT authentication, which is only issued to existing users. 
+		int idUser = UserContext.getIdUser();
 		logger.debug("Searching booking history for user {}", idUser);
 		return bookingRepository.findBookingsByUser(idUser).stream().map(booking -> mapper.toResponseDto(booking, classroomsStore)).toList();
 	}

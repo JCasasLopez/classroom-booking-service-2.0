@@ -8,6 +8,6 @@ import dev.jcasaslopez.booking.dto.BookingResponseDto;
 public interface BookingService {	
 	BookingResponseDto book(BookingRequestDto bookingDto);
 	void cancel(Long idBooking);
-	List<BookingResponseDto> bookingsByUser(int idUser);
+	List<BookingResponseDto> bookingsByUser();
 	void markBookingsAsCompleted();
 }
