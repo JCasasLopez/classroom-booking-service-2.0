@@ -36,6 +36,18 @@ public class GlobalExceptionHandler {
 	    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 	
+	@ExceptionHandler(InvalidBookingStatusException.class)
+	public ResponseEntity<StandardResponse<Void>> handleBookingNotActive(InvalidBookingStatusException ex) {
+	    StandardResponse<Void> response = new StandardResponse<>(ex.getMessage(), null, HttpStatus.CONFLICT);
+	    return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+	}
+	
+	@ExceptionHandler(UnauthorizedBookingAccessException.class)
+	public ResponseEntity<StandardResponse<Void>> handleUnauthorizedAccess(UnauthorizedBookingAccessException ex) {
+	    StandardResponse<Void> response = new StandardResponse<>(ex.getMessage(), null, HttpStatus.FORBIDDEN);
+	    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+	}
+	
 	@ExceptionHandler({NoSuchBookingException.class, 
 		NoSuchClassroomException.class})
 	public ResponseEntity<StandardResponse<Void>> handleNotFound (RuntimeException ex){

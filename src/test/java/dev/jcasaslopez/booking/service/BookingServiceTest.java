@@ -204,7 +204,7 @@ public class BookingServiceTest {
 	}
 	
 	@Test
-	void cancels_booking_if_the_booking_exists_in_the_database() {
+	void cancel_booking_if_the_booking_exists_in_the_database() {
 		// Arrange
 		long idBooking = 3L;
 		Booking booking = new Booking(idBooking, 1, 9, LocalDateTime.of(2026, 5, 11, 10, 0), 
@@ -227,7 +227,7 @@ public class BookingServiceTest {
 	}
 	
 	@Test
-	void if_trying_to_cancel_a_booking_that_does_not_exist_throws_exception() {
+	void try_to_cancel_a_booking_that_does_not_exist_throws_exception() {
 		// Arrange
 		long idBooking = 3L;
 		when(bookingRepository.findById(idBooking)).thenReturn(Optional.empty());

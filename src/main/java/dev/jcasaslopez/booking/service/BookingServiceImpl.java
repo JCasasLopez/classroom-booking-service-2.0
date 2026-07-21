@@ -22,7 +22,9 @@ import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.InvalidBookingException;
+import dev.jcasaslopez.booking.exception.InvalidBookingStatusException;
 import dev.jcasaslopez.booking.exception.NoSuchBookingException;
+import dev.jcasaslopez.booking.exception.UnauthorizedBookingAccessException;
 import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.mapper.BookingMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
@@ -90,8 +92,19 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional
 	public void cancel(Long idBooking) {
 		logger.debug("Cancel request received for booking {}", idBooking);
+			
 		Booking booking = bookingRepository.findById(idBooking)
 				.orElseThrow(() -> new NoSuchBookingException(String.format("Booking %s was not found in the database", idBooking)));		
+	
+		int idUser = UserContext.getIdUser();
+		if(booking.getIdUser() != idUser) {
+			throw new UnauthorizedBookingAccessException("Authenticated user does not own the booking");
+		}
+		
+		if(booking.getStatus() != BookingStatus.ACTIVE) {
+			throw new InvalidBookingStatusException("Only ACTIVE bookings can be cancelled");
+		}
+		
 		bookingRepository.modifyBookingStatus(idBooking, BookingStatus.CANCELLED);
 		eventPublisher.publishBookingRelatedEvent(NotificationType.BOOKING_CANCELLED, booking, UserContext.getEmail());
 		triggerWatchAlerts(booking);
@@ -99,10 +112,13 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	public List<BookingResponseDto> bookingsByUser() {
-		// No user existence check needed: this end-point requires JWT authentication, which is only issued to existing users. 
 		int idUser = UserContext.getIdUser();
 		logger.debug("Searching booking history for user {}", idUser);
-		return bookingRepository.findBookingsByUser(idUser).stream().map(booking -> mapper.toResponseDto(booking, classroomsStore)).toList();
+				
+		return bookingRepository.findBookingsByUser(idUser).stream()
+				.map(booking -> mapper.toResponseDto(booking, classroomsStore))
+				.toList();
+			
 	}
 
 	@Transactional
