@@ -37,7 +37,7 @@ public class SearchController {
 			@RequestParam @NotNull LocalDateTime start,
 	        @RequestParam @NotNull LocalDateTime finish,
 	        @RequestParam @Positive int idClassroom) {
-		logger.debug("GET /searches/availability-calendar - idClassroom={}, start={}, finish={}", idClassroom, start, finish);	
+		logger.debug("GET /searches/availability-calendar?idClassroom={}&start={}&finish={}", idClassroom, start, finish);	
 		List<SlotStatusDto> availabilityCalendar = searchService.availabilityCalendarByClassroom(idClassroom, start, finish);
 		String message = String.format("Availability calendar for classroom %s retrieved successfully", idClassroom);
 		StandardResponse<List<SlotStatusDto>> response = new StandardResponse<>(message, availabilityCalendar, HttpStatus.OK);
@@ -52,7 +52,7 @@ public class SearchController {
 	        @RequestParam int seats,
 	        @RequestParam @NotNull boolean projector,
 	        @RequestParam @NotNull boolean speakers) {
-		logger.debug("GET /searches/classrooms-available - start={}, finish={}, seats={}, projector={}, speakers={}", start, finish, seats, projector, speakers);
+		logger.debug("GET /searches/classrooms-available?start={}&finish={}&seats={}&projector={}&speakers={}", start, finish, seats, projector, speakers);
 		List<ClassroomEvent> classroomsAvailableByPeriod = searchService.classroomsAvailableByPeriodAndFeatures(start, finish, seats, projector, speakers);
 		String message = String.format("Available classrooms between %s and %s (seats: %s - projector: %s - speakers: %s) retrieved successfully", 
 				start, finish, seats, projector, speakers);
@@ -67,7 +67,7 @@ public class SearchController {
 			@RequestParam @NotNull LocalDateTime start,
 	        @RequestParam @NotNull LocalDateTime finish,
 	        @RequestParam @Positive int idClassroom){
-		logger.debug("GET /searches/booking-by-slot - idClassroom={}, start={}, finish={}", idClassroom, start, finish);	
+		logger.debug("GET /searches/booking-by-slot?idClassroom={}&start={}&finish={}", idClassroom, start, finish);	
 		Long idbooking = searchService.findBookingByClassroomAndTimePeriod(idClassroom, start, finish);
 		String message = String.format("Active booking for classroom %s between %s and %s retrieved successfully", idClassroom, start, finish);
 		StandardResponse<Long> response = new StandardResponse<>(message, idbooking, HttpStatus.OK);

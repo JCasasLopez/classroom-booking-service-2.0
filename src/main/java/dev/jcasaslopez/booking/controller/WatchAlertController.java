@@ -34,7 +34,7 @@ private static final Logger logger = LoggerFactory.getLogger(WatchAlertControlle
 
 	@PostMapping(value=Endpoints.ADD_WATCH_ALERT)
 	public ResponseEntity<StandardResponse<WatchAlertResponseDto>> addWatchAlert(@RequestParam @NotNull @Positive Long idBooking) {
-		logger.debug("POST /watch-alerts - idBooking={}", idBooking);
+		logger.debug("POST /watch-alerts?idBooking={}", idBooking);
 		WatchAlertResponseDto watchAlert = service.addWatchAlert(idBooking);
 		
 		StandardResponse<WatchAlertResponseDto> response = new StandardResponse<>("Watch alert created successfully", watchAlert, HttpStatus.CREATED);
@@ -46,7 +46,7 @@ private static final Logger logger = LoggerFactory.getLogger(WatchAlertControlle
 	@GetMapping(value=Endpoints.USER_WATCH_ALERTS)
 	public ResponseEntity<StandardResponse<List<WatchAlertResponseDto>>> getWatchAlertsByUser(@RequestParam @NotNull LocalDateTime startSearch, 
 			@RequestParam @NotNull LocalDateTime finishSearch) {
-		logger.debug("GET /watch-alerts - start={} - finish={}", startSearch, finishSearch);
+		logger.debug("GET /watch-alerts?start={}&finish={}", startSearch, finishSearch);
 		
 		List<WatchAlertResponseDto> watchAlerts = service.watchAlertsListByUserAndTimePeriod(startSearch, finishSearch);
 		
