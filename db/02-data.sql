@@ -3,9 +3,15 @@ TRUNCATE TABLE watch_alerts;
 TRUNCATE TABLE bookings;
 
 -- Insert bookings with dynamic dates relative to execution time
--- Booking 1: ACTIVE (for 7 days from now)
+-- Booking 1: ACTIVE (next Monday from 10 to 11)
 INSERT INTO bookings (idUser, idClassroom, start, finish, status) 
-VALUES (1, 1, DATE_ADD(NOW(), INTERVAL 7 DAY), DATE_ADD(NOW(), INTERVAL 8 DAY), 'ACTIVE');
+VALUES (
+  1, 
+  1, 
+  DATE_ADD(DATE_ADD(CURDATE(), INTERVAL (7 - WEEKDAY(CURDATE())) DAY), INTERVAL 10 HOUR), 
+  DATE_ADD(DATE_ADD(CURDATE(), INTERVAL (7 - WEEKDAY(CURDATE())) DAY), INTERVAL 11 HOUR), 
+  'ACTIVE'
+);
 
 -- Booking 2: COMPLETED (Always in the past)
 INSERT INTO bookings (idUser, idClassroom, start, finish, status) 
