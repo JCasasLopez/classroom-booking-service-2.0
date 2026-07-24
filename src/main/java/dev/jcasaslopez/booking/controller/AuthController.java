@@ -18,11 +18,11 @@ public class AuthController {
 	private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
 	@GetMapping(value = Endpoints.GENERATE_TOKEN)
-	public ResponseEntity<StandardResponse<String>> generateToken(@RequestParam(defaultValue = "user@example.com") String email) {
-		logger.debug("GET /generate-token?email={}", email);
+	public ResponseEntity<StandardResponse<String>> generateToken(@RequestParam(defaultValue = "1") int idUser) {
+		logger.debug("GET /generate-token?idUser={}", idUser);
 
-		String message = String.format("JWT created successfully for email address %s", email);
-		StandardResponse<String> response = new StandardResponse<>(message, AuthTestHelper.generateTestJwt(email), HttpStatus.OK);
+		String message = String.format("JWT created successfully for user ID %s", idUser);
+		StandardResponse<String> response = new StandardResponse<>(message, AuthTestHelper.generateTestJwt(idUser), HttpStatus.OK);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 

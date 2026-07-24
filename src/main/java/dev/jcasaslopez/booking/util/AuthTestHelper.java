@@ -12,7 +12,7 @@ import io.jsonwebtoken.security.Keys;
 
 public final class AuthTestHelper {
 	
-	public static String generateTestJwt(String email) {
+	public static String generateTestJwt(int idUser) {
 		String base64SecretKey = "MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaMDEyMzQ1Njc4OTA=";
 	    byte[] keyBytes = Base64.getDecoder().decode(base64SecretKey);
 	    SecretKey key = Keys.hmacShaKeyFor(keyBytes);
@@ -22,9 +22,9 @@ public final class AuthTestHelper {
 	            .subject("Username")
 	            .id(UUID.randomUUID().toString())
 	            .claim("roles", List.of("ROLE_USER"))
-	            .claim("idUser", 1)
+	            .claim("idUser", idUser)
 	            .claim("purpose", "access")
-	            .claim("email", email)
+	            .claim("email", "user@example.com")
 	            .issuedAt(new Date(System.currentTimeMillis()))
 	            .expiration(new Date(System.currentTimeMillis() + 3600_000)) 
 	            .signWith(key, Jwts.SIG.HS256)

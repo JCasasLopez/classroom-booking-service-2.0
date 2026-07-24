@@ -28,7 +28,6 @@ public class BookEndpointTest extends BaseIntegrationTest {
 	private static final int SLOT_DURATION = 30;
 	private static final int CLASSROOM_ID = 1;
 	private static final int USER_ID = 1;
-	private static final String email = "user@example.com";
     
     @Test
 	void book_endpoint_returns_the_expected_response() {
@@ -58,7 +57,7 @@ public class BookEndpointTest extends BaseIntegrationTest {
     @Test
     void book_endpoint_returns_400_when_body_is_missing() {
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(AuthTestHelper.generateTestJwt(email));
+        headers.setBearerAuth(AuthTestHelper.generateTestJwt(USER_ID));
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> request = new HttpEntity<>(headers);
 
@@ -85,7 +84,7 @@ public class BookEndpointTest extends BaseIntegrationTest {
             """;
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(AuthTestHelper.generateTestJwt(email));
+        headers.setBearerAuth(AuthTestHelper.generateTestJwt(USER_ID));
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> request = new HttpEntity<>(body, headers);
 
