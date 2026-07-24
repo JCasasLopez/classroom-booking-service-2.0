@@ -24,7 +24,6 @@ import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.InvalidBookingException;
 import dev.jcasaslopez.booking.exception.InvalidBookingStatusException;
 import dev.jcasaslopez.booking.exception.NoSuchBookingException;
-import dev.jcasaslopez.booking.exception.UnauthorizedBookingAccessException;
 import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.mapper.BookingMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
@@ -92,14 +91,15 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional
 	public void cancel(Long idBooking) {
 		logger.debug("Cancel request received for booking {}", idBooking);
-			
+		
+	    int idUser = UserContext.getIdUser();
+		
+	    // Both "booking not found" and "booking belongs to another user" are deliberately
+	    // mapped to the same exception. Distinguishing between them would let an attacker
+	    // enumerate valid booking IDs simply by observing which error is returned.
 		Booking booking = bookingRepository.findById(idBooking)
-				.orElseThrow(() -> new NoSuchBookingException(String.format("Booking %s was not found in the database", idBooking)));		
-	
-		int idUser = UserContext.getIdUser();
-		if(booking.getIdUser() != idUser) {
-			throw new UnauthorizedBookingAccessException("Authenticated user does not own the booking");
-		}
+	            .filter(b -> b.getIdUser() == idUser)
+	            .orElseThrow(() -> new NoSuchBookingException("Booking was not found in the database"));
 		
 		if(booking.getStatus() != BookingStatus.ACTIVE) {
 			throw new InvalidBookingStatusException("Only ACTIVE bookings can be cancelled");

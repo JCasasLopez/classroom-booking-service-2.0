@@ -52,8 +52,7 @@ public class BookingController {
 		logger.debug("PATCH /bookings/cancel?idBooking={}", idBooking);
 		bookingService.cancel(idBooking);
 		
-		String message = String.format("Booking %s cancelled successfully", idBooking);
-		StandardResponse<Void> response = new StandardResponse<>(message, null, HttpStatus.OK);
+		StandardResponse<Void> response = new StandardResponse<>("Booking cancelled successfully", null, HttpStatus.OK);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
