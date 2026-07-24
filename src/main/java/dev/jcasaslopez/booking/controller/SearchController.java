@@ -50,8 +50,8 @@ public class SearchController {
 	        @RequestParam @NotNull LocalDateTime finish,
 	        // If you do not want to filter by seats, set at 0.
 	        @RequestParam int seats,
-	        @RequestParam @NotNull boolean projector,
-	        @RequestParam @NotNull boolean speakers) {
+	        @RequestParam @NotNull Boolean projector,
+	        @RequestParam @NotNull Boolean speakers) {
 		logger.debug("GET /searches/classrooms-available?start={}&finish={}&seats={}&projector={}&speakers={}", start, finish, seats, projector, speakers);
 		List<ClassroomEvent> classroomsAvailableByPeriod = searchService.classroomsAvailableByPeriodAndFeatures(start, finish, seats, projector, speakers);
 		String message = String.format("Available classrooms between %s and %s (seats: %s - projector: %s - speakers: %s) retrieved successfully", 
