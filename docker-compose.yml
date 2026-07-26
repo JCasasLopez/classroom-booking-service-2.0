@@ -6,13 +6,13 @@ services:
     container_name: mysql-db
     environment:
       MYSQL_DATABASE: classroom_bookings
-      MYSQL_ROOT_PASSWORD: Vindel39!
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     ports:
       - "3307:3306"
     volumes:
       - ./db:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pVindel39!"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -67,5 +67,20 @@ services:
         condition: service_completed_successfully
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/classroom_bookings?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=${DB_ROOT_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_ROOT_PASSWORD}
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - JWT_SECRETKEY=${JWT_SECRETKEY}
+      - KAFKA_TOPIC_NOTIFICATIONS=${KAFKA_TOPIC_NOTIFICATIONS}
+      - KAFKA_TOPIC_CLASSROOMS=${KAFKA_TOPIC_CLASSROOMS}
+      - OPENING_TIMES_MONDAY=${OPENING_TIMES_MONDAY}
+      - OPENING_TIMES_TUESDAY=${OPENING_TIMES_TUESDAY}
+      - OPENING_TIMES_WEDNESDAY=${OPENING_TIMES_WEDNESDAY}
+      - OPENING_TIMES_THURSDAY=${OPENING_TIMES_THURSDAY}
+      - OPENING_TIMES_FRIDAY=${OPENING_TIMES_FRIDAY}
+      - OPENING_TIMES_SATURDAY=${OPENING_TIMES_SATURDAY}
+      - OPENING_TIMES_SUNDAY=${OPENING_TIMES_SUNDAY}
+      - TIME_SLOT_DURATION=${TIME_SLOT_DURATION}
+      - BOOKING_MAX_DURATION=${BOOKING_MAX_DURATION}
+      - BOOKING_MAX_PER_WEEK=${BOOKING_MAX_PER_WEEK}
     entrypoint: ["sh", "-c", "echo 'Esperando a MySQL...' && sleep 5 && java -jar app.jar"]
