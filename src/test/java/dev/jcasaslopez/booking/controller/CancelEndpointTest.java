@@ -104,7 +104,7 @@ public class CancelEndpointTest extends BaseIntegrationTest {
 	    
 	    // Assert
 	    assertAll(
-	    		() -> assertTrue(response.getBody().message().equals("Booking 9999 was not found in the database")),
+	    		() -> assertTrue(response.getBody().message().equals("Booking was not found in the database")),
 	            () -> assertEquals(HttpStatus.NOT_FOUND, response.getBody().status())
 	    );
 	}
