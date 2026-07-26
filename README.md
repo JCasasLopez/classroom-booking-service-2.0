@@ -10,6 +10,7 @@ The entire Classrooms application is deployed and available at [www.book-your-cl
 - [Tech Stack](#tech-stack)
 - [Local Execution Prerequisites](#local-execution-prerequisites)
 - [Deployment](#deployment)
+- [Configuration and environment variables](#configuration-and-environment-variables)
 - [Tests](#tests)
 - [Limitations of deploying Booking on its own](#limitations-of-deploying-booking-on-its-own)
 - [Exploring the Booking Microservice I: Authentication and Pre-loaded Data](#exploring-the-booking-microservice-i-authentication-and-pre-loaded-data)
@@ -73,6 +74,19 @@ cd classroom-booking-service-2.0
 ```bash
 docker compose up --build
 ```
+
+## Configuration and environment variables
+
+This project externalizes configuration (Kafka topic names, JWT secret, database credentials, business rules such as opening times and booking limits) into environment variables, resolved via a `.env` file consumed by Docker Compose.
+
+For convenience, the `.env` file is committed to this repository with demo values, so the project can be started with a single `docker-compose up` command, with no manual setup required.
+
+This is a deliberate decision for a demo/portfolio project, not an oversight. In a real production environment:
+
+- The `.env` file would **not** be committed to version control.
+- Secrets (JWT key, database credentials) would be stored in a secure, access-controlled system designed for that purpose, instead of a plain text file, and injected into each service only at deploy time.
+
+Since no real infrastructure or user data is involved here, the values in `.env` are safe to expose publicly, and doing so keeps the project easy to run for anyone evaluating it.
 
 ## Tests
 
