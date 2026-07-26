@@ -121,7 +121,20 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-		</plugins>
-	</build>
-
+			
+			 <plugin>
+			      <groupId>org.apache.maven.plugins</groupId>
+			      <artifactId>maven-surefire-plugin</artifactId>
+			      <configuration>
+			        <environmentVariables>
+			          <JWT_SECRETKEY>MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaMDEyMzQ1Njc4OTA=</JWT_SECRETKEY>
+			          <KAFKA_TOPIC_NOTIFICATIONS>notifications</KAFKA_TOPIC_NOTIFICATIONS>
+			          <KAFKA_TOPIC_CLASSROOMS>classrooms</KAFKA_TOPIC_CLASSROOMS>
+			        </environmentVariables>
+			      </configuration>
+			    </plugin>
+			</plugins>
+		</build>
+	
+	
 </project>
