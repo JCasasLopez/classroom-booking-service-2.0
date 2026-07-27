@@ -110,9 +110,13 @@ mvn test
 
 ## Limitations of deploying Booking on its own
 
-As already mentioned at the very beginning of this README, the deployment described above only allows working with the Booking microservice on its own — the rest of the Classrooms application is left out. Apart from the obvious inability to work with data from other microservices (Users or Classrooms), the main shortcoming of this approach is that the user will never receive the notifications sent by the system. This is due to two reasons: the email associated with the JWT is a made-up address, and the Notification microservice — which reads the Kafka topic and actually sends the notifications — is not spun up.
+As already mentioned at the very beginning of this README, the deployment described above only allows working with the Booking microservice on its own — the rest of the Classrooms application is left out. 
 
-To explore the notifications, you can check the `notifications` Kafka topic (obviously, the topic is empty before you perform any action that trigger a notification, which are creating a booking, cancelling a booking, and creating a watch alert):
+Note that while the technical documentation details a production VPS deployment using **3 Kafka brokers** for fault tolerance and high availability, this single-service setup uses **only 1 Kafka broker** for local simplicity and reduced resource consumption.
+
+Apart from the obvious inability to work with data from other microservices (Users or Classrooms), the main shortcoming of this approach is that the user will never receive the notifications sent by the system. This is due to two reasons: the email associated with the JWT is a made-up address, and the Notification microservice — which reads the Kafka topic and actually sends the notifications — is not spun up.
+
+To explore the notifications, you can check the `notifications` Kafka topic (obviously, the topic is empty before you perform any action that triggers a notification, which are creating a booking, cancelling a booking, and creating a watch alert):
 
 ```bash
 docker exec -it kafka-broker bash
