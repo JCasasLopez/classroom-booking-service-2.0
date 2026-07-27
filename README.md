@@ -231,7 +231,7 @@ The system extracts the user ID from the JWT and searches the booking history fo
 <summary><b>Retrieve availability calendar by classroom</b></summary>
 
 ```bash
-curl --location 'http://localhost:9000/classroom-booking/availability-calendar?start=<FUTURE_DATE e.g. 2027-07-27T10:00:00>&finish=<FUTURE_DATE e.g. 2027-07-27T18:00:00>&idClassroom=1'
+curl --location 'http://localhost:9000/classroom-booking/searches/availability-calendar?start=<FUTURE_DATE e.g. 2027-07-27T10:00:00>&finish=<FUTURE_DATE e.g. 2027-07-27T18:00:00>&idClassroom=1'
 ```
 
 Replace `start` and `finish` with actual future dates in ISO-8601 format (`yyyy-MM-ddTHH:mm:ss`) before running the request. This endpoint is public and doesn't require a token.
