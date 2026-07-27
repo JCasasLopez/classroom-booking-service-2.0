@@ -92,7 +92,7 @@ Since no real infrastructure or user data is involved here, the values in `.env`
 
 Since the Booking microservice has a fairly complex business logic, the microservice functionalities are tested comprehensively, with both unit and integration tests. Integration tests use **Testcontainers**, so they spin up their own isolated MySQL and Kafka instances — no manual setup required, and they don't interfere with the `docker-compose.yml` environment used for manual exploration.
 
-Tests already run automatically as part of the deployment described above (no `-DskipTests` flag is used). To run them independently:
+Tests are skipped during the Docker build (`-DskipTests`) to keep `docker-compose up` fast for manual exploration of the running application. To run the full test suite:
 
 ```bash
 mvn test
