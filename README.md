@@ -8,7 +8,8 @@ The entire Classrooms application is deployed and available at [www.book-your-cl
 - [Purpose](#purpose)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
-- [Local Execution Prerequisites](#local-execution-prerequisites)
+- [Running with Docker (recommended)](#running-with-docker-recommended)
+- [Running locally, outside Docker](#running-locally-outside-docker)
 - [Deployment](#deployment)
 - [Configuration and environment variables](#configuration-and-environment-variables)
 - [Tests](#tests)
@@ -55,13 +56,22 @@ The purpose of this repository is to allow exploring the microservice individual
 - `classroom-shared-library` — shared DTOs, JWT validation, Kafka event payloads and global exception handling across the ecosystem.
 
 
-## Local Execution Prerequisites
+## Running with Docker (recommended)
 
-- **Java 17**
-- **Docker Desktop** — used to run MySQL and Kafka locally.
-- **Maven**
+Prerequisites: Docker Desktop only (see Deployment section).
 
-Note: this project depends on an internal shared library, which JitPack fetches automatically from the library's GitHub repository. MySQL and Kafka are also spun up via Docker (see `docker-compose.yml`).
+This builds the application (Maven and Java run inside the build container — nothing needs to be installed locally) and starts MySQL, Kafka and the microservice together.
+
+
+## Running locally, outside Docker
+
+Prerequisites:
+
+* Java 17
+* Maven
+* Docker Desktop — used to run MySQL and Kafka locally, even when the application itself runs outside a container.
+
+Note: this project depends on an internal shared library, fetched automatically by Maven via JitPack from the library's GitHub repository.
 
 ## Deployment
 
