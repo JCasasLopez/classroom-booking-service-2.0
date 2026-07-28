@@ -1,11 +1,13 @@
 package dev.jcasaslopez.booking.service;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import dev.jcasaslopez.booking.classroom.ClassroomValidator;
@@ -29,15 +31,19 @@ public class SearchServiceImpl implements SearchService {
 	private final SlotAvailabilityMapper slotAvailabilityMapper;
 	private final List<ClassroomEvent> classroomsStore;
 	private final WeeklySchedule weeklySchedule;
+	private final Duration timeSlotDuration;
+;
 	
 	public SearchServiceImpl(BookingRepository bookingRepository, ClassroomValidator classroomValidator,
 			SlotAvailabilityMapper slotAvailabilityMapper, List<ClassroomEvent> classroomsStore,
-			WeeklySchedule weeklySchedule) {
+			WeeklySchedule weeklySchedule, @Value("${time-slot.duration}") int timeSlotDuration) {
 		this.bookingRepository = bookingRepository;
 		this.classroomValidator = classroomValidator;
 		this.slotAvailabilityMapper = slotAvailabilityMapper;
 		this.classroomsStore = classroomsStore;
 		this.weeklySchedule = weeklySchedule;
+		this.timeSlotDuration =  Duration.ofMinutes(timeSlotDuration);
+;
 	}
 
 	@Override
@@ -81,8 +87,12 @@ public class SearchServiceImpl implements SearchService {
 	
 	@Override
 	public Long findBookingByClassroomAndTimePeriod(int idClassroom, LocalDateTime start, LocalDateTime finish) {
+	    validateStartAndFinish(start, finish);
+	    validateIsSingleTimeSlot(start, finish);
+	    
 		List<Booking> bookings = bookingRepository.findActiveBookingsForClassroomByPeriod(idClassroom, start, finish);
 		if(bookings.isEmpty()) {
+	        logger.error("No active booking found for classroom {} between {} and {}", idClassroom, start, finish);
 			throw new NoSuchBookingException("No active booking found for classroom " + idClassroom + " between " + start + " and " + finish);
 		} else if(bookings.size() > 1) {
 		    logger.error("Data integrity violation: more than 1 booking for the time period: {}", bookings.toString());
@@ -118,5 +128,14 @@ public class SearchServiceImpl implements SearchService {
 			throw new SlotOutOfOpeningHoursException("Start or finish out of opening hours");
 		}
 		
+	}
+	
+	private void validateIsSingleTimeSlot(LocalDateTime start, LocalDateTime finish) {
+	    Duration requested = Duration.between(start, finish);
+	    if (!requested.equals(timeSlotDuration)) {
+	    	 logger.error("Invalid search period: expected duration {} but got {} (start={}, finish={})",
+	                 timeSlotDuration, requested, start, finish);
+	        throw new IllegalArgumentException("The search period must match exactly the minimum time slot duration");
+	    }
 	}
 }
