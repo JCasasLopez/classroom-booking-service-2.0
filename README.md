@@ -17,6 +17,7 @@ The entire Classrooms application is deployed and available at [www.book-your-cl
 - [Exploring the Booking Microservice I: Authentication and Pre-loaded Data](#exploring-the-booking-microservice-i-authentication-and-pre-loaded-data)
 - [Exploring the Booking Microservice II: Endpoints](#exploring-the-booking-microservice-ii-endpoints)
 - [Swagger](#swagger)
+- [Contribution and License](#contribution-and-license)
 
 ## Purpose
 
@@ -294,3 +295,16 @@ Interactive API documentation is available via Swagger UI:
 `http://localhost:9000/swagger-ui/index.html`
 
 This allows you to explore and try out all endpoints directly from the browser, without needing `curl`.
+
+## Contribution and License
+### Contributing
+As this project is intended as a personal demo, external contributions are not being accepted at this time.
+
+### License
+This project is licensed under the MIT License.  
+See the [LICENSE](./LICENSE) file for details.
+
+## Contact
+Created by Jorge Casas López.  
+Email: [contact@jorgecasaslopez.dev](mailto:contact@jorgecasaslopez.dev) 
+
