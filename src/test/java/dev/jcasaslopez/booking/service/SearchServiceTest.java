@@ -20,11 +20,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
+import dev.jcasaslopez.booking.classroom.ClassroomValidator;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
 import dev.jcasaslopez.booking.repository.BookingRepository;
@@ -34,8 +33,9 @@ import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 public class SearchServiceTest {
 	
 	@Mock BookingRepository bookingRepository;
-	@Mock WeeklySchedule weeklySchedule;
-	@InjectMocks SearchServiceImpl searchService;
+	@Mock ClassroomValidator classroomValidator;
+	@Mock SlotAvailabilityMapper slotAvailabilityMapper;
+	SearchServiceImpl searchService;
 	
 	private WeeklySchedule buildTestWeeklySchedule() {
 	    List<String> hours = new ArrayList<> (List.of("09:00-22:00", "09:00-22:00", "09:00-22:00", "09:00-22:00", "09:00-22:00", "10:00-14:00", "CLOSED"));
@@ -70,8 +70,14 @@ public class SearchServiceTest {
 	
 	@BeforeEach
 	void setUp() {
-	    ReflectionTestUtils.setField(searchService, "classroomsStore", allClassrooms);
-	    ReflectionTestUtils.setField(searchService, "weeklySchedule", buildTestWeeklySchedule());
+		searchService = new SearchServiceImpl(
+				bookingRepository,
+				classroomValidator,
+				slotAvailabilityMapper,
+				allClassrooms,
+				buildTestWeeklySchedule(),
+				30
+		);
 	}
 	
 	@Test
