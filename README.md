@@ -1,6 +1,6 @@
 # Booking Microservice
 
-Booking microservice (v2.0) manages classroom reservations and watch alerts, as part of the Classrooms application — a distributed, event-driven system built with a microservices architecture (see full [technical documentation](#) for details).
+Booking microservice (v3.0) manages classroom reservations and watch alerts, as part of the Classrooms application — a distributed, event-driven system built with a microservices architecture (see full [technical documentation](#) for details).
 
 The entire Classrooms application is deployed and available at [www.book-your-classroom.com](https://www.book-your-classroom.com).
 
@@ -292,7 +292,7 @@ Returns the watch alerts belonging to the authenticated user (resolved from the 
 
 Interactive API documentation is available via Swagger UI:
 
-`http://localhost:9000/swagger-ui/index.html`
+[http://localhost:9000/classroom-booking/swagger-ui/index.html](http://localhost:9000/classroom-booking/swagger-ui/index.html)
 
 This allows you to explore and try out all endpoints directly from the browser, without needing `curl`.
 
