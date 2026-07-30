@@ -24,9 +24,18 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 	private final JwtService jwtService;
 	private final String base64SecretKey;
 	
-	public AuthenticationFilter(JwtService jwtService, 	@Value("${jwt.secretKey}") String base64SecretKey) {
+	public AuthenticationFilter(JwtService jwtService, @Value("${jwt.secretKey}") String base64SecretKey) {
 		this.jwtService = jwtService;
 		this.base64SecretKey = base64SecretKey;
+	}
+	
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) {
+		String path = request.getRequestURI();
+		return path.contains("/searches/") 
+			|| path.contains("/generate-token")
+			|| path.contains("/swagger-ui") 
+			|| path.contains("/v3/api-docs");
 	}
 
 	@Override
@@ -34,15 +43,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 
 		logger.debug("Entering AuthenticationFilter...");
-		
-		String requestURI = request.getRequestURI();
-
-	    // If it is a search, allow the request to go through without verifying the token.
-		if (requestURI.contains("/searches/") || requestURI.contains("/generate-token")) {
-		    UserContext.clear();
-		    filterChain.doFilter(request, response);
-		    return;
-		}
 		
 		String authHeader = request.getHeader("Authorization");
 
@@ -54,15 +54,14 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 		    	// The real message that Spring will return is simply "Unauthorized" (see AuthFilterIntegrationTest).
 		        response.sendError(401, "Authentication failed");
 		        return; 
-		    }	    
+		    }    
 		    // We need access to user's email address to send notifications.
 		    
-		    UserContext.setContext(validationResult.get(), jwtService.extractIdUser(authHeader, base64SecretKey));		    
+		    UserContext.setContext(validationResult.get(), jwtService.extractIdUser(authHeader, base64SecretKey));    
 		    filterChain.doFilter(request, response);
 
 		} finally {
 		    UserContext.clear(); 
 		}
 	}
-
 }
