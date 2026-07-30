@@ -17,11 +17,18 @@ import dev.jcasaslopez.booking.service.SearchService;
 import dev.jcasaslopez.booking.util.Endpoints;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 @Validated
 @RestController
+@Tag(name = "Search", description = "Operations for querying classroom availability and existing bookings")	
 public class SearchController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(SearchController.class);
@@ -32,6 +39,29 @@ public class SearchController {
 		this.searchService = searchService;
 	}
 
+	@Operation(
+			summary = "Retrieves the availability calendar for a classroom",
+			description = """
+					Returns the time-slot grid (booked/free) for the given classroom between `start` and `finish`.
+					Both must fall on the same day and within opening hours.
+					"""
+			)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "Availability calendar retrieved successfully",
+				content = @Content(schema = @Schema(implementation = StandardResponse.class))),
+		@ApiResponse(responseCode = "400", description = """
+				Bad request. Possible causes:
+				- idClassroom missing or not positive
+				- start/finish missing
+				- start is not before finish
+				- Search range is in the past
+				- start and finish are not on the same day
+				- Range falls outside opening hours, or the center is closed that day
+				""",
+				content = @Content(schema = @Schema(implementation = StandardResponse.class))),
+		@ApiResponse(responseCode = "404", description = "Classroom does not exist",
+		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
+	})
 	@GetMapping(value=Endpoints.AVAILABILITY_CALENDAR)
 	public ResponseEntity<StandardResponse<List<SlotStatusDto>>> availabilityCalendar(
 			@RequestParam @NotNull LocalDateTime start,
@@ -44,6 +74,26 @@ public class SearchController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
+	@Operation(
+			summary = "Retrieves classrooms available for a period, optionally filtered by features",
+			description = """
+					Returns all classrooms with no active booking overlapping `start`–`finish`.
+					Filters are optional: set `seats` to 0 to skip the seats filter, and `projector`/`speakers` to false to skip those filters.
+					"""
+			)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "Available classrooms retrieved successfully",
+				content = @Content(schema = @Schema(implementation = StandardResponse.class))),
+		@ApiResponse(responseCode = "400", description = """
+				Bad request. Possible causes:
+				- start/finish/projector/speakers missing
+				- start is not before finish
+				- Search range is in the past
+				- start and finish are not on the same day
+				- Range falls outside opening hours, or the center is closed that day
+				""",
+				content = @Content(schema = @Schema(implementation = StandardResponse.class)))
+	})
 	@GetMapping(value=Endpoints.CLASSROOMS_AVAILABILITY)
 	public ResponseEntity<StandardResponse<List<ClassroomEvent>>> classroomsAvailable(
 	        @RequestParam @NotNull LocalDateTime start,
@@ -62,6 +112,33 @@ public class SearchController {
 	
 	// When creating a watch alert, user hits an already booked time slot on the front-end. This endpoint returns the idBooking
 	// corresponding to that booking, which is the parameter needed to create a watch alert.
+	@Operation(
+			summary = "Retrieves the booking ID occupying a given time slot",
+			description = """
+					Returns the `idBooking` of the active booking that occupies the exact slot `start`–`finish` for the given classroom.
+					Used by the front-end when a user clicks an already-booked slot, so a watch alert can be created for that booking.
+					`finish - start` must match exactly the configured minimum time-slot duration.
+					"""
+			)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "Booking id retrieved successfully",
+				content = @Content(schema = @Schema(implementation = StandardResponse.class))),
+		@ApiResponse(responseCode = "400", description = """
+				Bad request. Possible causes:
+				- idClassroom missing or not positive
+				- start/finish missing
+				- start is not before finish
+				- Search range is in the past
+				- start and finish are not on the same day
+				- Range falls outside opening hours, or the center is closed that day
+				- finish - start does not match exactly the minimum time-slot duration
+				""",
+				content = @Content(schema = @Schema(implementation = StandardResponse.class))),
+		@ApiResponse(responseCode = "404", description = "No active booking found for that classroom and time slot",
+		content = @Content(schema = @Schema(implementation = StandardResponse.class))),
+		@ApiResponse(responseCode = "500", description = "Data integrity error – more than one active booking found for the same slot",
+		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
+	})
 	@GetMapping(value=Endpoints.BOOKING_BY_SLOT)
 	public ResponseEntity<StandardResponse<Long>> bookingBySlot(
 			@RequestParam @NotNull LocalDateTime start,

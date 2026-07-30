@@ -17,11 +17,19 @@ import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
 import dev.jcasaslopez.booking.service.WatchAlertService;
 import dev.jcasaslopez.booking.util.Endpoints;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 @Validated
 @RestController
+@Tag(name = "Watch Alerts", description = "Operations for subscribing to notifications when a booked classroom slot becomes free")
 public class WatchAlertController {
 
 private static final Logger logger = LoggerFactory.getLogger(WatchAlertController.class);
@@ -32,6 +40,28 @@ private static final Logger logger = LoggerFactory.getLogger(WatchAlertControlle
 		this.service = service;
 	}
 
+	@Operation(
+			summary = "Creates a watch alert for a booked slot",
+			description = """
+					Subscribes the authenticated user to be notified if the given booking is cancelled.
+					The booking must exist and be currently ACTIVE.
+					"""
+			)
+	@ApiResponses({
+		@ApiResponse(responseCode = "201", description = "Watch alert created successfully",
+				content = @Content(schema = @Schema(implementation = StandardResponse.class))),
+		@ApiResponse(responseCode = "400", description = """
+				Bad request. Possible causes:
+				- idBooking missing or not positive
+				- Booking exists but is not ACTIVE
+				""",
+				content = @Content(schema = @Schema(implementation = StandardResponse.class))),
+		@ApiResponse(responseCode = "401", description = "Unauthorized – missing or invalid access token",
+		content = @Content(schema = @Schema(implementation = StandardResponse.class))),
+		@ApiResponse(responseCode = "404", description = "Booking not found, or its classroom no longer exists",
+		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
+	})
+	@SecurityRequirement(name = "bearerAuth")
 	@PostMapping(value=Endpoints.ADD_WATCH_ALERT)
 	public ResponseEntity<StandardResponse<WatchAlertResponseDto>> addWatchAlert(@RequestParam @NotNull @Positive Long idBooking) {
 		logger.debug("POST /watch-alerts?idBooking={}", idBooking);
@@ -43,6 +73,19 @@ private static final Logger logger = LoggerFactory.getLogger(WatchAlertControlle
 	
 	// No need to pass any user information as a parameter, as the end-point needs the user to be authenticated, 
 	// and the user's email is held in UserContext.
+	@Operation(
+			summary = "Retrieves the authenticated user's watch alerts for a time period",
+			description = "Returns the watch alerts created by the authenticated user (resolved from the security context) between `startSearch` and `finishSearch`."
+			)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "Watch alerts retrieved successfully",
+				content = @Content(schema = @Schema(implementation = StandardResponse.class))),
+		@ApiResponse(responseCode = "400", description = "startSearch/finishSearch missing, or startSearch is not before finishSearch",
+		content = @Content(schema = @Schema(implementation = StandardResponse.class))),
+		@ApiResponse(responseCode = "401", description = "Unauthorized – missing or invalid access token",
+		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
+	})
+	@SecurityRequirement(name = "bearerAuth")
 	@GetMapping(value=Endpoints.USER_WATCH_ALERTS)
 	public ResponseEntity<StandardResponse<List<WatchAlertResponseDto>>> getWatchAlertsByUser(@RequestParam @NotNull LocalDateTime startSearch, 
 			@RequestParam @NotNull LocalDateTime finishSearch) {
