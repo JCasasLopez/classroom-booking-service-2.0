@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
-import dev.jcasaslopez.booking.util.Endpoints;
+import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
@@ -32,7 +32,7 @@ public class ClassroomsAvailableEndpointTest extends BaseIntegrationTest {
 		boolean projector = false;
 		boolean speakers = true;
 
-		String classroomsAvailableUrl = UriComponentsBuilder.fromPath(Endpoints.CLASSROOMS_AVAILABILITY)
+		String classroomsAvailableUrl = UriComponentsBuilder.fromPath(BookingEndpoints.CLASSROOMS_AVAILABILITY)
 				.queryParam("start", TestHelper.generateStartSearch())
 				.queryParam("finish", TestHelper.generateFinishSearch(300))
 				.queryParam("seats", seats)

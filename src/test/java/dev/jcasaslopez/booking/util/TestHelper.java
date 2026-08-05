@@ -19,22 +19,24 @@ import org.springframework.http.ResponseEntity;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
+import dev.jcasaslopez.classroom.shared.security.GenerateJwt;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 public final class TestHelper {
 	
 	private static final int USER_ID = 1;
+	private static final String secretKey = "MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaMDEyMzQ1Njc4OTA=";
 
 	public static ResponseEntity<StandardResponse<BookingResponseDto>> createBooking
 								(TestRestTemplate restTemplate, int idUser, int classroomId, int slotDuration) {
 		BookingRequestDto bookingDto = new BookingRequestDto(idUser, classroomId, TestHelper.generateBookingSlots(slotDuration));
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(AuthTestHelper.generateTestJwt(USER_ID));
+		headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
 		HttpEntity<BookingRequestDto> httpBookingRequest = new HttpEntity<>(bookingDto, headers);
 
 		return restTemplate.exchange(
-				Endpoints.BOOK, 
+				BookingEndpoints.BOOK, 
 				HttpMethod.POST, 
 				httpBookingRequest, 
 				new ParameterizedTypeReference<StandardResponse<BookingResponseDto>>() {} 

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import dev.jcasaslopez.booking.dto.SlotStatusDto;
 import dev.jcasaslopez.booking.service.SearchService;
-import dev.jcasaslopez.booking.util.Endpoints;
+import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -62,7 +62,7 @@ public class SearchController {
 		@ApiResponse(responseCode = "404", description = "Classroom does not exist",
 		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	})
-	@GetMapping(value=Endpoints.AVAILABILITY_CALENDAR)
+	@GetMapping(value=BookingEndpoints.AVAILABILITY_CALENDAR)
 	public ResponseEntity<StandardResponse<List<SlotStatusDto>>> availabilityCalendar(
 			@RequestParam @NotNull LocalDateTime start,
 	        @RequestParam @NotNull LocalDateTime finish,
@@ -94,7 +94,7 @@ public class SearchController {
 				""",
 				content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	})
-	@GetMapping(value=Endpoints.CLASSROOMS_AVAILABILITY)
+	@GetMapping(value=BookingEndpoints.CLASSROOMS_AVAILABILITY)
 	public ResponseEntity<StandardResponse<List<ClassroomEvent>>> classroomsAvailable(
 	        @RequestParam @NotNull LocalDateTime start,
 	        @RequestParam @NotNull LocalDateTime finish,
@@ -139,7 +139,7 @@ public class SearchController {
 		@ApiResponse(responseCode = "500", description = "Data integrity error – more than one active booking found for the same slot",
 		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	})
-	@GetMapping(value=Endpoints.BOOKING_BY_SLOT)
+	@GetMapping(value=BookingEndpoints.BOOKING_BY_SLOT)
 	public ResponseEntity<StandardResponse<Long>> bookingBySlot(
 			@RequestParam @NotNull LocalDateTime start,
 	        @RequestParam @NotNull LocalDateTime finish,

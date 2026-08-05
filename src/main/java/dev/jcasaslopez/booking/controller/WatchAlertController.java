@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
 import dev.jcasaslopez.booking.service.WatchAlertService;
-import dev.jcasaslopez.booking.util.Endpoints;
+import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -62,7 +62,7 @@ private static final Logger logger = LoggerFactory.getLogger(WatchAlertControlle
 		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	})
 	@SecurityRequirement(name = "bearerAuth")
-	@PostMapping(value=Endpoints.ADD_WATCH_ALERT)
+	@PostMapping(value=BookingEndpoints.ADD_WATCH_ALERT)
 	public ResponseEntity<StandardResponse<WatchAlertResponseDto>> addWatchAlert(@RequestParam @NotNull @Positive Long idBooking) {
 		logger.debug("POST /watch-alerts?idBooking={}", idBooking);
 		WatchAlertResponseDto watchAlert = service.addWatchAlert(idBooking);
@@ -86,7 +86,7 @@ private static final Logger logger = LoggerFactory.getLogger(WatchAlertControlle
 		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	})
 	@SecurityRequirement(name = "bearerAuth")
-	@GetMapping(value=Endpoints.USER_WATCH_ALERTS)
+	@GetMapping(value=BookingEndpoints.USER_WATCH_ALERTS)
 	public ResponseEntity<StandardResponse<List<WatchAlertResponseDto>>> getWatchAlertsByUser(@RequestParam @NotNull LocalDateTime startSearch, 
 			@RequestParam @NotNull LocalDateTime finishSearch) {
 		logger.debug("GET /watch-alerts?start={}&finish={}", startSearch, finishSearch);

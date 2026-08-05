@@ -18,7 +18,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
 import dev.jcasaslopez.booking.dto.SlotStatusDto;
-import dev.jcasaslopez.booking.util.Endpoints;
+import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
@@ -35,7 +35,7 @@ public class AvailabilityCalendarEndpointTest extends BaseIntegrationTest {
 		// Arrange
 		HttpHeaders headers = new HttpHeaders();
 		
-		String availabilityCalendarUrl = UriComponentsBuilder.fromPath(Endpoints.AVAILABILITY_CALENDAR)
+		String availabilityCalendarUrl = UriComponentsBuilder.fromPath(BookingEndpoints.AVAILABILITY_CALENDAR)
 				.queryParam("start", TestHelper.generateStartSearch())
 				.queryParam("finish", TestHelper.generateFinishSearch(300))
 				.queryParam("idClassroom", 1)

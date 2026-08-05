@@ -18,9 +18,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
-import dev.jcasaslopez.booking.util.AuthTestHelper;
-import dev.jcasaslopez.booking.util.Endpoints;
+import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
+import dev.jcasaslopez.classroom.shared.security.GenerateJwt;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 // No negative idUser test needed: @Positive validation and its handling by the GlobalExceptionHandler
@@ -31,6 +31,7 @@ public class BookingsByUserEndpointTest extends BaseIntegrationTest {
 	private static final int SLOT_DURATION = 30;
 	private static final int CLASSROOM_ID = 1;
 	private static final int USER_ID = 1;
+	private static final String secretKey = "MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaMDEyMzQ1Njc4OTA=";
 	
 	@Test
 	void bookings_by_user_endpoint_returns_the_expected_response() {
@@ -39,8 +40,8 @@ public class BookingsByUserEndpointTest extends BaseIntegrationTest {
 		
 		// Act
 		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(AuthTestHelper.generateTestJwt(USER_ID));
-		String userBookingsUrl = UriComponentsBuilder.fromPath(Endpoints.USER_BOOKINGS)
+		headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
+		String userBookingsUrl = UriComponentsBuilder.fromPath(BookingEndpoints.USER_BOOKINGS)
 				.queryParam("idUser", USER_ID)
 				.toUriString();
 		HttpEntity<Void> httpRequest = new HttpEntity<>(headers); 

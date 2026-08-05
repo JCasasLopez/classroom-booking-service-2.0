@@ -19,9 +19,9 @@ import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.NoSuchBookingException;
-import dev.jcasaslopez.booking.util.AuthTestHelper;
-import dev.jcasaslopez.booking.util.Endpoints;
+import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
+import dev.jcasaslopez.classroom.shared.security.GenerateJwt;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 public class CancelEndpointTest extends BaseIntegrationTest {
@@ -29,6 +29,7 @@ public class CancelEndpointTest extends BaseIntegrationTest {
 	private static final int SLOT_DURATION = 30;
 	private static final int CLASSROOM_ID = 1;
 	private static final int USER_ID = 1;
+	private static final String secretKey = "MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaMDEyMzQ1Njc4OTA=";
 	
 	@Test
 	void cancel_endpoint_returns_the_expected_response() {
@@ -38,9 +39,9 @@ public class CancelEndpointTest extends BaseIntegrationTest {
 		
 		// Act
 		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(AuthTestHelper.generateTestJwt(USER_ID));
+		headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
 		Long idBooking = httpResponse.getBody().details().idBooking(); 
-		String cancelUrl = UriComponentsBuilder.fromPath(Endpoints.CANCEL)
+		String cancelUrl = UriComponentsBuilder.fromPath(BookingEndpoints.CANCEL)
 				.queryParam("idBooking", idBooking)
 				.toUriString();
 		HttpEntity<Void> httpCancelRequest = new HttpEntity<>(headers); 
@@ -63,11 +64,11 @@ public class CancelEndpointTest extends BaseIntegrationTest {
 	@Test
 	void cancel_endpoint_returns_400_when_idBooking_is_invalid() {
 	    // Arrange
-	    String cancelUrl = UriComponentsBuilder.fromPath(Endpoints.CANCEL)
+	    String cancelUrl = UriComponentsBuilder.fromPath(BookingEndpoints.CANCEL)
 	            .queryParam("idBooking", -1)
 	            .toUriString();
 	    HttpHeaders headers = new HttpHeaders();
-	    headers.setBearerAuth(AuthTestHelper.generateTestJwt(USER_ID));
+	    headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
 	    HttpEntity<Void> request = new HttpEntity<>(headers);
 
 	    // Act
@@ -87,11 +88,11 @@ public class CancelEndpointTest extends BaseIntegrationTest {
 	@Test
 	void cancel_endpoint_returns_404_when_booking_not_found() {
 	    // Arrange
-	    String cancelUrl = UriComponentsBuilder.fromPath(Endpoints.CANCEL)
+	    String cancelUrl = UriComponentsBuilder.fromPath(BookingEndpoints.CANCEL)
 	            .queryParam("idBooking", 9999)
 	            .toUriString();
 	    HttpHeaders headers = new HttpHeaders();
-	    headers.setBearerAuth(AuthTestHelper.generateTestJwt(USER_ID));
+	    headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
 	    HttpEntity<Void> request = new HttpEntity<>(headers);
 
 	    // Act

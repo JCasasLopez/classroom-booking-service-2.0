@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.service.BookingService;
-import dev.jcasaslopez.booking.util.Endpoints;
+import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 import dev.jcasaslopez.classroom.shared.utility.UserContext;
 import io.swagger.v3.oas.annotations.Operation;
@@ -77,7 +77,7 @@ public class BookingController {
 		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	})
 	@SecurityRequirement(name = "bearerAuth")
-	@PostMapping(value=Endpoints.BOOK, consumes=MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value=BookingEndpoints.BOOK, consumes=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<StandardResponse<BookingResponseDto>> book(@Valid @NotNull @RequestBody BookingRequestDto booking){
 		logger.debug("POST /bookings - idUser={}, idClassroom={}", booking.idUser(), booking.idClassroom());
 		BookingResponseDto bookingConfirmed = bookingService.book(booking);
@@ -108,7 +108,7 @@ public class BookingController {
 		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	})
 	@SecurityRequirement(name = "bearerAuth")
-	@PatchMapping(value=Endpoints.CANCEL)
+	@PatchMapping(value=BookingEndpoints.CANCEL)
 	public ResponseEntity<StandardResponse<Void>> cancelBooking(@RequestParam @Positive Long idBooking) {
 		logger.debug("PATCH /bookings/cancel?idBooking={}", idBooking);
 		bookingService.cancel(idBooking);
@@ -128,7 +128,7 @@ public class BookingController {
 		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	})
 	@SecurityRequirement(name = "bearerAuth")
-	@GetMapping(value=Endpoints.USER_BOOKINGS)
+	@GetMapping(value=BookingEndpoints.USER_BOOKINGS)
 	public ResponseEntity<StandardResponse<List<BookingResponseDto>>> bookingsByUser(){
 		int idUser = UserContext.getIdUser();
 		logger.debug("GET /bookings - idUser={}", idUser);

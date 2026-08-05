@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
-import dev.jcasaslopez.booking.util.Endpoints;
+import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
 
 // Happy path and "/searches/" bypass are not tested here: they're already covered by BookEndpointTest 
@@ -51,7 +51,7 @@ public class AuthFilterIntegrationTest extends BaseIntegrationTest{
 		// 		"path": ...
 		// 		}
 		ResponseEntity<String> httpResponse = testRestTemplate.exchange(
-				Endpoints.BOOK, 
+				BookingEndpoints.BOOK, 
 				HttpMethod.POST, 
 				httpBookingRequest, 
 				String.class 

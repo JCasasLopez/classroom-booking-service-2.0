@@ -1,6 +1,6 @@
 package dev.jcasaslopez.booking.util;
 
-public class Endpoints {
+public class BookingEndpoints {
 	
 	public static final String BOOK = "/bookings";
 	public static final String CANCEL = "/bookings/cancel";
@@ -14,5 +14,5 @@ public class Endpoints {
 	public static final String USER_WATCH_ALERTS = "/watch-alerts";
 	
 	public static final String GENERATE_TOKEN = "/generate-token";
-	
+
 }

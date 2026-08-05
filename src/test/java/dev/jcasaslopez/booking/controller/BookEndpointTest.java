@@ -18,9 +18,9 @@ import org.springframework.http.ResponseEntity;
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.util.AuthTestHelper;
-import dev.jcasaslopez.booking.util.Endpoints;
+import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
+import dev.jcasaslopez.classroom.shared.security.GenerateJwt;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 public class BookEndpointTest extends BaseIntegrationTest {
@@ -28,6 +28,7 @@ public class BookEndpointTest extends BaseIntegrationTest {
 	private static final int SLOT_DURATION = 30;
 	private static final int CLASSROOM_ID = 1;
 	private static final int USER_ID = 1;
+	private static final String secretKey = "MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaMDEyMzQ1Njc4OTA=";
     
     @Test
 	void book_endpoint_returns_the_expected_response() {
@@ -56,13 +57,13 @@ public class BookEndpointTest extends BaseIntegrationTest {
 
     @Test
     void book_endpoint_returns_400_when_body_is_missing() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(AuthTestHelper.generateTestJwt(USER_ID));
+        HttpHeaders headers = new HttpHeaders();        
+        headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> request = new HttpEntity<>(headers);
 
         ResponseEntity<StandardResponse<String>> httpResponse = testRestTemplate.exchange(
-		        Endpoints.BOOK, 
+		        BookingEndpoints.BOOK, 
 		        HttpMethod.POST, 
 		        request, 
 		        new ParameterizedTypeReference<StandardResponse<String>>() {} 
@@ -84,12 +85,12 @@ public class BookEndpointTest extends BaseIntegrationTest {
             """;
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(AuthTestHelper.generateTestJwt(USER_ID));
+        headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> request = new HttpEntity<>(body, headers);
 
         ResponseEntity<StandardResponse<String>> httpResponse = testRestTemplate.exchange(
-		        Endpoints.BOOK, 
+		        BookingEndpoints.BOOK, 
 		        HttpMethod.POST, 
 		        request, 
 		        new ParameterizedTypeReference<StandardResponse<String>>() {} 

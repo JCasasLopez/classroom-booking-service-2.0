@@ -24,9 +24,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
-import dev.jcasaslopez.booking.util.AuthTestHelper;
-import dev.jcasaslopez.booking.util.Endpoints;
+import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
+import dev.jcasaslopez.classroom.shared.security.GenerateJwt;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 // Controller parameter validation and the following exceptions are already covered
@@ -41,6 +41,7 @@ public class WatchAlertEndpointsTest extends BaseIntegrationTest {
 	private static final int SLOT_DURATION = 30;
 	private static final int CLASSROOM_ID = 1;
 	private static final int USER_ID = 1;
+	private static final String secretKey = "MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaMDEyMzQ1Njc4OTA=";
 
 	@Test
 	@Order(1)
@@ -69,8 +70,8 @@ public class WatchAlertEndpointsTest extends BaseIntegrationTest {
 
     	// Act
     	HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(AuthTestHelper.generateTestJwt(USER_ID));
-    	String getWatchAlertsUrl = UriComponentsBuilder.fromPath(Endpoints.USER_WATCH_ALERTS)
+		headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
+    	String getWatchAlertsUrl = UriComponentsBuilder.fromPath(BookingEndpoints.USER_WATCH_ALERTS)
     			.queryParam("startSearch", TestHelper.generateStartSearch())
     			.queryParam("finishSearch", TestHelper.generateFinishSearch(300))
     			.toUriString();
@@ -97,12 +98,12 @@ public class WatchAlertEndpointsTest extends BaseIntegrationTest {
     private ResponseEntity<StandardResponse<WatchAlertResponseDto>> addWatchAlert(BookingResponseDto bookingResult){
     	Long idBooking = bookingResult.idBooking(); 
     	
-		String addWatchAlertUrl = UriComponentsBuilder.fromPath(Endpoints.ADD_WATCH_ALERT)
+		String addWatchAlertUrl = UriComponentsBuilder.fromPath(BookingEndpoints.ADD_WATCH_ALERT)
 				.queryParam("idBooking", idBooking)
 				.toUriString();
 		
 		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(AuthTestHelper.generateTestJwt(USER_ID));
+		headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
 		HttpEntity<Void> httpRequest = new HttpEntity<>(headers); 
 		
 		return testRestTemplate.exchange(

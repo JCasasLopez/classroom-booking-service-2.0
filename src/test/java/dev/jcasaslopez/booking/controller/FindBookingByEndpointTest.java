@@ -21,7 +21,7 @@ import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.mapper.BookingMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
-import dev.jcasaslopez.booking.util.Endpoints;
+import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
 import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
@@ -74,7 +74,7 @@ public class FindBookingByEndpointTest extends BaseIntegrationTest {
     
 	private ResponseEntity<StandardResponse<Long>> getHttpResponse(){
 		HttpHeaders headers = new HttpHeaders();
-		String bookingBySlotUrl = UriComponentsBuilder.fromPath(Endpoints.BOOKING_BY_SLOT)
+		String bookingBySlotUrl = UriComponentsBuilder.fromPath(BookingEndpoints.BOOKING_BY_SLOT)
 				.queryParam("start", TestHelper.generateStartSearch())
 				.queryParam("finish", TestHelper.generateFinishSearch(30))
 				.queryParam("idClassroom", 1)
