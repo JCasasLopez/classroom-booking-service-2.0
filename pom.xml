@@ -55,9 +55,9 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>dev.jcasaslopez.classroom</groupId>
+			<groupId>com.github.jcasaslopez</groupId>
 			<artifactId>classroom-shared-library</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
+			<version>0.0.3</version>
 		</dependency>
 
 		<!-- Test -->
@@ -135,6 +135,7 @@
 			          <JWT_SECRETKEY>MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaMDEyMzQ1Njc4OTA=</JWT_SECRETKEY>
 			          <KAFKA_TOPIC_NOTIFICATIONS>notifications</KAFKA_TOPIC_NOTIFICATIONS>
 			          <KAFKA_TOPIC_CLASSROOMS>classrooms</KAFKA_TOPIC_CLASSROOMS>
+			          <FRONTEND_URL>http://localhost:4200</FRONTEND_URL>
 			        </environmentVariables>
 			      </configuration>
 			    </plugin>
