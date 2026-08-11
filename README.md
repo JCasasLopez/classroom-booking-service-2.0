@@ -113,7 +113,7 @@ mvn test
 
 As already mentioned at the very beginning of this README, the deployment described above only allows working with the Booking microservice on its own — the rest of the Classrooms application is left out. 
 
-Note that while the technical documentation details a production VPS deployment using **3 Kafka brokers** for fault tolerance and high availability, this single-service setup uses **only 1 Kafka broker** for local simplicity and reduced resource consumption.
+Note that while the technical documentation details a production deployment using **2 Kafka brokers** (classrooms and notifications), with 3 replications each for fault tolerance, this single-service setup uses **only 1 Kafka broker** (classrooms, which fulfills both roles) with only one replication for local simplicity.
 
 Apart from the obvious inability to work with data from other microservices (Users or Classrooms), the main shortcoming of this approach is that the user will never receive the notifications sent by the system. This is due to two reasons: the email associated with the JWT is a made-up address, and the Notification microservice — which reads the Kafka topic and actually sends the notifications — is not spun up.
 
