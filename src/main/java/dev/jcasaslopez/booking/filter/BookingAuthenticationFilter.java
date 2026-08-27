@@ -1,13 +1,12 @@
 package dev.jcasaslopez.booking.filter;
 
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import dev.jcasaslopez.booking.util.BookingEndpoints;
-import dev.jcasaslopez.classroom.shared.domain.UserInfo;
+import dev.jcasaslopez.classroom.shared.domain.AuthResponse;
 import dev.jcasaslopez.classroom.shared.enums.TokenType;
 import dev.jcasaslopez.classroom.shared.filter.AuthenticationFilterBase;
 import dev.jcasaslopez.classroom.shared.security.JwtService;
@@ -34,7 +33,7 @@ public class BookingAuthenticationFilter extends AuthenticationFilterBase {
 	    }
 
 	    @Override
-	    protected Optional<UserInfo> validateToken(String authHeader) {
+	    protected AuthResponse validateToken(String authHeader) {
 	        return jwtService.validateJwt(authHeader, base64SecretKey, TokenType.ACCESS);
 	    }
 
