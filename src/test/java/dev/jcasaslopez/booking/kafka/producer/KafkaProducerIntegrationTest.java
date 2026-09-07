@@ -1,4 +1,4 @@
-package dev.jcasaslopez.booking.kafka.consumer;
+package dev.jcasaslopez.booking.kafka.producer;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -16,7 +16,7 @@ import dev.jcasaslopez.booking.util.KafkaTestHelper;
 import dev.jcasaslopez.booking.util.TestHelper;
 import dev.jcasaslopez.classroom.shared.event.NotificationEvent;
 
-public class KafkaConsumerIntegrationTest extends BaseIntegrationTest {
+public class KafkaProducerIntegrationTest extends BaseIntegrationTest {
 	
 	@Value("${kafka.topic.name.notifications}") private String topicName;
 	
