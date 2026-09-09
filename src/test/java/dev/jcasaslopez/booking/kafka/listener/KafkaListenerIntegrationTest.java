@@ -41,11 +41,11 @@ public class KafkaListenerIntegrationTest extends BaseIntegrationTest {
 		.pollInterval(500, TimeUnit.MILLISECONDS)
 		.untilAsserted(() -> {
 			ClassroomEvent foundClassroom = classroomsStore.stream()
-					.filter(c -> c.getIdClassroom() == classroomId)
+					.filter(c -> c.idClassroom() == classroomId)
 					.findAny()
 					.orElseThrow();
 
-			assertEquals(expectedName, foundClassroom.getName());
+			assertEquals(expectedName, foundClassroom.name());
 		});
 	}
 }

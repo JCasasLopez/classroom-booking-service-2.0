@@ -68,7 +68,7 @@ public class SearchServiceImpl implements SearchService {
 	    validateStartAndFinish(start, finish);
 	    List<Integer> occupiedClassrooms = bookingRepository.findOccupiedClassroomsbyPeriod(start, finish);
 		return classroomsStore.stream()
-	            .filter(classroom -> !occupiedClassrooms.contains(classroom.getIdClassroom()))
+	            .filter(classroom -> !occupiedClassrooms.contains(classroom.idClassroom()))
 	            .toList();
 	}
 
@@ -79,9 +79,9 @@ public class SearchServiceImpl implements SearchService {
 		 logger.info("Fetching available classrooms from {} to {} with features: seats={}, projector={}, speakers={}", 
 		            start, finish, seats, projector, speakers);
 		return classroomsAvailableByPeriod(start, finish).stream()
-				.filter(c -> c.getSeats() >= seats)
-				.filter(c -> projector ? c.getProjector() : true)
-				.filter(c -> speakers ? c.getSpeakers() : true)
+				.filter(c -> c.seats() >= seats)
+				.filter(c -> projector ? c.projector() : true)
+				.filter(c -> speakers ? c.speakers() : true)
 				.toList();
 	}
 	

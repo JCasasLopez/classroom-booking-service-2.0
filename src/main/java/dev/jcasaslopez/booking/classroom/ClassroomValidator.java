@@ -18,7 +18,7 @@ public class ClassroomValidator {
 
 	    public void validateClassroomExists(int idClassroom) {
 	        classroomsStore.stream()
-	            .filter(c -> c.getIdClassroom() == idClassroom)
+	            .filter(c -> c.idClassroom() == idClassroom)
 	            .findFirst()
 	            .orElseThrow(() -> new NoSuchClassroomException("Classroom not found: " + idClassroom));
 	    }

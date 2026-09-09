@@ -93,7 +93,7 @@ public class SearchServiceTest {
 		assertAll(
 			    () -> assertEquals(4, availableClassrooms.size()),
 			    () -> assertTrue(availableClassrooms.stream()
-			            .map(ClassroomEvent::getIdClassroom)
+			            .map(ClassroomEvent::idClassroom)
 			            .toList()
 			            .containsAll(List.of(3, 5, 7, 8)))
 			);
@@ -114,7 +114,7 @@ public class SearchServiceTest {
 		assertAll(
 			    () -> assertEquals(expectedIds.size(), availableClassrooms.size()),
 			    () -> assertTrue(availableClassrooms.stream()
-			            .map(ClassroomEvent::getIdClassroom)
+			            .map(ClassroomEvent::idClassroom)
 			            .toList()
 			            .containsAll(expectedIds))
 			);

@@ -101,7 +101,7 @@ public class BookingServiceTest {
 		// Arrange
 		BookingRequestDto request = new BookingRequestDto(USER_ID, CLASSROOM_ID, new ArrayList<> (List.of(START, SLOT_2, SLOT_3)));
 		Booking bookingEntity = new Booking(0, USER_ID, CLASSROOM_ID, START, EXPECTED_FINISH, LocalDateTime.now(), BookingStatus.ACTIVE);
-		String classroomName = allClassrooms.get(CLASSROOM_ID).getName();
+		String classroomName = allClassrooms.get(CLASSROOM_ID).name();
 		when(bookingRepository.save(any(Booking.class))).thenReturn(bookingEntity);
 		when(mapper.toResponseDto(any(Booking.class), any(List.class))).thenReturn
 								(new BookingResponseDto(4, classroomName, START, EXPECTED_FINISH, BookingStatus.ACTIVE));

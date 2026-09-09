@@ -79,9 +79,9 @@ public class EventPublisherImpl implements EventPublisher {
 	private String classroomName(int idClassroom) {
 		logger.debug("Searching classroom name...");
 		return classroomsStore.stream()
-				.filter(classroom -> classroom.getIdClassroom() == idClassroom)
+				.filter(classroom -> classroom.idClassroom() == idClassroom)
 				.findAny()
-				.orElseThrow(() -> new NoSuchClassroomException("Classroom was not found in the database")).getName();	
+				.orElseThrow(() -> new NoSuchClassroomException("Classroom was not found in the database")).name();	
 	}
 
 }

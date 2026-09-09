@@ -11,12 +11,12 @@ public class ClassroomUtils {
 	public static String findClassroomName (Booking booking, List<ClassroomEvent> classroomsStore) {
 		int targetIdClassroom = booking.getIdClassroom();
 		ClassroomEvent targetClassroom = classroomsStore.stream()
-		        .filter(c -> c.getIdClassroom() == targetIdClassroom)
+		        .filter(c -> c.idClassroom() == targetIdClassroom)
 		        .findFirst()
 		        .orElseGet(() -> {
 		        	throw new NoSuchClassroomException(String.format("No classrooms with id:%s were found", targetIdClassroom));
         });
-		return targetClassroom.getName();
+		return targetClassroom.name();
 	}
 
 }

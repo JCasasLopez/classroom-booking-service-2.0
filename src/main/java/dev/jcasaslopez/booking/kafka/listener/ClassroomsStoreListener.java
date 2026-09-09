@@ -46,7 +46,7 @@ public class ClassroomsStoreListener implements ConsumerSeekAware {
 		// Handle Kafka tombstone (classroom deletion)
 	    if (classroom == null) {
 	        for (int i = 0; i < classroomsStore.size(); i++) {
-	            if (classroomsStore.get(i).getIdClassroom() == classroomId) {
+	            if (classroomsStore.get(i).idClassroom() == classroomId) {
 	                logger.info("Removing classroom {} from classroomsStore due to Tombstone", classroomId);
 	                classroomsStore.remove(i);
 	                return;
@@ -56,13 +56,13 @@ public class ClassroomsStoreListener implements ConsumerSeekAware {
 	    }
 
 	    for (int i = 0; i < classroomsStore.size(); i++) {
-	        if (classroomsStore.get(i).getIdClassroom() == classroomId) {
-	            logger.info("Updating classroom {} ({}) in classroomsStore", classroomId, classroom.getName());
+	        if (classroomsStore.get(i).idClassroom() == classroomId) {
+	            logger.info("Updating classroom {} ({}) in classroomsStore", classroomId, classroom.name());
 	            classroomsStore.set(i, classroom);
 	            return;
 	        }
 	    }
-	    logger.info("Adding classroom {} ({}) to classroomsStore", classroomId, classroom.getName());
+	    logger.info("Adding classroom {} ({}) to classroomsStore", classroomId, classroom.name());
 	    classroomsStore.add(classroom);
 	}
 }

@@ -76,8 +76,8 @@ public final class TestHelper {
 	
 	public static String findClassroomName(int classroomId, List<ClassroomEvent> classroomsStore) {
 		return classroomsStore.stream()
-				.filter(c -> c.getIdClassroom() == classroomId)
-				.map(c -> c.getName())
+				.filter(c -> c.idClassroom() == classroomId)
+				.map(c -> c.name())
 				.findFirst()
 			    .orElseThrow(() -> new RuntimeException("Classroom not found with id: " + classroomId));
 	}
