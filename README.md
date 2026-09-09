@@ -18,6 +18,7 @@ The entire Classrooms application is deployed and available at [www.book-your-cl
 - [Exploring the Booking Microservice II: Endpoints](#exploring-the-booking-microservice-ii-endpoints)
 - [Swagger](#swagger)
 - [Contribution and License](#contribution-and-license)
+- [Contact](#contact)
 
 ## Purpose
 
@@ -306,5 +307,5 @@ See the [LICENSE](./LICENSE) file for details.
 
 ## Contact
 Created by Jorge Casas López.  
-Email: [contact@jorgecasaslopez.dev](mailto:contact@jorgecasaslopez.dev) 
+Email: [j.casas.lopez.26@gmail.com](mailto:j.casas.lopez.26@gmail.com) 
 
