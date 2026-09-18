@@ -67,7 +67,6 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	public BookingResponseDto book(BookingRequestDto booking) {
-		logger.debug("Booking request received for user {} in classroom {}", booking.idUser(), booking.idClassroom());
 		classroomValidator.validateClassroomExists(booking.idClassroom());
 
 		// It returns a list with the booking start and finish
@@ -84,14 +83,15 @@ public class BookingServiceImpl implements BookingService {
 				);
 		
 		eventPublisher.publishBookingRelatedEvent(NotificationType.BOOKING_CONFIRMED, savedBooking, UserContext.getEmail());
+		logger.info("Booking created: ID= {}, User ID= {}, Classroom ID= {}, Start= {}, Finish= {}", 
+		        savedBooking.getIdBooking(), savedBooking.getIdUser(), savedBooking.getIdClassroom(), 
+		        savedBooking.getStart(), savedBooking.getFinish());
 		return mapper.toResponseDto(savedBooking, classroomsStore);
 	}
 
 	@Override
 	@Transactional
-	public void cancel(Long idBooking) {
-		logger.debug("Cancel request received for booking {}", idBooking);
-		
+	public void cancel(Long idBooking) {		
 	    int idUser = UserContext.getIdUser();
 		
 	    // Both "booking not found" and "booking belongs to another user" are deliberately
@@ -108,6 +108,9 @@ public class BookingServiceImpl implements BookingService {
 		bookingRepository.modifyBookingStatus(idBooking, BookingStatus.CANCELLED);
 		eventPublisher.publishBookingRelatedEvent(NotificationType.BOOKING_CANCELLED, booking, UserContext.getEmail());
 		triggerWatchAlerts(booking);
+		
+		logger.info("Booking cancelled: ID= {}, User ID= {}, Classroom ID= {}", 
+	            booking.getIdBooking(), idUser, booking.getIdClassroom());
 	}
 
 	@Override
@@ -127,8 +130,8 @@ public class BookingServiceImpl implements BookingService {
 	@Scheduled(fixedRate = 3_600_000)
 	public void markBookingsAsCompleted() {
 		LocalDateTime now = LocalDateTime.now();
-	    logger.debug("Marking all past bookings as COMPLETE from: {}", now);
 	    bookingRepository.markCompletedBookings(now); 
+	    logger.info("Past bookings marked as COMPLETE up to: {}", now);
 	}
 	
 	// *******************************************************************************************************
