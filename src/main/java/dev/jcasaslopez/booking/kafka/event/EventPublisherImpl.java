@@ -70,10 +70,8 @@ public class EventPublisherImpl implements EventPublisher {
 		String endTimeStr = booking.getFinish().format(timeFormatter);    
 		String message = String.format(type.getMessageText(), classroomName(booking.getIdClassroom()), dateStr, startTimeStr, endTimeStr);
 
-		String log = String.format(type.getLogText(), email);
-
 		logger.debug("Notification event created: {}", message);
-		return new NotificationEvent(subject, message, email, log);
+		return new NotificationEvent(subject, message, email);
 	}
 
 	private String classroomName(int idClassroom) {

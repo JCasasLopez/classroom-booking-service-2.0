@@ -78,7 +78,6 @@ public class EventPublisherTest {
 		NotificationEvent notification = captor.getValue();
 		assertAll(
 				() -> assertEquals(expectedSubject, notification.subject()),
-				() -> assertEquals(expectedLog, notification.log()),
 				// Contains instead of equals because the message is wrapped in HTML tags
 				() -> assertTrue(notification.message().contains(expectedMessage))
 				);
@@ -123,7 +122,6 @@ public class EventPublisherTest {
 		// Arrange
 		when(bookingRepository.findById(WATCH_ALERT.getIdBooking())).thenReturn(Optional.of(BOOKING));
 		String expectedSubject = NotificationType.WATCH_ALERT_CONFIRMED.getSubject();
-		String expectedLog = String.format(NotificationType.WATCH_ALERT_CONFIRMED.getLogText(), EMAIL);
 		String expectedMessage = "We are pleased to confirm your watch alert for classroom Main Auditorium on the 11/5/2026 from 11:00 to 12:00. If the booking is cancelled you will be notified.";
 	
 		// Act
@@ -135,7 +133,6 @@ public class EventPublisherTest {
 		NotificationEvent notification = captor.getValue();
 		assertAll(
 				() -> assertEquals(expectedSubject, notification.subject()),
-				() -> assertEquals(expectedLog, notification.log()),
 				// Contains instead of equals because the message is wrapped in HTML tags
 				() -> assertTrue(notification.message().contains(expectedMessage))
 				);

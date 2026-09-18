@@ -45,8 +45,7 @@ public class KafkaProducerIntegrationTest extends BaseIntegrationTest {
         assertAll(
         	    () -> assertFalse(event.subject().isBlank()),
         	    () -> assertFalse(event.message().isBlank()),
-        	    () -> assertFalse(event.emailAddress().isBlank()),
-        	    () -> assertFalse(event.log().isBlank())
+        	    () -> assertFalse(event.emailAddress().isBlank())
         	);
 
         consumer.close();
