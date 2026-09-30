@@ -19,8 +19,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
 import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
+import dev.jcasaslopez.classroom.shared.dto.StandardResponse;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
-import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 public class ClassroomsAvailableEndpointTest extends BaseIntegrationTest {
 	

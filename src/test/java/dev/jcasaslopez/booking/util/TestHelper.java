@@ -18,9 +18,9 @@ import org.springframework.http.ResponseEntity;
 
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
+import dev.jcasaslopez.classroom.shared.dto.StandardResponse;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 import dev.jcasaslopez.classroom.shared.security.GenerateJwt;
-import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 public final class TestHelper {
 	

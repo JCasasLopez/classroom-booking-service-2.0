@@ -26,8 +26,8 @@ import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
 import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
+import dev.jcasaslopez.classroom.shared.dto.StandardResponse;
 import dev.jcasaslopez.classroom.shared.security.GenerateJwt;
-import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 // Controller parameter validation and the following exceptions are already covered
 // by existing endpoint tests and are not repeated here:

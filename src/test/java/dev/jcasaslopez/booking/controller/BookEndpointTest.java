@@ -20,8 +20,8 @@ import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
+import dev.jcasaslopez.classroom.shared.dto.StandardResponse;
 import dev.jcasaslopez.classroom.shared.security.GenerateJwt;
-import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 public class BookEndpointTest extends BaseIntegrationTest {
 

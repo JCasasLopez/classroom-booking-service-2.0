@@ -20,8 +20,8 @@ import dev.jcasaslopez.booking.base.BaseIntegrationTest;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
+import dev.jcasaslopez.classroom.shared.dto.StandardResponse;
 import dev.jcasaslopez.classroom.shared.security.GenerateJwt;
-import dev.jcasaslopez.classroom.shared.utility.StandardResponse;
 
 // No negative idUser test needed: @Positive validation and its handling by the GlobalExceptionHandler
 // are already covered in CancelEndpointTest. No need to duplicate that coverage here.

@@ -11,8 +11,8 @@ import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.exception.NoSuchBookingException;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.util.ClassroomUtils;
+import dev.jcasaslopez.classroom.shared.context.UserContext;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
-import dev.jcasaslopez.classroom.shared.utility.UserContext;
 
 @Component
 public class WatchAlertMapper {
