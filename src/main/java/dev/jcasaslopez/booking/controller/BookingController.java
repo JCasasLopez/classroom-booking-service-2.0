@@ -11,9 +11,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
@@ -40,7 +40,7 @@ import jakarta.validation.constraints.Positive;
 public class BookingController {
 
 	private static final Logger logger = LoggerFactory.getLogger(BookingController.class);
-	
+
 	private final BookingService bookingService;
 
 	public BookingController(BookingService bookingService) {
@@ -79,16 +79,18 @@ public class BookingController {
 		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	})
 	@SecurityRequirement(name = "bearerAuth")
-	@PostMapping(value=BookingEndpoints.BOOK, consumes=MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value=BookingEndpoints.BOOKINGS, consumes=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<StandardResponse<BookingResponseDto>> book(@Valid @NotNull @RequestBody BookingRequestDto booking){
-		logger.debug("POST /bookings - idUser={}, idClassroom={}", booking.idUser(), booking.idClassroom());
+		logger.debug("POST /bookings - Creating booking for idClassroom={}", booking.idClassroom());
+
 		BookingResponseDto bookingConfirmed = bookingService.book(booking);
 
 		String message = String.format("Classroom %s booked successfully", booking.idClassroom());
 		StandardResponse<BookingResponseDto> response = new StandardResponse<>(message, bookingConfirmed, HttpStatus.CREATED);
+
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
-	
+
 	@Operation(
 			summary = "Cancels an existing booking",
 			description = """
@@ -111,14 +113,16 @@ public class BookingController {
 	})
 	@SecurityRequirement(name = "bearerAuth")
 	@PatchMapping(value=BookingEndpoints.CANCEL)
-	public ResponseEntity<StandardResponse<Void>> cancelBooking(@RequestParam @Positive Long idBooking) {
-		logger.debug("PATCH /bookings/cancel?idBooking={}", idBooking);
+	public ResponseEntity<StandardResponse<Void>> cancelBooking(@PathVariable @Positive Long idBooking) {
+		logger.debug("PATCH /bookings/{} - Cancelling booking", idBooking);
+
 		bookingService.cancel(idBooking);
-		
+
 		StandardResponse<Void> response = new StandardResponse<>("Booking cancelled successfully", null, HttpStatus.OK);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+
+		return ResponseEntity.ok(response);
 	}
-	
+
 	@Operation(
 			summary = "Retrieves all bookings for the authenticated user",
 			description = "Returns the full booking history (active, cancelled and completed) for the currently authenticated user, resolved from the security context."
@@ -130,14 +134,16 @@ public class BookingController {
 		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	})
 	@SecurityRequirement(name = "bearerAuth")
-	@GetMapping(value=BookingEndpoints.USER_BOOKINGS)
+	@GetMapping(value=BookingEndpoints.BOOKINGS)
 	public ResponseEntity<StandardResponse<List<BookingResponseDto>>> bookingsByUser(){
 		int idUser = UserContext.getIdUser();
-		logger.debug("GET /bookings - idUser={}", idUser);
+		logger.debug("GET /bookings - Retrieving bookings for idUser={}", idUser);
+
 		List<BookingResponseDto> bookings = bookingService.bookingsByUser();
-		
+
 		String message = String.format("Bookings by user %s retrieved successfully", idUser);
 		StandardResponse<List<BookingResponseDto>> response = new StandardResponse<>(message, bookings, HttpStatus.OK);
+
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }

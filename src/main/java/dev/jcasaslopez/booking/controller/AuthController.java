@@ -40,12 +40,13 @@ public class AuthController {
 	content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	@GetMapping(value = BookingEndpoints.GENERATE_TOKEN)
 	public ResponseEntity<StandardResponse<String>> generateToken(@RequestParam(defaultValue = "1") int idUser) {
-		logger.debug("GET /generate-token?idUser={}", idUser);
+		logger.debug("GET /generate-token?idUser={} - Generating token", idUser);
 
 		String message = String.format("JWT created successfully for user ID %s", idUser);
 		String jwt = new GenerateJwt(secretKey).withIdUser(idUser).build();
 		StandardResponse<String> response = new StandardResponse<>(message, jwt, HttpStatus.OK);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		
+		return ResponseEntity.ok(response);
 	}
 
 }

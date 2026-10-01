@@ -37,7 +37,7 @@ public class BookingAuthFilterUnitTest {
     @Test
     void auth_filter_does_not_require_authentication_for_searches() {
     	// Arrange
-    	when(request.getRequestURI()).thenReturn(BookingEndpoints.AVAILABILITY_CALENDAR);
+    	when(request.getRequestURI()).thenReturn(BookingEndpoints.CLASSROOM_AVAILABILITY);
     	
     	// Act
     	boolean shouldNotFilterResult = filter.shouldNotFilter(request);

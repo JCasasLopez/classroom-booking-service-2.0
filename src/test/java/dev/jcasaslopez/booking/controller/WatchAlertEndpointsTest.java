@@ -71,7 +71,7 @@ public class WatchAlertEndpointsTest extends BaseIntegrationTest {
     	// Act
     	HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
-    	String getWatchAlertsUrl = UriComponentsBuilder.fromPath(BookingEndpoints.USER_WATCH_ALERTS)
+    	String getWatchAlertsUrl = UriComponentsBuilder.fromPath(BookingEndpoints.WATCH_ALERTS)
     			.queryParam("startSearch", TestHelper.generateStartSearch())
     			.queryParam("finishSearch", TestHelper.generateFinishSearch(300))
     			.toUriString();
@@ -98,7 +98,7 @@ public class WatchAlertEndpointsTest extends BaseIntegrationTest {
     private ResponseEntity<StandardResponse<WatchAlertResponseDto>> addWatchAlert(BookingResponseDto bookingResult){
     	Long idBooking = bookingResult.idBooking(); 
     	
-		String addWatchAlertUrl = UriComponentsBuilder.fromPath(BookingEndpoints.ADD_WATCH_ALERT)
+		String addWatchAlertUrl = UriComponentsBuilder.fromPath(BookingEndpoints.WATCH_ALERTS)
 				.queryParam("idBooking", idBooking)
 				.toUriString();
 		

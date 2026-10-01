@@ -74,7 +74,7 @@ public class FindBookingByEndpointTest extends BaseIntegrationTest {
     
 	private ResponseEntity<StandardResponse<Long>> getHttpResponse(){
 		HttpHeaders headers = new HttpHeaders();
-		String bookingBySlotUrl = UriComponentsBuilder.fromPath(BookingEndpoints.BOOKING_BY_SLOT)
+		String bookingBySlotUrl = UriComponentsBuilder.fromPath(BookingEndpoints.TARGET_BOOKING)
 				.queryParam("start", TestHelper.generateStartSearch())
 				.queryParam("finish", TestHelper.generateFinishSearch(30))
 				.queryParam("idClassroom", 1)

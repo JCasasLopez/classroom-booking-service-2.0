@@ -2,17 +2,14 @@ package dev.jcasaslopez.booking.util;
 
 public class BookingEndpoints {
 	
-	public static final String BOOK = "/bookings";
-	public static final String CANCEL = "/bookings/cancel";
-	public static final String USER_BOOKINGS = "/bookings";
+	public static final String BOOKINGS = "/bookings";
+	public static final String CANCEL = "/bookings/{idBooking}";
 	
-	public static final String AVAILABILITY_CALENDAR = "/searches/availability-calendar";
-	public static final String CLASSROOMS_AVAILABILITY ="/searches/classrooms-available";
-	public static final String BOOKING_BY_SLOT = "/searches/booking-by-slot";
+	public static final String CLASSROOM_AVAILABILITY = "/classrooms/{idClassroom}/availability";
+	public static final String CLASSROOMS_AVAILABLE = "/classrooms/available";
 	
-	public static final String ADD_WATCH_ALERT = "/watch-alerts";
-	public static final String USER_WATCH_ALERTS = "/watch-alerts";
+	public static final String WATCH_ALERTS = "/watch-alerts";        
+    public static final String TARGET_BOOKING = "/watch-alerts/target-booking";
 	
 	public static final String GENERATE_TOKEN = "/generate-token";
-
 }

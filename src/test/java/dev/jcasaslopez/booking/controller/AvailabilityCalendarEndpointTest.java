@@ -35,7 +35,7 @@ public class AvailabilityCalendarEndpointTest extends BaseIntegrationTest {
 		// Arrange
 		HttpHeaders headers = new HttpHeaders();
 		
-		String availabilityCalendarUrl = UriComponentsBuilder.fromPath(BookingEndpoints.AVAILABILITY_CALENDAR)
+		String availabilityCalendarUrl = UriComponentsBuilder.fromPath(BookingEndpoints.CLASSROOM_AVAILABILITY)
 				.queryParam("start", TestHelper.generateStartSearch())
 				.queryParam("finish", TestHelper.generateFinishSearch(300))
 				.queryParam("idClassroom", 1)

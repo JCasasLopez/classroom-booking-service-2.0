@@ -63,7 +63,7 @@ public class BookEndpointTest extends BaseIntegrationTest {
         HttpEntity<String> request = new HttpEntity<>(headers);
 
         ResponseEntity<StandardResponse<String>> httpResponse = testRestTemplate.exchange(
-		        BookingEndpoints.BOOK, 
+		        BookingEndpoints.BOOKINGS, 
 		        HttpMethod.POST, 
 		        request, 
 		        new ParameterizedTypeReference<StandardResponse<String>>() {} 
@@ -90,7 +90,7 @@ public class BookEndpointTest extends BaseIntegrationTest {
         HttpEntity<String> request = new HttpEntity<>(body, headers);
 
         ResponseEntity<StandardResponse<String>> httpResponse = testRestTemplate.exchange(
-		        BookingEndpoints.BOOK, 
+		        BookingEndpoints.BOOKINGS, 
 		        HttpMethod.POST, 
 		        request, 
 		        new ParameterizedTypeReference<StandardResponse<String>>() {} 

@@ -32,7 +32,7 @@ public class ClassroomsAvailableEndpointTest extends BaseIntegrationTest {
 		boolean projector = false;
 		boolean speakers = true;
 
-		String classroomsAvailableUrl = UriComponentsBuilder.fromPath(BookingEndpoints.CLASSROOMS_AVAILABILITY)
+		String classroomsAvailableUrl = UriComponentsBuilder.fromPath(BookingEndpoints.CLASSROOMS_AVAILABLE)
 				.queryParam("start", TestHelper.generateStartSearch())
 				.queryParam("finish", TestHelper.generateFinishSearch(300))
 				.queryParam("seats", seats)

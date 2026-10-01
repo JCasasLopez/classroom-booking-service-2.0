@@ -18,8 +18,8 @@ import jakarta.servlet.http.HttpServletRequest;
 public class BookingAuthenticationFilter extends AuthenticationFilterBase {
 	
 	private static final Set<String> EXCLUDED_PATHS = Set.of(
-	        BookingEndpoints.AVAILABILITY_CALENDAR, BookingEndpoints.CLASSROOMS_AVAILABILITY,
-	        BookingEndpoints.BOOKING_BY_SLOT, BookingEndpoints.GENERATE_TOKEN,
+	        BookingEndpoints.CLASSROOM_AVAILABILITY, BookingEndpoints.CLASSROOMS_AVAILABLE,
+	        BookingEndpoints.TARGET_BOOKING, BookingEndpoints.GENERATE_TOKEN,
 	        PublicSwaggerPaths.SWAGGER_UI, PublicSwaggerPaths.API_DOCS
 	    );
 
