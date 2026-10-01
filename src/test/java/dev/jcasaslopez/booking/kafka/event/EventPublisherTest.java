@@ -96,11 +96,10 @@ public class EventPublisherTest {
 				);
 	}
 
-	// Builds test arguments deriving subject and log from the enum to avoid hardcoding them
+	// Builds test arguments deriving subject from the enum to avoid hardcoding them
 	private static Arguments bookingArgs(NotificationType type, String expectedMessage) {
 		return Arguments.of(
 				type.getSubject(),
-				String.format(type.getLogText(), EMAIL),
 				expectedMessage,
 				type
 				);

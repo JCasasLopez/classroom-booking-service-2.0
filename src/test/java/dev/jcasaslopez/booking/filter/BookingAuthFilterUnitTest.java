@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import dev.jcasaslopez.booking.util.BookingEndpoints;
+import dev.jcasaslopez.classroom.shared.handler.StandardResponseHandler;
 import dev.jcasaslopez.classroom.shared.security.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +23,7 @@ public class BookingAuthFilterUnitTest {
     @Mock FilterChain filterChain;
     @Mock HttpServletRequest request;
     @Mock HttpServletResponse response;
+    @Mock StandardResponseHandler standardResponseHandler;
 
     private final static String secretKey = "MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaMDEyMzQ1Njc4OTA=";
    
@@ -29,7 +31,7 @@ public class BookingAuthFilterUnitTest {
 
     @BeforeEach
     void setUp() {
-        filter = new BookingAuthenticationFilter(jwtService, secretKey);
+        filter = new BookingAuthenticationFilter(jwtService, secretKey, standardResponseHandler);
     }
     
     @Test

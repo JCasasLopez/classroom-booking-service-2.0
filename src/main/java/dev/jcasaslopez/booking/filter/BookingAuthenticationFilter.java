@@ -17,8 +17,6 @@ import jakarta.servlet.http.HttpServletRequest;
 @Component
 public class BookingAuthenticationFilter extends AuthenticationFilterBase {
 	
-	private final StandardResponseHandler standardResponseHandler;
-
 	private static final Set<String> EXCLUDED_PATHS = Set.of(
 	        BookingEndpoints.AVAILABILITY_CALENDAR, BookingEndpoints.CLASSROOMS_AVAILABILITY,
 	        BookingEndpoints.BOOKING_BY_SLOT, BookingEndpoints.GENERATE_TOKEN,
