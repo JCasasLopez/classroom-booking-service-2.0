@@ -6,6 +6,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
 @SpringBootApplication(scanBasePackages = {
+	    "dev.jcasaslopez.booking",
 	    "dev.jcasaslopez.classroom.shared"  
 	})
 public class ClassroomBookingService2Application {
