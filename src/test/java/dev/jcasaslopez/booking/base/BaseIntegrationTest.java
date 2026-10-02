@@ -10,8 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -32,17 +30,14 @@ public abstract class BaseIntegrationTest {
     @Autowired protected BookingRepository repository;
 
     @ServiceConnection
-    static final MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.3");
+    protected static final MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.3");
+    
+    @ServiceConnection
     protected static final KafkaContainer kafkaContainer = new KafkaContainer(DockerImageName.parse("apache/kafka"));
 
     static {
         mySQLContainer.start();
         kafkaContainer.start();
-    }
-
-    @DynamicPropertySource
-    static void overrideProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.kafka.bootstrap-servers", kafkaContainer::getBootstrapServers);
     }
 
     @BeforeAll
