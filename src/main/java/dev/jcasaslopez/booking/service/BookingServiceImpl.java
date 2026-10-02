@@ -67,14 +67,16 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	public BookingResponseDto book(BookingRequestDto booking) {
+	    int idUser = UserContext.getIdUser();
+
 		classroomValidator.validateClassroomExists(booking.idClassroom());
 
 		// It returns a list with the booking start and finish
-		List<LocalDateTime> bookingTimes = checkBookingValidity(booking);
+		List<LocalDateTime> bookingTimes = checkBookingValidity(booking, idUser);
 		
 		Booking savedBooking = bookingRepository.save(new Booking(
 				0, 
-				booking.idUser(), 
+				idUser, 
 				booking.idClassroom(), 
 				bookingTimes.get(0), // start
 				bookingTimes.get(1), // finish
@@ -138,7 +140,7 @@ public class BookingServiceImpl implements BookingService {
 	// ****************************************** Auxiliary methods ******************************************
 	// *******************************************************************************************************
 
-	private List<LocalDateTime> checkBookingValidity(BookingRequestDto booking) {
+	private List<LocalDateTime> checkBookingValidity(BookingRequestDto booking, int idUser) {
 		// Sorted copy of the booking's time slots
 		List<LocalDateTime> listStartTimeSlots = booking.startTimeSlotList();
 		Collections.sort(listStartTimeSlots);
@@ -154,7 +156,7 @@ public class BookingServiceImpl implements BookingService {
 		checkSlotsAreConsecutive(listStartTimeSlots);
 		checkBookDoesNotExceedMaxAllowedTime(listStartTimeSlots);
 		checkclassroomIsAvailable(booking.idClassroom(), bookingStart, bookingFinish);
-		checkUserHasBookingsLeft(booking.idUser(), bookingStart);
+		checkUserHasBookingsLeft(idUser, bookingStart);
 		
 		return List.of(bookingStart, bookingFinish);
 	}

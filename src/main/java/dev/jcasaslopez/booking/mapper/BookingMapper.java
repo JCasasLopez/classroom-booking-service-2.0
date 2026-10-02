@@ -16,6 +16,7 @@ import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.util.ClassroomUtils;
+import dev.jcasaslopez.classroom.shared.context.UserContext;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
 @Component
@@ -30,20 +31,27 @@ public class BookingMapper {
 	}
 	
 	public Booking toEntity(BookingRequestDto booking, WeeklySchedule weeklySchedule) {
+
+		int idUser = UserContext.getIdUser();
+
 		logger.debug("Mapping BookingRequestDto to Booking: idUser={}, idClassroom={}, slots={}", 
-		        booking.idUser(), booking.idClassroom(), booking.startTimeSlotList().size());
+				idUser, booking.idClassroom(), booking.startTimeSlotList().size());
+		
 		List<TimeSlot> timeSlots = convertStartToTimeSlots(booking, weeklySchedule);
-		return new Booking(0,
-							booking.idUser(),
-							booking.idClassroom(),
-							timeSlots.get(0).getStart(),
-							timeSlots.get(timeSlots.size()-1).getFinish(),
-							LocalDateTime.now(),
-							BookingStatus.ACTIVE);		
-	}
 	
+		return new Booking(0,
+				idUser,
+				booking.idClassroom(),
+				timeSlots.get(0).getStart(),
+				timeSlots.get(timeSlots.size()-1).getFinish(),
+				LocalDateTime.now(),
+				BookingStatus.ACTIVE);		
+	}
+
 	public BookingResponseDto toResponseDto (Booking booking, List<ClassroomEvent> classroomsStore) {
+		
 		logger.debug("Mapping Booking to BookingResponseDto: idBooking={}", booking.getIdBooking());
+		
 		return new BookingResponseDto(booking.getIdBooking(),
 				ClassroomUtils.findClassroomName(booking, classroomsStore), 
 				booking.getStart(),

@@ -23,6 +23,7 @@ import dev.jcasaslopez.booking.mapper.BookingMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
+import dev.jcasaslopez.classroom.shared.context.UserContext;
 import dev.jcasaslopez.classroom.shared.dto.StandardResponse;
 
 public class FindBookingByEndpointTest extends BaseIntegrationTest {
@@ -33,12 +34,13 @@ public class FindBookingByEndpointTest extends BaseIntegrationTest {
 	
 	private static final int SLOT_DURATION = 30;
 	private static final int CLASSROOM_ID = 1;
-	private static final int ANY_USER_ID = 1;
+	private static final int USER_ID = 1;
+	private static final String EMAIL = "user@example.com";
 	
 	@Test
 	void find_booking_endpoint_returns_the_expected_response() {
 		// Arrange
-		TestHelper.createBooking(testRestTemplate, ANY_USER_ID, CLASSROOM_ID, SLOT_DURATION);
+		TestHelper.createBooking(testRestTemplate, USER_ID, CLASSROOM_ID, SLOT_DURATION);
 		
 		// Act
 		ResponseEntity<StandardResponse<Long>> httpResponse = getHttpResponse();
@@ -56,8 +58,11 @@ public class FindBookingByEndpointTest extends BaseIntegrationTest {
 	@Test
 	void find_booking_endpoint_returns_500_if_finds_more_than_one_booking() {
 		// Arrange
-		TestHelper.createBooking(testRestTemplate, ANY_USER_ID, CLASSROOM_ID, SLOT_DURATION);
-		createConflictingBooking(CLASSROOM_ID, ANY_USER_ID);
+		TestHelper.createBooking(testRestTemplate, USER_ID, CLASSROOM_ID, SLOT_DURATION);
+		
+		// As the API prevents creating overlapping bookings, we bypass the endpoint and persist a conflicting 
+		// record directly via the repository to force  a data consistency error (HTTP 500) during retrieval.
+		createConflictingBooking(CLASSROOM_ID, USER_ID, EMAIL);
 		
 		// Act
 		ResponseEntity<StandardResponse<Long>> httpResponse = getHttpResponse();
@@ -77,7 +82,7 @@ public class FindBookingByEndpointTest extends BaseIntegrationTest {
 		String bookingBySlotUrl = UriComponentsBuilder.fromPath(BookingEndpoints.TARGET_BOOKING)
 				.queryParam("start", TestHelper.generateStartSearch())
 				.queryParam("finish", TestHelper.generateFinishSearch(30))
-				.queryParam("idClassroom", 1)
+				.queryParam("idClassroom", CLASSROOM_ID)
 				.toUriString();
 		HttpEntity<Void> httpRequest =  new HttpEntity<>(headers); 
 
@@ -89,10 +94,9 @@ public class FindBookingByEndpointTest extends BaseIntegrationTest {
 				);
 	}
 	
-	// As the API prevents creating overlapping bookings, we bypass the endpoint and persist a conflicting record
-	// directly via the repository to force  a data consistency error (HTTP 500) during retrieval.
-    private void createConflictingBooking(int classroomId, int idUser) {
-    	BookingRequestDto conflictingBookingDto = new BookingRequestDto(idUser, classroomId, TestHelper.generateBookingSlots(SLOT_DURATION));
+    private void createConflictingBooking(int classroomId, int idUser, String email) {
+    	BookingRequestDto conflictingBookingDto = new BookingRequestDto(classroomId, TestHelper.generateBookingSlots(SLOT_DURATION));
+    	UserContext.setContext(email, idUser);
     	Booking conflictingbooking = mapper.toEntity(conflictingBookingDto, weeklySchedule);
     	repository.saveAndFlush(conflictingbooking);
     }

@@ -27,13 +27,12 @@ public class AuthFilterIntegrationTest extends BaseIntegrationTest{
 	
 	private static final int SLOT_DURATION = 30;
 	private static final int CLASSROOM_ID = 1;
-	private static final int USER_ID = 1;
 	private static final String INVALID_JWT = "Invalid_JWT";
 	
 	@Test
 	void auth_filter_responds_with_401_if_token_is_not_valid() {
 		// Arrange
-		BookingRequestDto bookingDto = new BookingRequestDto(USER_ID, CLASSROOM_ID, TestHelper.generateBookingSlots(SLOT_DURATION));
+		BookingRequestDto bookingDto = new BookingRequestDto(CLASSROOM_ID, TestHelper.generateBookingSlots(SLOT_DURATION));
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(INVALID_JWT);

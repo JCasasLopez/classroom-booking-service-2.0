@@ -11,7 +11,6 @@ import jakarta.validation.constraints.NotNull;
 // correctly performing validations such as @NotNull.
 
 public record BookingRequestDto (
-		@NotNull(message = "idUser field is required") Integer idUser, 
 		@NotNull(message = "idClassroom field is required") Integer idClassroom,
 		// Front-end sends a list with the start time of every time slot
 		@NotNull(message = "startTimeSlotList field is required") List<LocalDateTime> startTimeSlotList

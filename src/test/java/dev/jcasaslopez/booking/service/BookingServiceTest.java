@@ -99,7 +99,7 @@ public class BookingServiceTest {
 	@Test
 	void if_the_booking_is_valid_persists_the_correct_booking_entity() {
 		// Arrange
-		BookingRequestDto request = new BookingRequestDto(USER_ID, CLASSROOM_ID, new ArrayList<> (List.of(START, SLOT_2, SLOT_3)));
+		BookingRequestDto request = new BookingRequestDto(CLASSROOM_ID, new ArrayList<> (List.of(START, SLOT_2, SLOT_3)));
 		Booking bookingEntity = new Booking(0, USER_ID, CLASSROOM_ID, START, EXPECTED_FINISH, LocalDateTime.now(), BookingStatus.ACTIVE);
 		String classroomName = allClassrooms.get(CLASSROOM_ID).name();
 		when(bookingRepository.save(any(Booking.class))).thenReturn(bookingEntity);
@@ -124,8 +124,7 @@ public class BookingServiceTest {
 		// Arrange
 		LocalDateTime pastStart = LocalDateTime.of(2026, 5, 4, 9, 0);
 		LocalDateTime pastSlot2 = LocalDateTime.of(2026, 5, 4, 10, 0);
-		BookingRequestDto request = new BookingRequestDto(USER_ID, CLASSROOM_ID, 
-														new ArrayList<> (List.of(pastStart, pastSlot2)));
+		BookingRequestDto request = new BookingRequestDto(CLASSROOM_ID, new ArrayList<> (List.of(pastStart, pastSlot2)));
 		
 		// Act & Assert
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> bookingService.book(request));	
@@ -139,8 +138,7 @@ public class BookingServiceTest {
 	void if_the_booking_slots_are_not_consecutive_throws_exception() {
 		// Arrange
 		// Skips SLOT 2, so slots are not consecutive
-		BookingRequestDto request = new BookingRequestDto(USER_ID, CLASSROOM_ID, 
-														new ArrayList<> (List.of(START, SLOT_3)));
+		BookingRequestDto request = new BookingRequestDto(CLASSROOM_ID, new ArrayList<> (List.of(START, SLOT_3)));
 		
 		// Act & Assert
 		InvalidBookingException ex = assertThrows(InvalidBookingException.class, () -> bookingService.book(request));	
@@ -157,8 +155,7 @@ public class BookingServiceTest {
 		LocalDateTime SLOT_5 = START.plusMinutes(120);
 		
 		// 5 slots -> 150' exceed the maximum length set of 120'
-		BookingRequestDto request = new BookingRequestDto(USER_ID, CLASSROOM_ID, 
-						new ArrayList<> (List.of(START, SLOT_2, SLOT_3, SLOT_4, SLOT_5)));
+		BookingRequestDto request = new BookingRequestDto(CLASSROOM_ID, new ArrayList<> (List.of(START, SLOT_2, SLOT_3, SLOT_4, SLOT_5)));
 
 		// Act & Assert
 		InvalidBookingException ex = assertThrows(InvalidBookingException.class, () -> bookingService.book(request));	
@@ -170,7 +167,7 @@ public class BookingServiceTest {
 	@Test
 	void if_the_classroom_is_not_available_throws_exception() {
 		// Arrange
-		BookingRequestDto request = new BookingRequestDto(USER_ID, CLASSROOM_ID, new ArrayList<>(List.of(START, SLOT_2, SLOT_3)));
+		BookingRequestDto request = new BookingRequestDto(CLASSROOM_ID, new ArrayList<>(List.of(START, SLOT_2, SLOT_3)));
 
 		when(bookingRepository.findActiveBookingsForClassroomByPeriod(anyInt(), any(LocalDateTime.class), any(LocalDateTime.class)))
 							.thenReturn(List.of(new Booking())); // List is not empty -> Classroom is not available
@@ -185,7 +182,7 @@ public class BookingServiceTest {
 	@Test
 	void if_the_user_has_no_bookings_left_throws_exception() {
 		// Arrange
-		BookingRequestDto request = new BookingRequestDto(USER_ID, CLASSROOM_ID,new ArrayList<>(List.of(START, SLOT_2, SLOT_3)));
+		BookingRequestDto request = new BookingRequestDto(CLASSROOM_ID,new ArrayList<>(List.of(START, SLOT_2, SLOT_3)));
 
 		Booking activeBooking = new Booking(0, USER_ID, CLASSROOM_ID,
 				START.plusDays(1),
