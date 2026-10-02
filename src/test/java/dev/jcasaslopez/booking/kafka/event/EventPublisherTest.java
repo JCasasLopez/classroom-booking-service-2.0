@@ -66,7 +66,7 @@ public class EventPublisherTest {
 	@ParameterizedTest
 	@MethodSource("NotificationFieldsProvider")
 	void publishBookingRelatedEvent_sends_correct_message_when_notification_type_is_the_right_type
-							(String expectedSubject, String expectedLog, String expectedMessage, NotificationType type) {
+							(NotificationType type, String expectedMessage) {
 		// Arrange
 		
 		// Act
@@ -75,11 +75,13 @@ public class EventPublisherTest {
 		// Assert
 		ArgumentCaptor<NotificationEvent> captor = ArgumentCaptor.forClass(NotificationEvent.class);
 		verify(notificationEventProducer).sendNotification(captor.capture());
+		
 		NotificationEvent notification = captor.getValue();
 		assertAll(
-				() -> assertEquals(expectedSubject, notification.subject()),
+				() -> assertEquals(type.getSubject(), notification.subject()),
 				// Contains instead of equals because the message is wrapped in HTML tags
-				() -> assertTrue(notification.message().contains(expectedMessage))
+				() -> assertTrue(notification.message().contains(expectedMessage)),
+				() -> assertEquals(EMAIL, notification.emailAddress())
 				);
 		
 	}
@@ -87,24 +89,15 @@ public class EventPublisherTest {
 	// Each argument: (expected subject, expected log, expected message fragment, notification type)
 	static Stream<Arguments> NotificationFieldsProvider() {
 		return Stream.of(
-				bookingArgs(NotificationType.BOOKING_CONFIRMED,
+				Arguments.of(NotificationType.BOOKING_CONFIRMED,
 						"We are pleased to confirm your booking for classroom Main Auditorium on the 11/5/2026 from 11:00 to 12:00"),
-				bookingArgs(NotificationType.BOOKING_CANCELLED,
+				Arguments.of(NotificationType.BOOKING_CANCELLED,
 						"We are pleased to confirm that your booking for classroom Main Auditorium on the 11/5/2026 from 11:00 to 12:00 has been succesfully cancelled"),
-				bookingArgs(NotificationType.WATCH_ALERT_TRIGGERED,
+				Arguments.of(NotificationType.WATCH_ALERT_TRIGGERED,
 						"A booking for classroom Main Auditorium on the 11/5/2026 from 11:00 to 12:00 has been cancelled. Hurry up and book it before someone else does!")
 				);
 	}
 
-	// Builds test arguments deriving subject from the enum to avoid hardcoding them
-	private static Arguments bookingArgs(NotificationType type, String expectedMessage) {
-		return Arguments.of(
-				type.getSubject(),
-				expectedMessage,
-				type
-				);
-	}
-	
 	@Test
 	void publishBookingRelatedEvent_throws_exception_when_notification_type_is_the_wrong_type_for_bookings() {
 		// Arrange
