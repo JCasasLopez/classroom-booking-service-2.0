@@ -31,7 +31,7 @@ import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.InvalidBookingException;
-import dev.jcasaslopez.booking.exception.NoSuchBookingException;
+import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
 import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.mapper.BookingMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
@@ -230,6 +230,6 @@ public class BookingServiceTest {
 		when(bookingRepository.findById(idBooking)).thenReturn(Optional.empty());
 		
 		// Act & Assert
-		assertThrows(NoSuchBookingException.class, () -> bookingService.cancel(idBooking));
+		assertThrows(BookingNotFoundExceptions.class, () -> bookingService.cancel(idBooking));
 	}
 }

@@ -20,7 +20,7 @@ import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.exception.NoSuchBookingException;
+import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.util.ClassroomUtils;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
@@ -71,7 +71,7 @@ public class WatchAlertMapperTest {
 	    when(bookingRepository.findById(236L)).thenReturn(Optional.empty());
 		
 		// Act & Assert
-	    assertThrows(NoSuchBookingException.class, () -> mapper.toResponseDto(watchAlert, classroomsStore, bookingRepository));
+	    assertThrows(BookingNotFoundExceptions.class, () -> mapper.toResponseDto(watchAlert, classroomsStore, bookingRepository));
 	}
 
 }

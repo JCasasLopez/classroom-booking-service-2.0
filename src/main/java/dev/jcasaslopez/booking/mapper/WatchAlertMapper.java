@@ -8,7 +8,7 @@ import dev.jcasaslopez.booking.dto.WatchAlertRequestDto;
 import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.entity.WatchAlert;
-import dev.jcasaslopez.booking.exception.NoSuchBookingException;
+import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.util.ClassroomUtils;
 import dev.jcasaslopez.classroom.shared.context.UserContext;
@@ -25,7 +25,7 @@ public class WatchAlertMapper {
 	public WatchAlertResponseDto toResponseDto (WatchAlert watchAlert, List<ClassroomEvent> classroomsStore, 
 			BookingRepository bookingRepository) {
 		 Booking booking = bookingRepository.findById(watchAlert.getIdBooking())
-		            .orElseThrow(() -> new NoSuchBookingException("No booking with that id was found in the database"));
+		            .orElseThrow(() -> new BookingNotFoundExceptions("No booking with that id was found in the database"));
 
 		    String classroomName = ClassroomUtils.findClassroomName(booking, classroomsStore);
 		    return new WatchAlertResponseDto(classroomName, booking.getStart(), booking.getFinish());

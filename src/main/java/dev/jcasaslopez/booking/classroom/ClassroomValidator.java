@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import dev.jcasaslopez.booking.exception.NoSuchClassroomException;
+import dev.jcasaslopez.booking.exception.ClassroomNotFoundException;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
 @Component
@@ -20,6 +20,6 @@ public class ClassroomValidator {
 	        classroomsStore.stream()
 	            .filter(c -> c.idClassroom() == idClassroom)
 	            .findFirst()
-	            .orElseThrow(() -> new NoSuchClassroomException("Classroom not found: " + idClassroom));
+	            .orElseThrow(() -> new ClassroomNotFoundException("Classroom not found: " + idClassroom));
 	    }
 }

@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import dev.jcasaslopez.booking.exception.NoSuchClassroomException;
+import dev.jcasaslopez.booking.exception.ClassroomNotFoundException;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
 public class ClassroomValidatorTest {
@@ -34,6 +34,6 @@ public class ClassroomValidatorTest {
 		// Arrange
 
 		// Act & Assert
-		assertThrows(NoSuchClassroomException.class, () -> classroomValidator.validateClassroomExists(103));
+		assertThrows(ClassroomNotFoundException.class, () -> classroomValidator.validateClassroomExists(103));
 	}
 }

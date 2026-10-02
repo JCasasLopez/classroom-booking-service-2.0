@@ -3,7 +3,7 @@ package dev.jcasaslopez.booking.util;
 import java.util.List;
 
 import dev.jcasaslopez.booking.entity.Booking;
-import dev.jcasaslopez.booking.exception.NoSuchClassroomException;
+import dev.jcasaslopez.booking.exception.ClassroomNotFoundException;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
 public class ClassroomUtils {
@@ -14,7 +14,7 @@ public class ClassroomUtils {
 		        .filter(c -> c.idClassroom() == targetIdClassroom)
 		        .findFirst()
 		        .orElseGet(() -> {
-		        	throw new NoSuchClassroomException(String.format("No classrooms with id:%s were found", targetIdClassroom));
+		        	throw new ClassroomNotFoundException(String.format("No classrooms with id:%s were found", targetIdClassroom));
         });
 		return targetClassroom.name();
 	}

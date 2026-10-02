@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.entity.WatchAlert;
-import dev.jcasaslopez.booking.exception.NoSuchBookingException;
-import dev.jcasaslopez.booking.exception.NoSuchClassroomException;
+import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
+import dev.jcasaslopez.booking.exception.ClassroomNotFoundException;
 import dev.jcasaslopez.booking.kafka.producer.NotificationEventProducer;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.classroom.shared.enums.NotificationType;
@@ -50,7 +50,7 @@ public class EventPublisherImpl implements EventPublisher {
 			throw new IllegalArgumentException("Invalid notification type for booking event: " + type);
 		}
 		Booking booking = bookingRepository.findById(watchAlert.getIdBooking())
-				.orElseThrow(() -> new NoSuchBookingException("Booking was not found in the database"));		
+				.orElseThrow(() -> new BookingNotFoundExceptions("Booking was not found in the database"));		
 		NotificationEvent notification = createNotificationEvent(type, booking, email);
 		notificationEventProducer.sendNotification(notification);	
 	}
@@ -79,7 +79,7 @@ public class EventPublisherImpl implements EventPublisher {
 		return classroomsStore.stream()
 				.filter(classroom -> classroom.idClassroom() == idClassroom)
 				.findAny()
-				.orElseThrow(() -> new NoSuchClassroomException("Classroom was not found in the database")).name();	
+				.orElseThrow(() -> new ClassroomNotFoundException("Classroom was not found in the database")).name();	
 	}
 
 }

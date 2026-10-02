@@ -23,8 +23,8 @@ import dev.jcasaslopez.booking.dto.WatchAlertRequestDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.exception.NoSuchBookingException;
-import dev.jcasaslopez.booking.exception.NoSuchClassroomException;
+import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
+import dev.jcasaslopez.booking.exception.ClassroomNotFoundException;
 import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.mapper.WatchAlertMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
@@ -69,7 +69,7 @@ public class WatchAlertServiceTest {
         when(bookingRepository.findById(BOOKING_ID)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(NoSuchBookingException.class, () -> watchAlertService.addWatchAlert(BOOKING_ID));
+        assertThrows(BookingNotFoundExceptions.class, () -> watchAlertService.addWatchAlert(BOOKING_ID));
         verifyNoInteractions(watchAlertRepository);
     }
 
@@ -83,7 +83,7 @@ public class WatchAlertServiceTest {
         when(bookingRepository.findById(BOOKING_ID)).thenReturn(Optional.of(bookingWithNonExistingClassroom));
 
         // Act & Assert
-        assertThrows(NoSuchClassroomException.class, () -> watchAlertService.addWatchAlert(BOOKING_ID));
+        assertThrows(ClassroomNotFoundException.class, () -> watchAlertService.addWatchAlert(BOOKING_ID));
         verifyNoInteractions(watchAlertRepository);
     }
     

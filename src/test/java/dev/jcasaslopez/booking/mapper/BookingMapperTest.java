@@ -15,7 +15,7 @@ import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.exception.NoSuchClassroomException;
+import dev.jcasaslopez.booking.exception.ClassroomNotFoundException;
 import dev.jcasaslopez.classroom.shared.context.UserContext;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
@@ -84,6 +84,6 @@ public class BookingMapperTest {
 									LocalDateTime.now(), BookingStatus.ACTIVE);
 				
 		// Act & Assert
-		assertThrows(NoSuchClassroomException.class, () -> mapper.toResponseDto(booking, classroomsStore));
+		assertThrows(ClassroomNotFoundException.class, () -> mapper.toResponseDto(booking, classroomsStore));
 	}
 }

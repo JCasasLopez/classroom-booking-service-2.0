@@ -13,7 +13,7 @@ import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.exception.NoSuchBookingException;
+import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
 import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.mapper.WatchAlertMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
@@ -50,7 +50,7 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 		WatchAlert watchAlert = mapper.toEntity(new WatchAlertRequestDto(idBooking));
 		
 		Booking booking = bookingRepository.findById(idBooking)
-							.orElseThrow(() -> new NoSuchBookingException(String.format("Booking %s was not found in the database", idBooking)));
+							.orElseThrow(() -> new BookingNotFoundExceptions(String.format("Booking %s was not found in the database", idBooking)));
 		
 		if(booking.getStatus() != BookingStatus.ACTIVE) {
 			throw new IllegalStateException(String.format("Booking %s is not an active booking", idBooking));

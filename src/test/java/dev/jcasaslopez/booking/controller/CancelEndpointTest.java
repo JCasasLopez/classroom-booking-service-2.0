@@ -18,7 +18,7 @@ import dev.jcasaslopez.booking.base.BaseIntegrationTest;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.exception.NoSuchBookingException;
+import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
 import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
 import dev.jcasaslopez.classroom.shared.dto.StandardResponse;
@@ -54,7 +54,7 @@ public class CancelEndpointTest extends BaseIntegrationTest {
 	
 		// Assert
 		Booking savedBooking = repository.findById(idBooking)
-			    					.orElseThrow(() -> new NoSuchBookingException("Booking not found in the database"));
+			    					.orElseThrow(() -> new BookingNotFoundExceptions("Booking not found in the database"));
 		assertAll(
 				() -> assertEquals(HttpStatus.OK, httpCancelResponse.getBody().status()),
 				() -> assertEquals(BookingStatus.CANCELLED, savedBooking.getStatus())
