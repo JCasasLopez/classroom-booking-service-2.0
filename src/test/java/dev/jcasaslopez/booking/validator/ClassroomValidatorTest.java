@@ -1,4 +1,4 @@
-package dev.jcasaslopez.booking.classroom;
+package dev.jcasaslopez.booking.validator;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;

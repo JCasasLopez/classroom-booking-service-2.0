@@ -23,10 +23,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import dev.jcasaslopez.booking.classroom.ClassroomValidator;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
 import dev.jcasaslopez.booking.repository.BookingRepository;
+import dev.jcasaslopez.booking.validator.ClassroomValidator;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
 @ExtendWith(MockitoExtension.class)

@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import dev.jcasaslopez.booking.classroom.ClassroomValidator;
 import dev.jcasaslopez.booking.domain.OpeningHours;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.SlotStatusDto;
@@ -19,6 +18,7 @@ import dev.jcasaslopez.booking.exception.DataIntegrityException;
 import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
 import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
 import dev.jcasaslopez.booking.repository.BookingRepository;
+import dev.jcasaslopez.booking.validator.ClassroomValidator;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
 @Service

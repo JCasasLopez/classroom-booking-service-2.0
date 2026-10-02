@@ -1,4 +1,4 @@
-package dev.jcasaslopez.booking.classroom;
+package dev.jcasaslopez.booking.validator;
 
 import java.util.List;
 
