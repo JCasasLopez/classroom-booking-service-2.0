@@ -22,7 +22,6 @@ import dev.jcasaslopez.booking.mapper.BookingMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.repository.WatchAlertRepository;
 import dev.jcasaslopez.booking.validator.BookingValidator;
-import dev.jcasaslopez.classroom.shared.context.UserContext;
 import dev.jcasaslopez.classroom.shared.enums.NotificationType;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
@@ -50,7 +49,7 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	@Override
-	public BookingResponseDto book(BookingRequestDto booking, int idUser) {
+	public BookingResponseDto book(BookingRequestDto booking, int idUser, String userEmail) {
 		// It returns a list with the booking start and finish
 		BookingPeriod bookingPeriod = bookingValidator.validateBooking(booking, idUser);
 		
@@ -64,7 +63,7 @@ public class BookingServiceImpl implements BookingService {
 				BookingStatus.ACTIVE)
 				);
 		
-		eventPublisher.publishBookingRelatedEvent(NotificationType.BOOKING_CONFIRMED, savedBooking, UserContext.getEmail());
+		eventPublisher.publishBookingRelatedEvent(NotificationType.BOOKING_CONFIRMED, savedBooking, userEmail);
 		logger.info("Booking created: ID= {}, User ID= {}, Classroom ID= {}, Start= {}, Finish= {}", 
 		        savedBooking.getIdBooking(), savedBooking.getIdUser(), savedBooking.getIdClassroom(), 
 		        savedBooking.getStart(), savedBooking.getFinish());
@@ -73,7 +72,7 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	@Transactional
-	public void cancel(Long idBooking, int idUser) {				
+	public void cancel(Long idBooking, int idUser, String userEmail) {				
 	    // Both "booking not found" and "booking belongs to another user" are deliberately
 	    // mapped to the same exception. Distinguishing between them would let an attacker
 	    // enumerate valid booking IDs simply by observing which error is returned.
@@ -86,7 +85,7 @@ public class BookingServiceImpl implements BookingService {
 		}
 		
 		bookingRepository.modifyBookingStatus(idBooking, BookingStatus.CANCELLED);
-		eventPublisher.publishBookingRelatedEvent(NotificationType.BOOKING_CANCELLED, booking, UserContext.getEmail());
+		eventPublisher.publishBookingRelatedEvent(NotificationType.BOOKING_CANCELLED, booking, userEmail);
 		triggerWatchAlerts(booking);
 		
 		logger.info("Booking cancelled: ID= {}, User ID= {}, Classroom ID= {}", 

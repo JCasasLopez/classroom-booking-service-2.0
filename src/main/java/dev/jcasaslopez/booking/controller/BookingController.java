@@ -80,12 +80,10 @@ public class BookingController {
 	})
 	@SecurityRequirement(name = "bearerAuth")
 	@PostMapping(value=BookingEndpoints.BOOKINGS, consumes=MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<StandardResponse<BookingResponseDto>> book(@Valid @NotNull @RequestBody BookingRequestDto booking){
-	    int idUser = UserContext.getIdUser();
-		
-		logger.debug("POST /bookings - Creating booking for idClassroom={} and idUser={}", booking.idClassroom(), idUser);
+	public ResponseEntity<StandardResponse<BookingResponseDto>> book(@Valid @NotNull @RequestBody BookingRequestDto booking){		
+		logger.debug("POST /bookings - Creating booking with idClassroom={}", booking.idClassroom());
 
-		BookingResponseDto bookingConfirmed = bookingService.book(booking, idUser);
+		BookingResponseDto bookingConfirmed = bookingService.book(booking, UserContext.getIdUser(), UserContext.getEmail());
 
 		String message = String.format("Classroom %s booked successfully", booking.idClassroom());
 		StandardResponse<BookingResponseDto> response = new StandardResponse<>(message, bookingConfirmed, HttpStatus.CREATED);
@@ -115,12 +113,10 @@ public class BookingController {
 	})
 	@SecurityRequirement(name = "bearerAuth")
 	@PatchMapping(value=BookingEndpoints.CANCEL)
-	public ResponseEntity<StandardResponse<Void>> cancelBooking(@PathVariable @Positive Long idBooking) {
-	    int idUser = UserContext.getIdUser();
-		
-		logger.debug("PATCH /bookings/{} - Cancelling booking for idUser={}", idBooking, idUser);
+	public ResponseEntity<StandardResponse<Void>> cancelBooking(@PathVariable @Positive Long idBooking) {		
+		logger.debug("PATCH /bookings/{} - Cancelling booking with idBooking={}", idBooking);
 
-		bookingService.cancel(idBooking, idUser);
+		bookingService.cancel(idBooking, UserContext.getIdUser(), UserContext.getEmail());
 
 		StandardResponse<Void> response = new StandardResponse<>("Booking cancelled successfully", null, HttpStatus.OK);
 
