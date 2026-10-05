@@ -2,16 +2,15 @@ package dev.jcasaslopez.booking.repository;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -20,13 +19,13 @@ import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import jakarta.persistence.EntityManager;
 
-public class FindOccupiedClassroomsAndUserBookingTest extends BaseRepositoryTest{
+public class BookingQueriesRepositoryTest extends BaseRepositoryTest{
 
 	@Autowired private EntityManager entityManager;
 	
 	@ParameterizedTest
 	@MethodSource("bookingPeriodsAndExpectedResult")
-	void findOccupiedClassroomsbyPeriod_ReturnsExpectedResultsTest
+	void findOccupiedClassroomsbyPeriod_returns_expected_result
 	(List<Integer> listClassrooms, LocalDateTime queryStart, LocalDateTime queryFinish) {
 		// Arrange
 		setupTestBookings();
@@ -39,28 +38,39 @@ public class FindOccupiedClassroomsAndUserBookingTest extends BaseRepositoryTest
 		assertEquals(new HashSet<>(listClassrooms), new HashSet<>(unavailableClassrooms));
 	}
 
-	@Test
-	void findBookingsByUser_ReturnsExpectedResultsTest() {
+	@ParameterizedTest
+    @CsvSource({
+        "10,   4",
+        "8,   3"
+        })
+	void findBookingsByUser_returns_expected_result(int idUser, int totalNumberOfBookings) {
 		// Arrange
 		setupTestBookings();
 
 		// Act
-		int idUser = 10;
 		List<Booking> bookingsFound = bookingRepository.findBookingsByUser(idUser);
 
-		// Assert
-		long activeCount = bookingsFound.stream().filter(booking -> booking.getStatus() == BookingStatus.ACTIVE).count();
-		long cancelledCount = bookingsFound.stream().filter(booking -> booking.getStatus() == BookingStatus.CANCELLED).count();
-
+		// Assert	
 		assertAll(
-				() -> assertEquals(4, bookingsFound.size()),
-				() -> assertEquals(2, activeCount),
-				() -> assertEquals(2, cancelledCount),
-				() -> assertTrue(bookingsFound.stream().allMatch(booking -> booking.getIdUser() == idUser))
+				() -> assertEquals(totalNumberOfBookings, bookingsFound.size())
 				);
 	}
+	
+	@ParameterizedTest
+	@MethodSource("countBookingsByUserInPeriodCases")
+	void countBookingsByUserInPeriod_returns_expected_result
+	(int idUser, LocalDateTime queryStart, LocalDateTime queryFinish, long expectedCount) {
+		// Arrange
+		setupTestBookings();
 
-	// Test data for findOccupiedClassroomsbyPeriod_ReturnsExpectedResultsTest
+		// Act
+	    long count = bookingRepository.countBookingsByUserInPeriod(idUser, queryStart, queryFinish);
+
+	    // Assert
+	    assertEquals(expectedCount, count);
+	}
+
+	// Test data for findOccupiedClassroomsbyPeriod_returns_expected_result
 	// (Expected result, start, finish).
 	private static Stream<Arguments> bookingPeriodsAndExpectedResult() {
 		// ┌────────────┬───────────────┬───────────┐
@@ -96,11 +106,37 @@ public class FindOccupiedClassroomsAndUserBookingTest extends BaseRepositoryTest
 				);
 	}
 	
+	// Test data for countBookingsByUserInPeriod_returns_expected_result
+	// (idUser, start, finish, expected result).
+	private static Stream<Arguments> countBookingsByUserInPeriodCases() {
+	    return Stream.of(
+	        // User 8: Full period. 
+	        // Includes: 10:00 (COMPLETED), 14:00 (ACTIVE), 17:00 (ACTIVE) -> 3
+	        Arguments.of(8, LocalDateTime.of(2025, 3, 2, 10, 0), LocalDateTime.of(2025, 3, 2, 21, 30), 3L),
+
+	        // User 10: Full period. 
+	        // Includes: 14:00 (ACTIVE), 17:00 (ACTIVE). Ignores: CANCELLED (19:00, 20:00) -> 2
+	        Arguments.of(10, LocalDateTime.of(2025, 3, 2, 10, 0), LocalDateTime.of(2025, 3, 2, 21, 30), 2L),
+
+	        // User 10: Afternoon period.
+	        // Includes: 17:00 (ACTIVE). Ignores: CANCELLED (19:00, 20:00) -> 1
+	        Arguments.of(10, LocalDateTime.of(2025, 3, 2, 17, 0), LocalDateTime.of(2025, 3, 2, 21, 30), 1L),
+
+	        // Lower bound (>=): User 8's booking starts EXACTLY at 10:00. Must be included -> 1
+	        Arguments.of(8, LocalDateTime.of(2025, 3, 2, 10, 0), LocalDateTime.of(2025, 3, 2, 12, 0), 1L),
+
+	        // Upper bound (<): User 8's booking starts EXACTLY at 17:00. 
+	        // Searching up to 17:00 excludes it. Includes only 10:00 and 14:00 -> 2
+	        Arguments.of(8, LocalDateTime.of(2025, 3, 2, 10, 0), LocalDateTime.of(2025, 3, 2, 17, 0), 2L)
+	    );
+	}
+	
 	private void setupTestBookings() {
 		
 		// ┌────────────┬───────────────┬─────────┬───────────┐
 		// │ Classroom  │ Hours         │ idUser  │ Status    │
 		// ├────────────┼───────────────┼─────────┼───────────┤
+		// │ 1          │ 10:00-11:00   │ 8       │ COMPLETED │    
 		// │ 1          │ 14:00-15:30   │ 10      │ ACTIVE    │
 		// │ 1          │ 17:00-18:00   │ 8       │ ACTIVE    │
 		// │ 1          │ 19:00-20:30   │ 10      │ CANCELLED │
@@ -108,6 +144,12 @@ public class FindOccupiedClassroomsAndUserBookingTest extends BaseRepositoryTest
 		// │ 2          │ 17:00-19:00   │ 10      │ ACTIVE    │
 		// │ 2          │ 20:00-21:30   │ 10      │ CANCELLED │
 		// └────────────┴───────────────┴─────────┴───────────┘
+		
+		Booking booking0 = new Booking(0, 8, 1, 
+				LocalDateTime.of(2025, 3, 2, 10, 0),
+				LocalDateTime.of(2025, 3, 2, 11, 0), LocalDateTime.now(), 
+				BookingStatus.COMPLETED);
+		bookingRepository.save(booking0);
 		
 		Booking booking1 = new Booking(0, 10, 1, 
 				LocalDateTime.of(2025, 3, 2, 14, 0),
