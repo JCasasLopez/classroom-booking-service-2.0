@@ -50,5 +50,16 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 			ORDER BY b.start DESC
 			""")
 	List<Booking> findBookingsByUser(int queryIdUser);
+	
+	// Counts the bookings of a user whose start falls within [weekStart, nextWeekStart).
+	// ACTIVE and COMPLETED count towards the weekly limit; CANCELLED ones do not.
+	@Query("""
+			SELECT COUNT(b) FROM Booking b
+			WHERE b.idUser = :queryIdUser
+			AND b.status IN ('ACTIVE', 'COMPLETED')
+			AND b.start >= :weekStart
+			AND b.start < :nextWeekStart
+			""")
+	long countBookingsByUserInPeriod(int queryIdUser, LocalDateTime weekStart, LocalDateTime nextWeekStart);
 
 }

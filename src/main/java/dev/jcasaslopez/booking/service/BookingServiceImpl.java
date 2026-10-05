@@ -1,33 +1,27 @@
 package dev.jcasaslopez.booking.service;
 
-import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dev.jcasaslopez.booking.domain.TimeSlot;
-import dev.jcasaslopez.booking.domain.WeeklySchedule;
+import dev.jcasaslopez.booking.domain.BookingPeriod;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.exception.InvalidBookingException;
-import dev.jcasaslopez.booking.exception.InvalidBookingStatusException;
 import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
+import dev.jcasaslopez.booking.exception.InvalidBookingStatusException;
 import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.mapper.BookingMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.repository.WatchAlertRepository;
-import dev.jcasaslopez.booking.validator.ClassroomValidator;
+import dev.jcasaslopez.booking.validator.BookingValidator;
 import dev.jcasaslopez.classroom.shared.context.UserContext;
 import dev.jcasaslopez.classroom.shared.enums.NotificationType;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
@@ -36,50 +30,38 @@ import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 public class BookingServiceImpl implements BookingService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(BookingServiceImpl.class);
+	
 	private final BookingRepository bookingRepository;
 	private final WatchAlertRepository watchAlertRepository;
-	private final WeeklySchedule weeklySchedule;
-	private final ClassroomValidator classroomValidator;
 	private final EventPublisher eventPublisher;
 	private final BookingMapper mapper;
 	private final List<ClassroomEvent> classroomsStore;
-	private final int slotDuration; 
-	private final int bookingMaxDuration; 
-	private final int maxNumberBookings;
-	
+	private final BookingValidator bookingValidator;
 	
 	public BookingServiceImpl(BookingRepository bookingRepository, WatchAlertRepository watchAlertRepository,
-			WeeklySchedule weeklySchedule, ClassroomValidator classroomValidator, EventPublisher eventPublisher,
-			BookingMapper mapper, List<ClassroomEvent> classroomsStore, @Value("${time-slot.duration}") int slotDuration, 
-			@Value("${booking.maximum-duration}") int bookingMaxDuration, 
-			@Value("${booking.maximum-number-per-week}") int maxNumberBookings) {
+			EventPublisher eventPublisher, BookingMapper mapper,
+			List<ClassroomEvent> classroomsStore, BookingValidator bookingValidator) {
 		this.bookingRepository = bookingRepository;
 		this.watchAlertRepository = watchAlertRepository;
-		this.weeklySchedule = weeklySchedule;
-		this.classroomValidator = classroomValidator;
 		this.eventPublisher = eventPublisher;
 		this.mapper = mapper;
 		this.classroomsStore = classroomsStore;
-		this.slotDuration = slotDuration;
-		this.bookingMaxDuration = bookingMaxDuration;
-		this.maxNumberBookings = maxNumberBookings;
+		this.bookingValidator = bookingValidator;
 	}
 
 	@Override
 	public BookingResponseDto book(BookingRequestDto booking) {
 	    int idUser = UserContext.getIdUser();
 
-		classroomValidator.validateClassroomExists(booking.idClassroom());
-
 		// It returns a list with the booking start and finish
-		List<LocalDateTime> bookingTimes = checkBookingValidity(booking, idUser);
+		BookingPeriod bookingPeriod = bookingValidator.validateBooking(booking, idUser);
 		
 		Booking savedBooking = bookingRepository.save(new Booking(
 				0, 
 				idUser, 
 				booking.idClassroom(), 
-				bookingTimes.get(0), // start
-				bookingTimes.get(1), // finish
+				bookingPeriod.start(),
+				bookingPeriod.finish(),
 				LocalDateTime.now(),
 				BookingStatus.ACTIVE)
 				);
@@ -136,82 +118,7 @@ public class BookingServiceImpl implements BookingService {
 	    logger.info("Past bookings marked as COMPLETE up to: {}", now);
 	}
 	
-	// *******************************************************************************************************
-	// ****************************************** Auxiliary methods ******************************************
-	// *******************************************************************************************************
-
-	private List<LocalDateTime> checkBookingValidity(BookingRequestDto booking, int idUser) {
-		// Sorted copy of the booking's time slots
-		List<LocalDateTime> listStartTimeSlots = booking.startTimeSlotList();
-		Collections.sort(listStartTimeSlots);
-		
-		LocalDateTime bookingStart = listStartTimeSlots.get(0);
-		LocalDateTime bookingFinish = listStartTimeSlots.get(listStartTimeSlots.size()-1).plusMinutes(slotDuration);
-		
-		if(bookingStart.isBefore(LocalDateTime.now()) || bookingFinish.isBefore(LocalDateTime.now())) {
-			throw new IllegalArgumentException("Booking a past period is not allowed");
-		}
-		
-		checkTimeSlotsAreValid(listStartTimeSlots);
-		checkSlotsAreConsecutive(listStartTimeSlots);
-		checkBookDoesNotExceedMaxAllowedTime(listStartTimeSlots);
-		checkclassroomIsAvailable(booking.idClassroom(), bookingStart, bookingFinish);
-		checkUserHasBookingsLeft(idUser, bookingStart);
-		
-		return List.of(bookingStart, bookingFinish);
-	}
-	
-	// There is no actual need to convert into TimeSlots, but by doing so, we validate them (see TimeSlot class)
-	// That is reason the method does not return anything
-	private void checkTimeSlotsAreValid (List<LocalDateTime> listSlots) { 
-		listSlots.stream()
-		.map(slot -> new TimeSlot(slot, weeklySchedule, slotDuration))
-		// we do not return the list, since we do not need it (see comment above), but we do need a terminal operation for the stream
-		.collect(Collectors.toList());
-	}
-
-	private void checkSlotsAreConsecutive(List<LocalDateTime> listSlots) {
-		for(int i=0; i < listSlots.size() - 1; i++) {
-			if(!listSlots.get(i).plusMinutes(slotDuration).equals(listSlots.get(i+1))) {
-				throw new InvalidBookingException("Booking slots are not consecutive");
-			}
-		}
-	}
-	
-	private void checkBookDoesNotExceedMaxAllowedTime(List<LocalDateTime> listSlots) {
-		int intendedBookingDuration = listSlots.size() * slotDuration;
-		if(intendedBookingDuration >  bookingMaxDuration) {
-			throw new InvalidBookingException("Booking exceeds maximum duration allowed");
-		}
-	}
-	
-	private void checkclassroomIsAvailable (int idClassroom, LocalDateTime start, LocalDateTime finish) {
-		if(bookingRepository.findActiveBookingsForClassroomByPeriod(idClassroom, start, finish).size() != 0) {
-			throw new InvalidBookingException("Classroom is not available for this time period");
-		}
-	}
-	
-	private void checkUserHasBookingsLeft(int idUser, LocalDateTime start) {		
-	    LocalDateTime weekStart = start
-	        .with(DayOfWeek.MONDAY)
-	        .withHour(8).withMinute(0).withSecond(0).withNano(0);
-
-	    LocalDateTime weekEnd = start
-	        .with(DayOfWeek.SUNDAY)
-	        .withHour(23).withMinute(59).withSecond(0).withNano(0);
-	    
-	    long bookingsForUserThatWeek = bookingRepository.findBookingsByUser(idUser).stream()
-	    					.filter(booking ->  booking.getStatus() == BookingStatus.ACTIVE && 
-	    										booking.getStart().isAfter(weekStart) 
-	    										&& booking.getFinish().isBefore(weekEnd))
-	    					.count();
-	    
-	    if(bookingsForUserThatWeek >= maxNumberBookings) {
-			throw new InvalidBookingException("User has reached the maximum number of weekly bookings");
-	    }
-	}
-	
-    // This is the core enforcement of our pragmatic denormalization strategy (see WatchAlert entity comment over email field).
+	// This is the core enforcement of our pragmatic denormalization strategy (see WatchAlert entity comment over email field).
 	// Since this thread runs under the context  of the user performing the cancellation, we cannot resolve 
 	// the targets' email via ThreadLocal. By reading the email addresses directly from the local DB, 
     // we publish to Kafka with zero latency and microservices are completely independent from each other.
