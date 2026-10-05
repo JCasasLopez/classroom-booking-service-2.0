@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import dev.jcasaslopez.booking.domain.BookingPeriod;
-import dev.jcasaslopez.booking.domain.TimeSlot;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.exception.InvalidBookingException;
@@ -49,7 +48,7 @@ public class BookingValidator {
 		LocalDateTime bookingStart = sortedStartTimes.get(0);
 		LocalDateTime bookingFinish = sortedStartTimes.get(sortedStartTimes.size()-1).plusMinutes(slotDuration);
 		
-		checkTimeSlotsAreValid(sortedStartTimes);
+		checkTimeStartTimesAreValid(sortedStartTimes, weeklySchedule, slotDuration);
 		
 		if(bookingStart.isBefore(LocalDateTime.now())) {
 			throw new IllegalArgumentException("Booking a past period is not allowed");
@@ -63,14 +62,8 @@ public class BookingValidator {
 		return new BookingPeriod(bookingStart, bookingFinish);
 	}
 	
-	// Each start time is converted into a TimeSlot only for its side effect: the TimeSlot
-	// constructor validates the slot (opening hours, closed days, valid interval, closing time)
-	// and throws if it is not valid. The resulting objects are deliberately discarded:
-	// a booking only needs its overall start and finish, not the intermediate slots.
-	// Validating through the constructor keeps the rules in a single place (TimeSlot),
-	// which guarantees that no invalid TimeSlot can exist.
-	private void checkTimeSlotsAreValid(List<LocalDateTime> startTimes) {
-	    startTimes.forEach(start -> new TimeSlot(start, weeklySchedule, slotDuration));
+	private void checkTimeStartTimesAreValid(List<LocalDateTime> startTimes,  WeeklySchedule weeklySchedule, int slotDuration) {
+	    startTimes.forEach(start -> SlotValidator.validate(start, weeklySchedule, slotDuration));
 	}
 	
 	private void checkSlotsAreConsecutive(List<LocalDateTime> listSlots) {
@@ -107,4 +100,5 @@ public class BookingValidator {
 	        throw new InvalidBookingException("User has reached the maximum number of weekly bookings");
 	    }
 	}
+	
 }
