@@ -7,6 +7,6 @@ import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
 
 public interface WatchAlertService {
 	
-	WatchAlertResponseDto addWatchAlert(Long idBooking);
-	List<WatchAlertResponseDto> watchAlertsListByUserAndTimePeriod(LocalDateTime start, LocalDateTime finish);	
+	WatchAlertResponseDto addWatchAlert(Long idBooking, String email);
+	List<WatchAlertResponseDto> watchAlertsListByUserAndTimePeriod(LocalDateTime start, LocalDateTime finish, String email);	
 }

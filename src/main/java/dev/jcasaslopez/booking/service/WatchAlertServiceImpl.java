@@ -18,7 +18,6 @@ import dev.jcasaslopez.booking.mapper.WatchAlertMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.repository.WatchAlertRepository;
 import dev.jcasaslopez.booking.validator.ClassroomValidator;
-import dev.jcasaslopez.classroom.shared.context.UserContext;
 import dev.jcasaslopez.classroom.shared.enums.NotificationType;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
@@ -46,7 +45,7 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 	}
 
 	@Override
-	public WatchAlertResponseDto addWatchAlert(Long idBooking) {
+	public WatchAlertResponseDto addWatchAlert(Long idBooking, String email) {
 		WatchAlert watchAlert = mapper.toEntity(new WatchAlertRequestDto(idBooking));
 		
 		Booking booking = bookingRepository.findById(idBooking)
@@ -59,7 +58,7 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 		classroomValidator.validateClassroomExists(booking.getIdClassroom());
 				
 		WatchAlert savedWatchAlert = watchAlertRepository.save(watchAlert);
-		eventPublisher.publishBookingRelatedEvent(NotificationType.WATCH_ALERT_CONFIRMED, savedWatchAlert, UserContext.getEmail());
+		eventPublisher.publishBookingRelatedEvent(NotificationType.WATCH_ALERT_CONFIRMED, savedWatchAlert, email);
 	
 		logger.info("Watch alert created: Classroom ID= {}, User ID= {}, Start= {}, Finish= {}", 
 				booking.getIdClassroom(), booking.getIdUser(), booking.getStart(), booking.getFinish());
@@ -68,10 +67,10 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 	}
 
 	@Override
-	public List<WatchAlertResponseDto> watchAlertsListByUserAndTimePeriod(LocalDateTime startSearch, LocalDateTime finishSearch) {
+	public List<WatchAlertResponseDto> watchAlertsListByUserAndTimePeriod(LocalDateTime startSearch, LocalDateTime finishSearch, String email) {
 		if(!startSearch.isBefore(finishSearch)) throw new IllegalArgumentException("Start time has to preced finish time");
 		
-		return watchAlertRepository.findWatchAlertsByUserAndTimePeriod(UserContext.getEmail(), startSearch, finishSearch)
+		return watchAlertRepository.findWatchAlertsByUserAndTimePeriod(email, startSearch, finishSearch)
 						.stream()
 						.map(watchAlert -> mapper.toResponseDto(watchAlert, classroomsStore, bookingRepository))
 						.toList();

@@ -18,6 +18,7 @@ import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
 import dev.jcasaslopez.booking.service.SearchService;
 import dev.jcasaslopez.booking.service.WatchAlertService;
 import dev.jcasaslopez.booking.util.BookingEndpoints;
+import dev.jcasaslopez.classroom.shared.context.UserContext;
 import dev.jcasaslopez.classroom.shared.dto.StandardResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -69,10 +70,9 @@ public class WatchAlertController {
 	@SecurityRequirement(name = "bearerAuth")
 	@PostMapping(value=BookingEndpoints.WATCH_ALERTS)
 	public ResponseEntity<StandardResponse<WatchAlertResponseDto>> addWatchAlert(@RequestParam @NotNull @Positive Long idBooking) {
-
 		logger.debug("POST /watch-alerts - Creating watch alert for idBooking={}", idBooking);
 
-		WatchAlertResponseDto watchAlert = watchAlertService.addWatchAlert(idBooking);
+		WatchAlertResponseDto watchAlert = watchAlertService.addWatchAlert(idBooking, UserContext.getEmail());
 
 		StandardResponse<WatchAlertResponseDto> response = new StandardResponse<>("Watch alert created successfully", watchAlert, HttpStatus.CREATED);
 
@@ -101,7 +101,7 @@ public class WatchAlertController {
 
 		logger.debug("GET /watch-alerts - Retrieving user watch alerts with startSearch={}, finishSearch={}", startSearch, finishSearch);
 
-		List<WatchAlertResponseDto> watchAlerts = watchAlertService.watchAlertsListByUserAndTimePeriod(startSearch, finishSearch);
+		List<WatchAlertResponseDto> watchAlerts = watchAlertService.watchAlertsListByUserAndTimePeriod(startSearch, finishSearch, UserContext.getEmail());
 
 		StandardResponse<List<WatchAlertResponseDto>> response = new StandardResponse<>("Watch alerts retrieved successfully", watchAlerts, HttpStatus.OK);
 
