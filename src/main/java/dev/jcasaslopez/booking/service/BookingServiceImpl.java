@@ -50,9 +50,7 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	@Override
-	public BookingResponseDto book(BookingRequestDto booking) {
-	    int idUser = UserContext.getIdUser();
-
+	public BookingResponseDto book(BookingRequestDto booking, int idUser) {
 		// It returns a list with the booking start and finish
 		BookingPeriod bookingPeriod = bookingValidator.validateBooking(booking, idUser);
 		
@@ -75,9 +73,7 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	@Transactional
-	public void cancel(Long idBooking) {		
-	    int idUser = UserContext.getIdUser();
-		
+	public void cancel(Long idBooking, int idUser) {				
 	    // Both "booking not found" and "booking belongs to another user" are deliberately
 	    // mapped to the same exception. Distinguishing between them would let an attacker
 	    // enumerate valid booking IDs simply by observing which error is returned.
@@ -98,8 +94,7 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	@Override
-	public List<BookingResponseDto> bookingsByUser() {
-		int idUser = UserContext.getIdUser();
+	public List<BookingResponseDto> bookingsByUser(int idUser) {
 		logger.debug("Searching booking history for user {}", idUser);
 				
 		return bookingRepository.findBookingsByUser(idUser).stream()
