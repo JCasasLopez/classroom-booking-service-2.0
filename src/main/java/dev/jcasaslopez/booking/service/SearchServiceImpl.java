@@ -112,8 +112,8 @@ public class SearchServiceImpl implements SearchService {
 		DayOfWeek searchStartDayOfWeek = start.getDayOfWeek();
 		DayOfWeek searchFinishDayOfWeek = finish.getDayOfWeek();
 		
-		if(searchStartDayOfWeek != searchFinishDayOfWeek) {
-			throw new IllegalArgumentException("Start and finish have to be in the same day");
+		if (!start.toLocalDate().equals(finish.toLocalDate())) {
+		    throw new IllegalArgumentException("Start and finish have to be in the same day");
 		}
 
 		OpeningHours startOpeningHours = weeklySchedule.getWeeklySchedule().get(searchStartDayOfWeek);
