@@ -20,10 +20,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
+import dev.jcasaslopez.booking.entity.Booking;
+import dev.jcasaslopez.booking.enums.BookingStatus;
+import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
+import dev.jcasaslopez.booking.exception.DataIntegrityException;
 import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.validator.ClassroomValidator;
@@ -50,6 +55,14 @@ public class SearchServiceTest {
 	
 	private static final LocalDateTime START = nextMonday();
 	private static final LocalDateTime FINISH = START.plusHours(10);
+	private static final int ID_CLASSROOM = 1;
+	private static final long ID_BOOKING = 5;
+	private static final LocalDateTime SLOT_FINISH = START.plusMinutes(30);
+
+	private Booking bookingInSlot(long idBooking) {
+	    return new Booking(idBooking, 1, ID_CLASSROOM, START, SLOT_FINISH,
+	            START.minusDays(1), BookingStatus.ACTIVE);
+	}
 	
 	private static LocalDateTime nextSunday() {
 	    LocalDate today = LocalDate.now();
@@ -131,6 +144,44 @@ public class SearchServiceTest {
 	}
 	
 	@Test
+	void findBooking_returns_the_id_of_the_only_active_booking() {
+	    when(bookingRepository.findActiveBookingsForClassroomByPeriod(ID_CLASSROOM, START, SLOT_FINISH))
+	            .thenReturn(List.of(bookingInSlot(ID_BOOKING)));
+
+	    Long result = searchService.findBookingByClassroomAndTimePeriod(ID_CLASSROOM, START, SLOT_FINISH);
+
+	    assertEquals(ID_BOOKING, result);
+	}
+
+	@Test
+	void findBooking_without_active_booking_throws_not_found() {
+	    when(bookingRepository.findActiveBookingsForClassroomByPeriod(ID_CLASSROOM, START, SLOT_FINISH))
+	            .thenReturn(List.of());
+
+	    assertThrows(BookingNotFoundExceptions.class,
+	            () -> searchService.findBookingByClassroomAndTimePeriod(ID_CLASSROOM, START, SLOT_FINISH));
+	}
+
+	@Test
+	void findBooking_with_more_than_one_booking_throws_data_integrity() {
+	    when(bookingRepository.findActiveBookingsForClassroomByPeriod(ID_CLASSROOM, START, SLOT_FINISH))
+	            .thenReturn(List.of(bookingInSlot(ID_BOOKING), bookingInSlot(ID_BOOKING + 1)));
+
+	    assertThrows(DataIntegrityException.class,
+	            () -> searchService.findBookingByClassroomAndTimePeriod(ID_CLASSROOM, START, SLOT_FINISH));
+	}
+
+	@Test
+	void findBooking_with_period_longer_than_a_slot_throws_illegal_argument() {
+	    LocalDateTime tooLong = START.plusMinutes(60);
+
+	    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+	            () -> searchService.findBookingByClassroomAndTimePeriod(ID_CLASSROOM, START, tooLong));
+
+	    assertEquals("The search period must match exactly the minimum time slot duration", ex.getMessage());
+	}
+	
+	@Test
 	void search_service_does_not_allow_searches_for_the_past() {
 		// Arrange
 		LocalDateTime pastStart = LocalDateTime.of(2026, 5, 27, 11, 0);
@@ -142,6 +193,19 @@ public class SearchServiceTest {
 		
 		// The exception message must be checked to identify the exact cause, since all validation failures throw IllegalArgumentException	
 		assertTrue(ex.getMessage().equals("Search range cannot be in the past"));				
+	}
+	
+	@ParameterizedTest
+	@ValueSource(longs = {0, -30})
+	void search_service_does_not_allow_start_equal_or_after_finish(long minutesFromStart) {
+		// Arrange
+		LocalDateTime finish = START.plusMinutes(minutesFromStart);
+
+		// Act & Assert
+	    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+	            () -> searchService.classroomsAvailableByPeriod(START, finish));
+
+	    assertEquals(String.format("Start %s must precede finish %s", START, finish), ex.getMessage());
 	}
 	
 	@Test
@@ -156,6 +220,17 @@ public class SearchServiceTest {
 		assertTrue(ex.getMessage().equals("Start and finish have to be in the same day"));			
 	}
 	
+	@Test
+	void search_service_does_not_allow_searches_on_the_same_weekday_of_different_weeks() {
+		// Arrange
+
+		// Act & Assert
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+				() -> searchService.classroomsAvailableByPeriod(START, START.plusDays(7)));
+
+		assertEquals("Start and finish have to be in the same day", ex.getMessage());
+	}
+
 	@Test
 	void search_service_does_not_allow_searches_on_a_closed_day() {
 		// Search on a SUNDAY
