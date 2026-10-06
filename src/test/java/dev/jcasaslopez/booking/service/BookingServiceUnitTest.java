@@ -1,7 +1,9 @@
 package dev.jcasaslopez.booking.service;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -87,6 +89,8 @@ public class BookingServiceUnitTest {
 
 		// Act & Assert
 		assertThrows(BookingNotFoundExceptions.class, () -> bookingService.cancel(ID_BOOKING, ID_USER, EMAIL));
+		verifyNoInteractions(eventPublisher);
+		verify(bookingRepository, never()).modifyBookingStatus(ID_BOOKING, BookingStatus.CANCELLED);
 	}
 
 	@Test
@@ -104,6 +108,8 @@ public class BookingServiceUnitTest {
 
 		// Act & Assert
 		assertThrows(BookingNotFoundExceptions.class, () -> bookingService.cancel(ID_BOOKING, ID_USER, EMAIL));
+		verifyNoInteractions(eventPublisher);
+		verify(bookingRepository, never()).modifyBookingStatus(ID_BOOKING, BookingStatus.CANCELLED);
 	}
 
 	@Test
@@ -121,6 +127,8 @@ public class BookingServiceUnitTest {
 
 		// Act & Assert
 		assertThrows(InvalidBookingStatusException.class, () -> bookingService.cancel(ID_BOOKING, ID_USER, EMAIL));
+		verifyNoInteractions(eventPublisher);
+		verify(bookingRepository, never()).modifyBookingStatus(ID_BOOKING, BookingStatus.CANCELLED);
 	}
 
 	private Booking activeBookingToCancel() {
