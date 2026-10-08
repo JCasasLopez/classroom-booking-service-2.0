@@ -65,8 +65,7 @@ public class EventPublisherTest {
 	
 	@ParameterizedTest
 	@MethodSource("NotificationFieldsProvider")
-	void publishBookingRelatedEvent_sends_correct_message_when_notification_type_is_the_right_type
-							(NotificationType type, String expectedMessage) {
+	void event_publisher_builds_correct_message_for_booking_options(NotificationType type, String expectedMessage) {
 		// Arrange
 		
 		// Act
@@ -99,7 +98,7 @@ public class EventPublisherTest {
 	}
 
 	@Test
-	void publishBookingRelatedEvent_throws_exception_when_notification_type_is_the_wrong_type_for_bookings() {
+	void event_publisher_throws_exception_when_notification_is_the_wrong_type() {
 		// Arrange
 		
 		// Act & Assert
@@ -110,7 +109,7 @@ public class EventPublisherTest {
 	
 	// Tests the second overloaded method
 	@Test
-	void publishBookingRelatedEvent_sends_correct_message_when_notification_type_is_watch_alert_confirmed() {
+	void event_publisher_builds_correct_message_for_watch_alert_confirmed() {
 		// Arrange
 		when(bookingRepository.findById(WATCH_ALERT.getIdBooking())).thenReturn(Optional.of(BOOKING));
 		String expectedSubject = NotificationType.WATCH_ALERT_CONFIRMED.getSubject();
@@ -132,7 +131,7 @@ public class EventPublisherTest {
 	}
 
 	@Test
-	void publishBookingRelatedEvent_throws_exception_when_notification_type_is_the_wrong_type_for_watch_alerts() {
+	void event_publisher_throws_exception_when_notification_type_is_wrong_for_watch_alerts() {
 		// Arrange
 		
 		// Act & Assert
