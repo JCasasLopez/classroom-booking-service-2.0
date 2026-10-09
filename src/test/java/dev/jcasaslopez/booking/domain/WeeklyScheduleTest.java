@@ -12,13 +12,15 @@ import org.junit.jupiter.api.Test;
 
 public class WeeklyScheduleTest {
 	
+	private static final SlotDuration SLOT_DURATION_30 = new SlotDuration(30);
+	
 	@Test
     void constructor_with_less_than_seven_days_throws_IllegalArgumentException() {
 		// Arrange
         List<String> hours = List.of("9:00-22:00", "9:00-22:00", "9:00-22:00");
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> new WeeklySchedule(hours));
+        assertThrows(IllegalArgumentException.class, () -> new WeeklySchedule(hours, SLOT_DURATION_30));
     }
 
     @Test
@@ -30,7 +32,7 @@ public class WeeklyScheduleTest {
         );
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> new WeeklySchedule(hours));
+        assertThrows(IllegalArgumentException.class, () -> new WeeklySchedule(hours, SLOT_DURATION_30));
     }
 
     @Test
@@ -42,7 +44,7 @@ public class WeeklyScheduleTest {
         );
 
     	// Act
-    	WeeklySchedule schedule = new WeeklySchedule(hours);
+    	WeeklySchedule schedule = new WeeklySchedule(hours, SLOT_DURATION_30);
 
      // Assert
         assertAll(

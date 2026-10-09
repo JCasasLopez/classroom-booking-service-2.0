@@ -11,13 +11,16 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import dev.jcasaslopez.booking.domain.DaySchedule;
+import dev.jcasaslopez.booking.domain.SlotDuration;
 
 public class DayScheduleParserTest {
+	
+	private static final SlotDuration SLOT_DURATION_30 = new SlotDuration(30);
 	
 	@Test
 	void parse_with_valid_range_returns_correctly_parsed_open_schedule() {
 	    // Act
-	    DaySchedule result = DayScheduleParser.parse("9:00-11:00", DayOfWeek.SUNDAY);
+	    DaySchedule result = DayScheduleParser.parse("9:00-11:00", DayOfWeek.SUNDAY, SLOT_DURATION_30);
 
 	    // Assert
 	    assertEquals(new DaySchedule.Open(LocalTime.of(9, 0), LocalTime.of(11, 0)), result);
@@ -26,7 +29,7 @@ public class DayScheduleParserTest {
 	@Test
 	void parse_on_a_closed_day_returns_closed_schedule() {
 	    // Act
-	    DaySchedule result = DayScheduleParser.parse("CLOSED", DayOfWeek.SUNDAY);
+	    DaySchedule result = DayScheduleParser.parse("CLOSED", DayOfWeek.SUNDAY, SLOT_DURATION_30);
 
 	    // Assert
 	    assertEquals(DaySchedule.CLOSED, result);
@@ -38,7 +41,7 @@ public class DayScheduleParserTest {
 		// *** See application.properties to check out valid time formats ***
 
 		// Act & Assert
-		assertThrows(IllegalArgumentException.class, () -> DayScheduleParser.parse(rawOpeningTimes, DayOfWeek.SUNDAY));
+		assertThrows(IllegalArgumentException.class, () -> DayScheduleParser.parse(rawOpeningTimes, DayOfWeek.SUNDAY, SLOT_DURATION_30));
 
 	}
 

@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import dev.jcasaslopez.booking.domain.SlotDuration;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
@@ -21,13 +22,16 @@ import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
 public class BookingMapperTest {
 	
-	private static final BookingMapper mapper = new BookingMapper(30);
+	private static final SlotDuration SLOT_DURATION_30 = new SlotDuration(30);
+
+	private static final BookingMapper mapper = new BookingMapper(SLOT_DURATION_30);
 	
 	private static final String ANY_EMAIL = "user@example.com";
 	private static final int USER_ID = 1;
 	
 	private final WeeklySchedule weeklySchedule = 
-			new WeeklySchedule(List.of("9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "CLOSED", "CLOSED"));
+			new WeeklySchedule(List.of("9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "CLOSED", "CLOSED"), 
+					SLOT_DURATION_30);
 
 	private final List<ClassroomEvent> classroomsStore = List.of(
 		    new ClassroomEvent(1, "Blue Whale Auditorium", 30, true, true),

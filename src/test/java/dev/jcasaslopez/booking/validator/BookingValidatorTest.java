@@ -26,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import dev.jcasaslopez.booking.domain.BookingPeriod;
+import dev.jcasaslopez.booking.domain.SlotDuration;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.entity.Booking;
@@ -44,13 +45,15 @@ public class BookingValidatorTest {
 	    return nextMonday.atTime(9, 0);
 	}
 	
-	private static final int SLOT_DURATION = 30;
+	private static final SlotDuration SLOT_DURATION_30 = new SlotDuration(30);
+	private static final int SLOT_DURATION_IN_MINUTES = SLOT_DURATION_30.minutes();
+	
 	private static final int BOOKING_MAX_DURATION = 120;
 	private static final int MAX_NUMBER_BOOKINGS = 1;
 	
 	private static final LocalDateTime START = nextMondayAt9();
-	private static final LocalDateTime SLOT_2 = START.plusMinutes(SLOT_DURATION);
-	private static final LocalDateTime SLOT_3 = START.plusMinutes(SLOT_DURATION*2);
+	private static final LocalDateTime SLOT_2 = START.plusMinutes(SLOT_DURATION_IN_MINUTES);
+	private static final LocalDateTime SLOT_3 = START.plusMinutes(SLOT_DURATION_IN_MINUTES*2);
 	
 	private static final int USER_ID = 1;
 	private static final int CLASSROOM_ID = 1;
@@ -59,12 +62,12 @@ public class BookingValidatorTest {
 	
 	private WeeklySchedule buildTestWeeklySchedule() {
 	    List<String> hours = new ArrayList<> (List.of("09:00-22:00", "09:00-22:00", "09:00-22:00", "09:00-22:00", "09:00-22:00", "10:00-14:00", "CLOSED"));
-	    return new WeeklySchedule(hours);
+	    return new WeeklySchedule(hours, SLOT_DURATION_30);
 	}
 	
 	@BeforeEach
 	void setUp() {
-		bookingValidator = new BookingValidator(SLOT_DURATION, BOOKING_MAX_DURATION, MAX_NUMBER_BOOKINGS, 
+		bookingValidator = new BookingValidator(SLOT_DURATION_30, BOOKING_MAX_DURATION, MAX_NUMBER_BOOKINGS, 
 												buildTestWeeklySchedule(), bookingRepository, classroomValidator);
 	}
 	
@@ -91,7 +94,7 @@ public class BookingValidatorTest {
 		// Act & Assert
 		BookingPeriod bookingPeriod = bookingValidator.validateBooking(bookingRequest, USER_ID);	
 		assertAll(() -> assertEquals(START, bookingPeriod.start()),
-				() -> assertEquals(SLOT_2.plusMinutes(SLOT_DURATION), bookingPeriod.finish())
+				() -> assertEquals(SLOT_2.plusMinutes(SLOT_DURATION_IN_MINUTES), bookingPeriod.finish())
 				);
 	}
 	
@@ -163,7 +166,7 @@ public class BookingValidatorTest {
 	@Test
 	void if_the_booking_is_exactly_the_maximum_length_does_not_throw_exception() {
 		// Arrange
-		LocalDateTime SLOT_4 = START.plusMinutes(SLOT_DURATION*3);
+		LocalDateTime SLOT_4 = START.plusMinutes(SLOT_DURATION_IN_MINUTES*3);
 		BookingRequestDto bookingRequest = new BookingRequestDto(CLASSROOM_ID, List.of(START, SLOT_2, SLOT_3, SLOT_4));
 
 		// Act & Assert
@@ -174,8 +177,8 @@ public class BookingValidatorTest {
 	@Test
 	void if_the_booking_exceeds_maximum_length_throws_exception() {
 		// Arrange
-		LocalDateTime SLOT_4 = START.plusMinutes(SLOT_DURATION*3);
-		LocalDateTime SLOT_5 = START.plusMinutes(SLOT_DURATION*4);
+		LocalDateTime SLOT_4 = START.plusMinutes(SLOT_DURATION_IN_MINUTES*3);
+		LocalDateTime SLOT_5 = START.plusMinutes(SLOT_DURATION_IN_MINUTES*4);
 		
 		// 5 slots -> 150' exceed the maximum length set of 120'
 		BookingRequestDto request = new BookingRequestDto(CLASSROOM_ID, List.of(START, SLOT_2, SLOT_3, SLOT_4, SLOT_5));
@@ -192,7 +195,7 @@ public class BookingValidatorTest {
 	void the_weekly_limit_is_checked_against_monday_midnight_and_the_following_monday() {
 		// Arrange: a Wednesday booking, so Monday is not the day of the booking itself
 		LocalDateTime wednesday = START.plusDays(2);
-		BookingRequestDto request = new BookingRequestDto(CLASSROOM_ID, List.of(wednesday, wednesday.plusMinutes(SLOT_DURATION)));
+		BookingRequestDto request = new BookingRequestDto(CLASSROOM_ID, List.of(wednesday, wednesday.plusMinutes(SLOT_DURATION_IN_MINUTES)));
 		when(bookingRepository.findActiveBookingsForClassroomByPeriod(anyInt(), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.thenReturn(List.of());
 		when(bookingRepository.countBookingsByUserInPeriod(anyInt(), any(LocalDateTime.class), any(LocalDateTime.class)))

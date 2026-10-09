@@ -7,10 +7,10 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import dev.jcasaslopez.booking.domain.DaySchedule;
+import dev.jcasaslopez.booking.domain.SlotDuration;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.SlotStatusDto;
 import dev.jcasaslopez.booking.entity.Booking;
@@ -31,19 +31,17 @@ public class SearchServiceImpl implements SearchService {
 	private final SlotAvailabilityMapper slotAvailabilityMapper;
 	private final List<ClassroomEvent> classroomsStore;
 	private final WeeklySchedule weeklySchedule;
-	private final Duration timeSlotDuration;
-;
+	private final SlotDuration slotDuration;
 	
 	public SearchServiceImpl(BookingRepository bookingRepository, ClassroomValidator classroomValidator,
 			SlotAvailabilityMapper slotAvailabilityMapper, List<ClassroomEvent> classroomsStore,
-			WeeklySchedule weeklySchedule, @Value("${time-slot.duration}") int timeSlotDuration) {
+			WeeklySchedule weeklySchedule, SlotDuration slotDuration) {
 		this.bookingRepository = bookingRepository;
 		this.classroomValidator = classroomValidator;
 		this.slotAvailabilityMapper = slotAvailabilityMapper;
 		this.classroomsStore = classroomsStore;
 		this.weeklySchedule = weeklySchedule;
-		this.timeSlotDuration =  Duration.ofMinutes(timeSlotDuration);
-;
+		this.slotDuration =  slotDuration;
 	}
 
 	@Override
@@ -136,11 +134,12 @@ public class SearchServiceImpl implements SearchService {
 	}
 	
 	private void validateIsSingleTimeSlot(LocalDateTime start, LocalDateTime finish) {
+		Duration slotDurationInMinutes = Duration.ofMinutes(slotDuration.minutes());
 	    Duration requested = Duration.between(start, finish);
 	    
-	    if (!requested.equals(timeSlotDuration)) {
+	    if (!requested.equals(slotDurationInMinutes)) {
 	    	 logger.error("Invalid search period: expected duration {} but got {} (start={}, finish={})",
-	                 timeSlotDuration, requested, start, finish);
+	    			 slotDurationInMinutes, requested, start, finish);
 	        throw new IllegalArgumentException("The search period must match exactly the minimum time slot duration");
 	    }
 	}

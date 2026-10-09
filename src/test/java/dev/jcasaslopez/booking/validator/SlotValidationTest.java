@@ -13,6 +13,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import dev.jcasaslopez.booking.domain.SlotDuration;
 import dev.jcasaslopez.booking.domain.TimeSlot;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.exception.SlotNotValidException;
@@ -20,10 +21,11 @@ import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
 
 public class SlotValidationTest {
 	
+	private static final SlotDuration SLOT_DURATION_30 = new SlotDuration(30);
+	
 	private final WeeklySchedule weeklySchedule = 
-			new WeeklySchedule(List.of("9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "CLOSED", "CLOSED"));
-
-	private static final int SLOT_DURATION = 30;
+			new WeeklySchedule(List.of("9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "CLOSED", "CLOSED"),
+					SLOT_DURATION_30);
 	
 	@ParameterizedTest
 	@MethodSource("openSlots")
@@ -31,7 +33,7 @@ public class SlotValidationTest {
 		// Arrange
 
 		// Act & Assert
-		assertDoesNotThrow(() -> new TimeSlot(start, weeklySchedule, SLOT_DURATION));
+		assertDoesNotThrow(() -> new TimeSlot(start, weeklySchedule, SLOT_DURATION_30));
 	}
 
 	private static Stream<Arguments> openSlots(){
@@ -53,7 +55,7 @@ public class SlotValidationTest {
 		// Arrange
 
 		// Act & Assert
-		SlotOutOfOpeningHoursException ex = assertThrows(SlotOutOfOpeningHoursException.class, () -> new TimeSlot(start, weeklySchedule, 30));
+		SlotOutOfOpeningHoursException ex = assertThrows(SlotOutOfOpeningHoursException.class, () -> new TimeSlot(start, weeklySchedule, SLOT_DURATION_30));
 		assertEquals(exceptionMessage, ex.getMessage());
 	}
 
@@ -79,7 +81,7 @@ public class SlotValidationTest {
 	@Test
 	void validation_throws_SlotNotValidException_when_start_is_not_valid () {
 		// Act & Assert
-		assertThrows(SlotNotValidException.class, () -> new TimeSlot(LocalDateTime.of(2026, 4, 21, 11, 17), weeklySchedule, 30));
+		assertThrows(SlotNotValidException.class, () -> new TimeSlot(LocalDateTime.of(2026, 4, 21, 11, 17), weeklySchedule, SLOT_DURATION_30));
 	}
 
 

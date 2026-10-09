@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import dev.jcasaslopez.booking.domain.BookingPeriod;
+import dev.jcasaslopez.booking.domain.SlotDuration;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.exception.InvalidBookingException;
@@ -16,14 +17,14 @@ import dev.jcasaslopez.booking.repository.BookingRepository;
 @Component
 public class BookingValidator {
 	
-	private final int slotDuration; 
+	private final SlotDuration slotDuration; 
 	private final int bookingMaxDuration; 
 	private final int maxNumberBookings;
 	private final WeeklySchedule weeklySchedule;
 	private final BookingRepository bookingRepository;
 	private final ClassroomValidator classroomValidator;
 	
-	public BookingValidator(@Value("${time-slot.duration}") int slotDuration, 
+	public BookingValidator(SlotDuration slotDuration, 
 			@Value("${booking.maximum-duration}") int bookingMaxDuration, 
 			@Value("${booking.maximum-number-per-week}") int maxNumberBookings,
 			WeeklySchedule weeklySchedule, 
@@ -46,7 +47,7 @@ public class BookingValidator {
 
 		// The list of  start time slots in BookingRequestDto is annotated with @NotEmpty, so this line is safe
 		LocalDateTime bookingStart = sortedStartTimes.get(0);
-		LocalDateTime bookingFinish = sortedStartTimes.get(sortedStartTimes.size()-1).plusMinutes(slotDuration);
+		LocalDateTime bookingFinish = sortedStartTimes.get(sortedStartTimes.size()-1).plusMinutes(slotDuration.minutes());
 		
 		checkTimeStartTimesAreValid(sortedStartTimes, weeklySchedule, slotDuration);
 		
@@ -62,20 +63,20 @@ public class BookingValidator {
 		return new BookingPeriod(bookingStart, bookingFinish);
 	}
 	
-	private void checkTimeStartTimesAreValid(List<LocalDateTime> startTimes,  WeeklySchedule weeklySchedule, int slotDuration) {
+	private void checkTimeStartTimesAreValid(List<LocalDateTime> startTimes,  WeeklySchedule weeklySchedule, SlotDuration slotDuration) {
 	    startTimes.forEach(start -> SlotValidator.validate(start, weeklySchedule, slotDuration));
 	}
 	
 	private void checkSlotsAreConsecutive(List<LocalDateTime> listSlots) {
 		for(int i=0; i < listSlots.size() - 1; i++) {
-			if(!listSlots.get(i).plusMinutes(slotDuration).equals(listSlots.get(i+1))) {
+			if(!listSlots.get(i).plusMinutes(slotDuration.minutes()).equals(listSlots.get(i+1))) {
 				throw new InvalidBookingException("Booking slots are not consecutive");
 			}
 		}
 	}
 	
 	private void checkBookDoesNotExceedMaxAllowedTime(List<LocalDateTime> listSlots) {
-		int intendedBookingDuration = listSlots.size() * slotDuration;
+		int intendedBookingDuration = listSlots.size() * slotDuration.minutes();
 		if(intendedBookingDuration >  bookingMaxDuration) {
 			throw new InvalidBookingException("Booking exceeds maximum duration allowed");
 		}

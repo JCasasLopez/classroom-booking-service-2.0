@@ -15,14 +15,16 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class TimeSlotTest {
 	
+	private static final SlotDuration SLOT_DURATION_30 = new SlotDuration(30);
+	
 	private final WeeklySchedule weeklySchedule = 
-			new WeeklySchedule(List.of("9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "CLOSED", "CLOSED"));
+			new WeeklySchedule(List.of("9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "CLOSED", "CLOSED"), SLOT_DURATION_30);
 
 	
 	@Test
 	void null_start_throws_IllegalArgumentException() {
 		// Act & Assert
-		assertThrows(IllegalArgumentException.class, () -> new TimeSlot(null, weeklySchedule, 30));
+		assertThrows(IllegalArgumentException.class, () -> new TimeSlot(null, weeklySchedule, SLOT_DURATION_30));
 	}
 
 	// Verify open slots (including edge cases) do not throw exception (via instatiation) and nextSlot() works as expected.
@@ -31,7 +33,7 @@ public class TimeSlotTest {
 	void nextSlot_returns_the_expected_slot_when_passed_a_valid_start(LocalDateTime slotStart, LocalDateTime nextSlotStart, 
 			LocalDateTime nextSlotFinish) {
 		// Arrange
-		TimeSlot timeSlot = new TimeSlot(slotStart, weeklySchedule, 30);
+		TimeSlot timeSlot = new TimeSlot(slotStart, weeklySchedule, SLOT_DURATION_30);
 
 		// Act
 		TimeSlot nextTimeSlot = timeSlot.nextSlot();

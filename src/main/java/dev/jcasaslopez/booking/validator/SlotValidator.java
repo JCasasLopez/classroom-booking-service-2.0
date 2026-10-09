@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dev.jcasaslopez.booking.domain.DaySchedule;
+import dev.jcasaslopez.booking.domain.SlotDuration;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.exception.SlotNotValidException;
 import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
@@ -16,8 +17,9 @@ public class SlotValidator {
 	
 	private static final Logger logger = LoggerFactory.getLogger(SlotValidator.class);
 	
-	public static void validate(LocalDateTime start, WeeklySchedule weeklySchedule, int slotDuration) {
+	public static void validate(LocalDateTime start, WeeklySchedule weeklySchedule, SlotDuration slotDuration) {
 		
+		int slotDurationInMinutes = slotDuration.minutes();
 		DayOfWeek day = start.getDayOfWeek();
 		DaySchedule daySchedule = weeklySchedule.scheduleFor(day);
 
@@ -34,13 +36,13 @@ public class SlotValidator {
 		long minutesSinceOpening = ChronoUnit.MINUTES.between(open.openingTime(), start.toLocalTime());
 
 		// Slots are anchored to the opening time: only start times that are an exact multiple of the slot 
-		// duration after opening are valid. E.g. opening at 9:00 with 15-minute slots: 9:00, 9:15, 9:30, 9:45...
-		if (minutesSinceOpening % slotDuration != 0) {
+		// duration after opening are valid. E.g. opening at 9:00 with 15-minute slots: 9:00, 9:30...
+		if (minutesSinceOpening % slotDurationInMinutes != 0) {
 			logger.debug("Slot validation failed: invalid start time {} ({}min since opening)", start, minutesSinceOpening);
 			throw new SlotNotValidException("Slot does not start at a valid interval");
 		}
 		
-		LocalDateTime slotEnd = start.plusMinutes(slotDuration);
+		LocalDateTime slotEnd = start.plusMinutes(slotDurationInMinutes);
 		LocalDateTime closing = start.toLocalDate().atTime(open.closingTime());
 
 		if (slotEnd.isAfter(closing)) {

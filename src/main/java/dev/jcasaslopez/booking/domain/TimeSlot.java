@@ -14,10 +14,10 @@ public class TimeSlot implements Comparable<TimeSlot>{
 
 	private final LocalDateTime start;
 	private final LocalDateTime finish;
-	private final int slotDuration;
+	private final SlotDuration slotDuration;
 	private final WeeklySchedule weeklySchedule;
 	
-	public TimeSlot(LocalDateTime start, WeeklySchedule weeklySchedule, int slotDuration) {		
+	public TimeSlot(LocalDateTime start, WeeklySchedule weeklySchedule, SlotDuration slotDuration) {		
 		if (start == null) throw new IllegalArgumentException("The start of a TimeSlot cannot be null");
 		this.start = start;
 		this.slotDuration = slotDuration;
@@ -26,7 +26,7 @@ public class TimeSlot implements Comparable<TimeSlot>{
 		SlotValidator.validate(start, weeklySchedule, slotDuration);
 		
 		// Built after validation of 'start'
-		this.finish = start.plusMinutes(slotDuration);
+		this.finish = start.plusMinutes(slotDuration.minutes());
 		logger.debug("TimeSlot created: start={}, finish={}", this.start, this.finish);
 	}
 	
@@ -40,7 +40,7 @@ public class TimeSlot implements Comparable<TimeSlot>{
 	}
 
 	public TimeSlot nextSlot () {
-		LocalDateTime nextSlotStart = this.getStart().plusMinutes(slotDuration);
+		LocalDateTime nextSlotStart = this.getStart().plusMinutes(slotDuration.minutes());
 		return new TimeSlot(nextSlotStart, weeklySchedule, slotDuration);
 	}
 

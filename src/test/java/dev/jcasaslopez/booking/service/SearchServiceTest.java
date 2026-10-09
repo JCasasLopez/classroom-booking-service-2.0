@@ -24,6 +24,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import dev.jcasaslopez.booking.domain.SlotDuration;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.enums.BookingStatus;
@@ -42,9 +43,11 @@ public class SearchServiceTest {
 	@Mock SlotAvailabilityMapper slotAvailabilityMapper;
 	SearchServiceImpl searchService;
 	
+	private static final SlotDuration SLOT_DURATION_30 = new SlotDuration(30);
+	
 	private WeeklySchedule buildTestWeeklySchedule() {
 	    List<String> hours = new ArrayList<> (List.of("09:00-22:00", "09:00-22:00", "09:00-22:00", "09:00-22:00", "09:00-22:00", "10:00-14:00", "CLOSED"));
-	    return new WeeklySchedule(hours);
+	    return new WeeklySchedule(hours, SLOT_DURATION_30);
 	}
 	
 	private static LocalDateTime nextMonday() {
@@ -89,7 +92,7 @@ public class SearchServiceTest {
 				slotAvailabilityMapper,
 				allClassrooms,
 				buildTestWeeklySchedule(),
-				30
+				SLOT_DURATION_30
 		);
 	}
 	
@@ -205,7 +208,7 @@ public class SearchServiceTest {
 	    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
 	            () -> searchService.classroomsAvailableByPeriod(START, finish));
 
-	    assertEquals(String.format("Start %s must precede finish %s", START, finish), ex.getMessage());
+	    assertEquals(String.format("Finish must be after start", START, finish), ex.getMessage());
 	}
 	
 	@Test

@@ -7,9 +7,9 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import dev.jcasaslopez.booking.domain.SlotDuration;
 import dev.jcasaslopez.booking.domain.TimeSlot;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.SlotStatusDto;
@@ -22,11 +22,11 @@ public class SlotAvailabilityMapper {
 	
 	private static final Logger logger = LoggerFactory.getLogger(SlotAvailabilityMapper.class);
 	
-	private final int slotDuration;
+	private final SlotDuration slotDuration;
 	private final WeeklySchedule weeklySchedule;
 	private final TimeSlotMapper mapper;
 	
-	public SlotAvailabilityMapper(@Value("${time-slot.duration}") int slotDuration, WeeklySchedule weeklySchedule,
+	public SlotAvailabilityMapper(SlotDuration slotDuration, WeeklySchedule weeklySchedule,
 			TimeSlotMapper mapper) {
 		this.slotDuration = slotDuration;
 		this.weeklySchedule = weeklySchedule;
@@ -68,7 +68,7 @@ public class SlotAvailabilityMapper {
 				// Out-of-opening-hours slot is skipped
 			    logger.debug("Skipping slot at {}: out of opening hours", cursor);
 			}
-			cursor = cursor.plusMinutes(slotDuration);
+			cursor = cursor.plusMinutes(slotDuration.minutes());
 		}
 		return grid;
 	}

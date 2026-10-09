@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import dev.jcasaslopez.booking.domain.SlotDuration;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import jakarta.annotation.PostConstruct;
 
@@ -28,14 +29,12 @@ public class OpeningHoursConfig {
 		weeklyHours = List.of(mondayHours, tuesdayHours, wednesdayHours, thursdayHours, fridayHours, saturdayHours, sundayHours);
 	}
 
-    // WeeklySchedule class is a Map that has (see the class definition in domain package for details):
-    // - As keys: Java's DayOfWeek enum values.
-    // - As values: OpeningHours object as defined in the domain package.
-    // Example:  MONDAY (open)   → (9:00, 22:00)
-    //           SUNDAY (closed) → (null, null)
+    // WeeklySchedule holds the opening schedule for a whole week: one DaySchedule per DayOfWeek.
+    // Each entry is either "CLOSED" or an opening range such as "9:00-22:00" (see DayScheduleParser for the accepted format).
+    // Example: MONDAY (open) → (9:00, 22:00), SUNDAY (closed) → CLOSED
     @Bean
-    WeeklySchedule weeklySchedule() {
-    	return new WeeklySchedule(weeklyHours);
-	}
+    WeeklySchedule weeklySchedule(SlotDuration slotDuration) {
+    	return new WeeklySchedule(weeklyHours, slotDuration);
+    }
 
 }

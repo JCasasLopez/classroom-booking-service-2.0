@@ -6,9 +6,9 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import dev.jcasaslopez.booking.domain.SlotDuration;
 import dev.jcasaslopez.booking.domain.TimeSlot;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
@@ -24,9 +24,9 @@ public class BookingMapper {
 	
 	private static final Logger logger = LoggerFactory.getLogger(BookingMapper.class);
 	
-	@Value("${time-slot.duration}") private final int slotDuration; 
+	private final SlotDuration slotDuration; 
 	
-	public BookingMapper(@Value("${time-slot.duration}") int slotDuration) {
+	public BookingMapper(SlotDuration slotDuration) {
 		this.slotDuration = slotDuration;
 	}
 	

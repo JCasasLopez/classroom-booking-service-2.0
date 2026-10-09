@@ -15,13 +15,13 @@ import dev.jcasaslopez.booking.config.DayScheduleParser;
 
 public class WeeklySchedule {
 
-	private Map<DayOfWeek, DaySchedule> weeklySchedule;
+	private final Map<DayOfWeek, DaySchedule> weeklySchedule;
 
-	public WeeklySchedule(List<String> weeklyHours) {
+	public WeeklySchedule(List<String> weeklyHours, SlotDuration slotDuration) {
 		if (weeklyHours.size() != DayOfWeek.values().length) {
 			throw new IllegalArgumentException("weeklyHours must contain exactly 7 entries, one per day of the week");
 		}
-		this.weeklySchedule = addOpeningHours(weeklyHours);
+		this.weeklySchedule = addOpeningHours(weeklyHours, slotDuration);
 	}
 	
 	public Map<DayOfWeek, DaySchedule> getWeeklySchedule(){
@@ -32,13 +32,13 @@ public class WeeklySchedule {
 	    return Objects.requireNonNull(weeklySchedule.get(dayOfWeek), () -> "No schedule configured for " + dayOfWeek);
 	}
 	
-	private Map<DayOfWeek, DaySchedule> addOpeningHours(List<String> weeklyHours) {
+	private Map<DayOfWeek, DaySchedule> addOpeningHours(List<String> weeklyHours, SlotDuration slotDuration) {
 	    DayOfWeek[] days = DayOfWeek.values();
 	    return IntStream.range(0, weeklyHours.size())
 	        .boxed()
 	        .collect(Collectors.toMap(
 	            i -> days[i],
-	            i -> DayScheduleParser.parse(weeklyHours.get(i), days[i])
+	            i -> DayScheduleParser.parse(weeklyHours.get(i), days[i], slotDuration)
 	        ));
 	}
 
