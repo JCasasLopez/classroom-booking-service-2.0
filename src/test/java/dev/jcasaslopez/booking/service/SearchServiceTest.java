@@ -4,13 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -20,19 +20,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import dev.jcasaslopez.booking.domain.SlotDuration;
-import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
 import dev.jcasaslopez.booking.exception.DataIntegrityException;
-import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.validator.ClassroomValidator;
+import dev.jcasaslopez.booking.validator.SearchValidator;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,16 +38,13 @@ public class SearchServiceTest {
 	
 	@Mock BookingRepository bookingRepository;
 	@Mock ClassroomValidator classroomValidator;
+	@Mock SearchValidator searchValidator;
 	@Mock SlotAvailabilityMapper slotAvailabilityMapper;
 	SearchServiceImpl searchService;
 	
 	private static final SlotDuration SLOT_DURATION_30 = new SlotDuration(30);
-	
-	private WeeklySchedule buildTestWeeklySchedule() {
-	    List<String> hours = new ArrayList<> (List.of("09:00-22:00", "09:00-22:00", "09:00-22:00", "09:00-22:00", "09:00-22:00", "10:00-14:00", "CLOSED"));
-	    return new WeeklySchedule(hours, SLOT_DURATION_30);
-	}
-	
+	private static final int SLOT_DURATION_IN_MINUTES = SLOT_DURATION_30.minutes();
+		
 	private static LocalDateTime nextMonday() {
 	    LocalDate today = LocalDate.now();
 	    LocalDate nextMonday = today.with(TemporalAdjusters.next(DayOfWeek.MONDAY));
@@ -60,20 +55,14 @@ public class SearchServiceTest {
 	private static final LocalDateTime FINISH = START.plusHours(10);
 	private static final int ID_CLASSROOM = 1;
 	private static final long ID_BOOKING = 5;
-	private static final LocalDateTime SLOT_FINISH = START.plusMinutes(30);
+	private static final LocalDateTime SLOT_FINISH = START.plusMinutes(SLOT_DURATION_IN_MINUTES);
 
 	private Booking bookingInSlot(long idBooking) {
 	    return new Booking(idBooking, 1, ID_CLASSROOM, START, SLOT_FINISH,
 	            START.minusDays(1), BookingStatus.ACTIVE);
 	}
 	
-	private static LocalDateTime nextSunday() {
-	    LocalDate today = LocalDate.now();
-	    LocalDate nextSunday = today.with(TemporalAdjusters.next(DayOfWeek.SUNDAY));
-	    return nextSunday.atTime(11, 0);
-	}
-
-	private static List<ClassroomEvent> allClassrooms = List.of(
+	private static List<ClassroomEvent> ALL_CLASSROOMS = List.of(
 		    new ClassroomEvent(1, "Main Auditorium", 150, true, true),
 		    new ClassroomEvent(2, "Standard Seminar Room", 30, true, false),
 		    new ClassroomEvent(3, "Advanced Tech Lab", 25, true, true),
@@ -88,12 +77,20 @@ public class SearchServiceTest {
 	void setUp() {
 		searchService = new SearchServiceImpl(
 				bookingRepository,
-				classroomValidator,
 				slotAvailabilityMapper,
-				allClassrooms,
-				buildTestWeeklySchedule(),
-				SLOT_DURATION_30
+				ALL_CLASSROOMS,
+				SLOT_DURATION_30,
+				classroomValidator,
+				searchValidator		
 		);
+	}
+	
+	@Test
+	void classroomsAvailableByPeriod_with_invalid_period_propagates_the_exception() {
+		doThrow(new IllegalArgumentException("invalid")).when(searchValidator).validateSearch(START, FINISH);
+
+		assertThrows(IllegalArgumentException.class,
+				() -> searchService.classroomsAvailableByPeriod(START, FINISH));
 	}
 	
 	@Test
@@ -184,92 +181,4 @@ public class SearchServiceTest {
 	    assertEquals("The search period must match exactly the minimum time slot duration", ex.getMessage());
 	}
 	
-	@Test
-	void search_service_does_not_allow_searches_for_the_past() {
-		// Arrange
-		LocalDateTime pastStart = LocalDateTime.of(2026, 5, 27, 11, 0);
-		LocalDateTime pastFinish = LocalDateTime.of(2026, 5, 27, 21, 0);
-		
-		// Act & Assert
-		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, 
-				() -> searchService.classroomsAvailableByPeriod(pastStart, pastFinish));
-		
-		// The exception message must be checked to identify the exact cause, since all validation failures throw IllegalArgumentException	
-		assertTrue(ex.getMessage().equals("Search range cannot be in the past"));				
-	}
-	
-	@ParameterizedTest
-	@ValueSource(longs = {0, -30})
-	void search_service_does_not_allow_start_equal_or_after_finish(long minutesFromStart) {
-		// Arrange
-		LocalDateTime finish = START.plusMinutes(minutesFromStart);
-
-		// Act & Assert
-	    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-	            () -> searchService.classroomsAvailableByPeriod(START, finish));
-
-	    assertEquals(String.format("Finish must be after start", START, finish), ex.getMessage());
-	}
-	
-	@Test
-	void search_service_does_not_allow_searches_spanning_longer_than_a_day() {
-		// Arrange
-		
-		// Act & Assert
-		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, 
-				() -> searchService.classroomsAvailableByPeriod(START, START.plusDays(2)));
-		
-		// The exception message must be checked to identify the exact cause, since all validation failures throw IllegalArgumentException	
-		assertTrue(ex.getMessage().equals("Start and finish have to be in the same day"));			
-	}
-	
-	@Test
-	void search_service_does_not_allow_searches_on_the_same_weekday_of_different_weeks() {
-		// Arrange
-
-		// Act & Assert
-		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-				() -> searchService.classroomsAvailableByPeriod(START, START.plusDays(7)));
-
-		assertEquals("Start and finish have to be in the same day", ex.getMessage());
-	}
-
-	@Test
-	void search_service_does_not_allow_searches_on_a_closed_day() {
-		// Search on a SUNDAY
-		// Act & Assert
-		SlotOutOfOpeningHoursException ex = assertThrows(SlotOutOfOpeningHoursException.class, 
-				() -> searchService.classroomsAvailableByPeriod(nextSunday(), nextSunday().plusHours(10)));
-		
-		// The exception message must be checked to identify the exact cause, since all validation failures throw IllegalArgumentException	
-		assertTrue(ex.getMessage().equals("The center is closed that day"));			
-	}
-	
-	@Test
-	void search_service_does_not_allow_searches_before_opening_time() {
-		// Arrange
-		// Start at 6am
-		LocalDateTime startBeforeOpeningtime = START.minusHours(5);
-		
-		// Act & Assert
-		SlotOutOfOpeningHoursException ex = assertThrows(SlotOutOfOpeningHoursException.class, 
-				() -> searchService.classroomsAvailableByPeriod(startBeforeOpeningtime, FINISH));
-		
-		// The exception message must be checked to identify the exact cause, since all validation failures throw IllegalArgumentException	
-		assertTrue(ex.getMessage().equals("Start or finish out of opening hours"));			
-	}
-	
-	@Test
-	void search_service_does_not_allow_searches_after_closing_time() {
-		// Arrange
-		// Finish at 23h
-		LocalDateTime finishAfterClosingTime = FINISH.plusHours(2);
-		
-		// Act & Assert
-		SlotOutOfOpeningHoursException ex = assertThrows(SlotOutOfOpeningHoursException.class, 
-				() -> searchService.classroomsAvailableByPeriod(START, finishAfterClosingTime));
-		
-		// The exception message must be checked to identify the exact cause, since all validation failures throw IllegalArgumentException	
-		assertTrue(ex.getMessage().equals("Start or finish out of opening hours"));			
-	}
 }

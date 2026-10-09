@@ -1,6 +1,5 @@
 package dev.jcasaslopez.booking.service;
 
-import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -9,16 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import dev.jcasaslopez.booking.domain.DaySchedule;
 import dev.jcasaslopez.booking.domain.SlotDuration;
-import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.SlotStatusDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
 import dev.jcasaslopez.booking.exception.DataIntegrityException;
-import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.validator.ClassroomValidator;
+import dev.jcasaslopez.booking.validator.SearchValidator;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
 @Service
@@ -27,28 +24,28 @@ public class SearchServiceImpl implements SearchService {
 	private static final Logger logger = LoggerFactory.getLogger(SearchServiceImpl.class);
 	
 	private final BookingRepository bookingRepository;
-	private final ClassroomValidator classroomValidator;
 	private final SlotAvailabilityMapper slotAvailabilityMapper;
 	private final List<ClassroomEvent> classroomsStore;
-	private final WeeklySchedule weeklySchedule;
 	private final SlotDuration slotDuration;
+	private final ClassroomValidator classroomValidator;
+	private final SearchValidator searchValidator;
 	
-	public SearchServiceImpl(BookingRepository bookingRepository, ClassroomValidator classroomValidator,
-			SlotAvailabilityMapper slotAvailabilityMapper, List<ClassroomEvent> classroomsStore,
-			WeeklySchedule weeklySchedule, SlotDuration slotDuration) {
+	public SearchServiceImpl(BookingRepository bookingRepository, SlotAvailabilityMapper slotAvailabilityMapper,
+			List<ClassroomEvent> classroomsStore, SlotDuration slotDuration, ClassroomValidator classroomValidator,
+			SearchValidator searchValidator) {
 		this.bookingRepository = bookingRepository;
-		this.classroomValidator = classroomValidator;
 		this.slotAvailabilityMapper = slotAvailabilityMapper;
 		this.classroomsStore = classroomsStore;
-		this.weeklySchedule = weeklySchedule;
-		this.slotDuration =  slotDuration;
+		this.slotDuration = slotDuration;
+		this.classroomValidator = classroomValidator;
+		this.searchValidator = searchValidator;
 	}
 
 	@Override
 	public List<SlotStatusDto> availabilityCalendarByClassroom(int idClassroom, LocalDateTime start, LocalDateTime finish) {
 		logger.info("Fetching availability calendar for classroom {} from {} to {}", idClassroom, start, finish);
 		
-	    validateStartAndFinish(start, finish);
+		searchValidator.validateSearch(start, finish);
 		classroomValidator.validateClassroomExists(idClassroom);
 		
 		List<Booking> bookingsForPeriod = bookingRepository.findActiveBookingsForClassroomByPeriod(idClassroom, start, finish);
@@ -61,7 +58,7 @@ public class SearchServiceImpl implements SearchService {
 	public List<ClassroomEvent> classroomsAvailableByPeriod(LocalDateTime start, LocalDateTime finish) {
 		logger.info("Fetching available classrooms from {} to {}", start, finish);
 	   
-		validateStartAndFinish(start, finish);
+		searchValidator.validateSearch(start, finish);
 	    
 		List<Integer> occupiedClassrooms = bookingRepository.findOccupiedClassroomsbyPeriod(start, finish);
 		
@@ -86,7 +83,7 @@ public class SearchServiceImpl implements SearchService {
 	
 	@Override
 	public Long findBookingByClassroomAndTimePeriod(int idClassroom, LocalDateTime start, LocalDateTime finish) {
-	    validateStartAndFinish(start, finish);
+		searchValidator.validateSearch(start, finish);
 	    validateIsSingleTimeSlot(start, finish);
 	    
 		List<Booking> bookings = bookingRepository.findActiveBookingsForClassroomByPeriod(idClassroom, start, finish);
@@ -100,37 +97,6 @@ public class SearchServiceImpl implements SearchService {
 		}
 		
 		return bookings.get(0).getIdBooking();
-	}
-	
-	// we need a specific validation method here, as TimeSlot validates slot alignment, which is too strict here 
-	// — a search period like 11:15–14:00 is valid even if it doesn't align with slot boundaries.
-	// Also, start and finish must be on the same day to avoid closed days and out of opening hours slots in between.	
-	private void validateStartAndFinish(LocalDateTime start, LocalDateTime finish) {
-		if (!finish.isAfter(start)) {
-		    throw new IllegalArgumentException("Finish must be after start");
-		}
-		
-		LocalDateTime now = LocalDateTime.now();
-		if(start.isBefore(now) || finish.isBefore(now)) {
-			throw new IllegalArgumentException("Search range cannot be in the past");
-		}
-			
-		if (!start.toLocalDate().equals(finish.toLocalDate())) {
-		    throw new IllegalArgumentException("Start and finish have to be in the same day");
-		}
-
-		DayOfWeek searchDayOfWeek = start.getDayOfWeek();
-		DaySchedule daySchedule = weeklySchedule.scheduleFor(searchDayOfWeek);
-		
-		if (!(daySchedule instanceof DaySchedule.Open open)) {
-		    throw new SlotOutOfOpeningHoursException("The center is closed that day");
-		}
-
-		if (start.toLocalTime().isBefore(open.openingTime()) ||
-		    finish.toLocalTime().isAfter(open.closingTime())) {
-		    throw new SlotOutOfOpeningHoursException("Start or finish out of opening hours");
-		}		
-		
 	}
 	
 	private void validateIsSingleTimeSlot(LocalDateTime start, LocalDateTime finish) {
