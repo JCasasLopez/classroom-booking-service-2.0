@@ -3,18 +3,19 @@ package dev.jcasaslopez.booking.domain;
 import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-// WeeklySchedule class is a Map that has (see the class definition in domain package for details):
-// - As keys: Java's DayOfWeek enum values.
-// - As values: OpeningHours object as defined in the domain package.
-// Example:  MONDAY (open)   → (9:00, 22:00)
-//           SUNDAY (closed) → (null, null)
+import dev.jcasaslopez.booking.config.DayScheduleParser;
+
+// WeeklySchedule holds the opening schedule for a whole week: one DaySchedule per DayOfWeek.
+// Each entry is either "CLOSED" or an opening range such as "9:00-22:00" (see DayScheduleParser for the accepted format).
+// Example: MONDAY (open) → (9:00, 22:00), SUNDAY (closed) → CLOSED
 
 public class WeeklySchedule {
 
-	private Map<DayOfWeek, OpeningHours> weeklySchedule;
+	private Map<DayOfWeek, DaySchedule> weeklySchedule;
 
 	public WeeklySchedule(List<String> weeklyHours) {
 		if (weeklyHours.size() != DayOfWeek.values().length) {
@@ -22,18 +23,22 @@ public class WeeklySchedule {
 		}
 		this.weeklySchedule = addOpeningHours(weeklyHours);
 	}
-
-	public Map<DayOfWeek, OpeningHours> getWeeklySchedule() {
+	
+	public Map<DayOfWeek, DaySchedule> getWeeklySchedule(){
 		return weeklySchedule;
 	}
 
-	private Map<DayOfWeek, OpeningHours> addOpeningHours(List<String> weeklyHours) {
+	public DaySchedule scheduleFor(DayOfWeek dayOfWeek) {
+	    return Objects.requireNonNull(weeklySchedule.get(dayOfWeek), () -> "No schedule configured for " + dayOfWeek);
+	}
+	
+	private Map<DayOfWeek, DaySchedule> addOpeningHours(List<String> weeklyHours) {
 	    DayOfWeek[] days = DayOfWeek.values();
 	    return IntStream.range(0, weeklyHours.size())
 	        .boxed()
 	        .collect(Collectors.toMap(
 	            i -> days[i],
-	            i -> OpeningHours.parse(weeklyHours.get(i), days[i])
+	            i -> DayScheduleParser.parse(weeklyHours.get(i), days[i])
 	        ));
 	}
 

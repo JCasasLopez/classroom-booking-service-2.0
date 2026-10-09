@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.DayOfWeek;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -38,18 +37,22 @@ public class WeeklyScheduleTest {
     void constructor_maps_days_in_correct_order() {
 		// Arrange
     	List<String> hours = List.of(
-            "9:00-22:00", "9:00-22:00", "9:00-22:00", "9:00-22:00",
-            "9:00-22:00", "10:00-20:00", "CLOSED"
+            "9:00-22:00", "CLOSED", "9:00-22:00", "9:00-22:00",
+            "CLOSED", "10:00-20:00", "CLOSED"
         );
 
     	// Act
-        Map<DayOfWeek, OpeningHours> schedule = new WeeklySchedule(hours).getWeeklySchedule();
+    	WeeklySchedule schedule = new WeeklySchedule(hours);
 
-        // Assert
+     // Assert
         assertAll(
-            () -> assertTrue(schedule.get(DayOfWeek.MONDAY).isOpen()),
-            () -> assertTrue(schedule.get(DayOfWeek.SATURDAY).isOpen()),
-            () -> assertFalse(schedule.get(DayOfWeek.SUNDAY).isOpen())
+            () -> assertTrue(schedule.scheduleFor(DayOfWeek.MONDAY).isOpen()),
+            () -> assertFalse(schedule.scheduleFor(DayOfWeek.TUESDAY).isOpen()),
+            () -> assertTrue(schedule.scheduleFor(DayOfWeek.WEDNESDAY).isOpen()),
+            () -> assertTrue(schedule.scheduleFor(DayOfWeek.THURSDAY).isOpen()),
+            () -> assertFalse(schedule.scheduleFor(DayOfWeek.FRIDAY).isOpen()),
+            () -> assertTrue(schedule.scheduleFor(DayOfWeek.SATURDAY).isOpen()),
+            () -> assertFalse(schedule.scheduleFor(DayOfWeek.SUNDAY).isOpen())
         );
     }
 

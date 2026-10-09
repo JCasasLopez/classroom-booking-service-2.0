@@ -10,12 +10,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import dev.jcasaslopez.booking.domain.OpeningHours;
+import dev.jcasaslopez.booking.domain.DaySchedule;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.SlotStatusDto;
 import dev.jcasaslopez.booking.entity.Booking;
-import dev.jcasaslopez.booking.exception.DataIntegrityException;
 import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
+import dev.jcasaslopez.booking.exception.DataIntegrityException;
 import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.validator.ClassroomValidator;
@@ -48,25 +48,25 @@ public class SearchServiceImpl implements SearchService {
 
 	@Override
 	public List<SlotStatusDto> availabilityCalendarByClassroom(int idClassroom, LocalDateTime start, LocalDateTime finish) {
-		if (!start.isBefore(finish)) {
-	        throw new IllegalArgumentException(String.format("Start %s must precede finish %s", start, finish));
-	    }
 		logger.info("Fetching availability calendar for classroom {} from {} to {}", idClassroom, start, finish);
+		
 	    validateStartAndFinish(start, finish);
 		classroomValidator.validateClassroomExists(idClassroom);
+		
 		List<Booking> bookingsForPeriod = bookingRepository.findActiveBookingsForClassroomByPeriod(idClassroom, start, finish);
+		
 		return slotAvailabilityMapper.buildAvailabilityGrid(bookingsForPeriod, start, finish);
 	}
 
 	// ClassroomEvent = Classroom 
 	@Override
 	public List<ClassroomEvent> classroomsAvailableByPeriod(LocalDateTime start, LocalDateTime finish) {
-		if (!start.isBefore(finish)) {
-	        throw new IllegalArgumentException(String.format("Start %s must precede finish %s", start, finish));
-	    }
 		logger.info("Fetching available classrooms from {} to {}", start, finish);
-	    validateStartAndFinish(start, finish);
-	    List<Integer> occupiedClassrooms = bookingRepository.findOccupiedClassroomsbyPeriod(start, finish);
+	   
+		validateStartAndFinish(start, finish);
+	    
+		List<Integer> occupiedClassrooms = bookingRepository.findOccupiedClassroomsbyPeriod(start, finish);
+		
 		return classroomsStore.stream()
 	            .filter(classroom -> !occupiedClassrooms.contains(classroom.idClassroom()))
 	            .toList();
@@ -78,6 +78,7 @@ public class SearchServiceImpl implements SearchService {
 			int seats, boolean projector, boolean speakers) {
 		 logger.info("Fetching available classrooms from {} to {} with features: seats={}, projector={}, speakers={}", 
 		            start, finish, seats, projector, speakers);
+		 
 		return classroomsAvailableByPeriod(start, finish).stream()
 				.filter(c -> c.seats() >= seats)
 				.filter(c -> projector ? c.projector() : true)
@@ -91,6 +92,7 @@ public class SearchServiceImpl implements SearchService {
 	    validateIsSingleTimeSlot(start, finish);
 	    
 		List<Booking> bookings = bookingRepository.findActiveBookingsForClassroomByPeriod(idClassroom, start, finish);
+		
 		if(bookings.isEmpty()) {
 	        logger.error("No active booking found for classroom {} between {} and {}", idClassroom, start, finish);
 			throw new BookingNotFoundExceptions("No active booking found for classroom " + idClassroom + " between " + start + " and " + finish);
@@ -98,6 +100,7 @@ public class SearchServiceImpl implements SearchService {
 		    logger.error("Data integrity violation: more than 1 booking for the time period: {}", bookings.toString());
 			throw new DataIntegrityException("An internal data consistency error has occurred");
 		}
+		
 		return bookings.get(0).getIdBooking();
 	}
 	
@@ -105,33 +108,36 @@ public class SearchServiceImpl implements SearchService {
 	// — a search period like 11:15–14:00 is valid even if it doesn't align with slot boundaries.
 	// Also, start and finish must be on the same day to avoid closed days and out of opening hours slots in between.	
 	private void validateStartAndFinish(LocalDateTime start, LocalDateTime finish) {
-		if(start.isBefore(LocalDateTime.now()) || finish.isBefore(LocalDateTime.now())) {
-			throw new IllegalArgumentException("Search range cannot be in the past");
+		if (!finish.isAfter(start)) {
+		    throw new IllegalArgumentException("Finish must be after start");
 		}
 		
-		DayOfWeek searchStartDayOfWeek = start.getDayOfWeek();
-		DayOfWeek searchFinishDayOfWeek = finish.getDayOfWeek();
-		
+		LocalDateTime now = LocalDateTime.now();
+		if(start.isBefore(now) || finish.isBefore(now)) {
+			throw new IllegalArgumentException("Search range cannot be in the past");
+		}
+			
 		if (!start.toLocalDate().equals(finish.toLocalDate())) {
 		    throw new IllegalArgumentException("Start and finish have to be in the same day");
 		}
 
-		OpeningHours startOpeningHours = weeklySchedule.getWeeklySchedule().get(searchStartDayOfWeek);
-		OpeningHours finishOpeningHours = weeklySchedule.getWeeklySchedule().get(searchFinishDayOfWeek);
+		DayOfWeek searchDayOfWeek = start.getDayOfWeek();
+		DaySchedule daySchedule = weeklySchedule.scheduleFor(searchDayOfWeek);
 		
-		if (startOpeningHours.openingTime() == null) {			
-			throw new SlotOutOfOpeningHoursException("The center is closed that day");
+		if (!(daySchedule instanceof DaySchedule.Open open)) {
+		    throw new SlotOutOfOpeningHoursException("The center is closed that day");
 		}
-		
-		if(start.toLocalTime().isBefore(startOpeningHours.openingTime()) || 
-				finish.toLocalTime().isAfter(finishOpeningHours.closingTime())) {
-			throw new SlotOutOfOpeningHoursException("Start or finish out of opening hours");
-		}
+
+		if (start.toLocalTime().isBefore(open.openingTime()) ||
+		    finish.toLocalTime().isAfter(open.closingTime())) {
+		    throw new SlotOutOfOpeningHoursException("Start or finish out of opening hours");
+		}		
 		
 	}
 	
 	private void validateIsSingleTimeSlot(LocalDateTime start, LocalDateTime finish) {
 	    Duration requested = Duration.between(start, finish);
+	    
 	    if (!requested.equals(timeSlotDuration)) {
 	    	 logger.error("Invalid search period: expected duration {} but got {} (start={}, finish={})",
 	                 timeSlotDuration, requested, start, finish);
