@@ -63,23 +63,44 @@ public final class KafkaTestHelper {
 	        Map<String, Object> props = new HashMap<>();
 	        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 	        props.put(ConsumerConfig.GROUP_ID_CONFIG, "test-notifications-" + UUID.randomUUID());
-	        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+	        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 	        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
 	        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName());
 	        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
 	        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, NotificationEvent.class.getName());
+	        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
 	        KafkaConsumer<String, NotificationEvent> consumer = new KafkaConsumer<>(props);
 	        consumer.subscribe(List.of(topic));
+
+	        // subscribe() does not assign partitions; the assignment happens inside poll(). So we poll in short intervals 
+	        // (up to 100 ms each) until partitions are assigned, with a maximum wait of 5 seconds.
+	        long deadline = System.currentTimeMillis() + 5000;
+	        while (consumer.assignment().isEmpty() && System.currentTimeMillis() < deadline) {
+	        	consumer.poll(Duration.ofMillis(100));
+	        }
+	        if (consumer.assignment().isEmpty()) {
+	        	throw new IllegalStateException("Partitions not assigned within 5 seconds for topic " + topic);
+	        }
+
+	        // A random group.id means a fresh group with no committed offsets. That alone does not skip records from earlier 
+	        // tests, so we move to the end of each assigned partition to ignore them, keeping tests independent of each other.
+	        // props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest"); on its own makes it start at the end, but 
+	        // seekToEnd() makes the isolation explicit.
+	        consumer.seekToEnd(consumer.assignment());
+
+	        // seekToEnd() is lazy: the end offset is only resolved when it is first needed (position() or the next poll()). 
+	        // Calling position() on each partition forces the resolution now, so the consumer is positioned before the test publishes anything.
+	        consumer.assignment().forEach(consumer::position);
 	        return consumer;
-	    }
+	 }
 
 	 public static List<ConsumerRecord<String, NotificationEvent>> pollRecords(
-		        KafkaConsumer<String, NotificationEvent> consumer, Duration timeout) {
-		    ConsumerRecords<String, NotificationEvent> records = consumer.poll(timeout);
-		    List<ConsumerRecord<String, NotificationEvent>> result = new ArrayList<>();
-		    records.forEach(result::add);
-		    return result;
-		}
+			 KafkaConsumer<String, NotificationEvent> consumer, Duration timeout) {
+		 ConsumerRecords<String, NotificationEvent> records = consumer.poll(timeout);
+		 List<ConsumerRecord<String, NotificationEvent>> result = new ArrayList<>();
+		 records.forEach(result::add);
+		 return result;
+	 }
 
 }
