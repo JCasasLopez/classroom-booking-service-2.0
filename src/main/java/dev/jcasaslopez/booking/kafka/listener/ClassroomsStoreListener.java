@@ -31,8 +31,10 @@ public class ClassroomsStoreListener implements ConsumerSeekAware {
 
 	@Override
 	public void onPartitionsAssigned(Map<TopicPartition, Long> assignments, ConsumerSeekCallback callback) {
-		// Kafka's 'earliest' config is ignored if a valid offset already exists. Since a crash wipes our RAM bean 
-		// but keeps Kafka's offset, we must programmatically force a seek-to-beginning to rebuild the local store.
+		// If classroomsStore is empty, the bean has just started or recovered from a crash. Since Kafka remembers
+		// the last committed offset, setting 'auto.offset.reset=earliest' is not enough, as this is only used
+		// when there is no offset recorded.  We must explicitly force a seek-to-beginning to re-hydrate 
+		// classroomsStore by replaying all historical events (classrooms) up to the latest state.
 		if (classroomsStore.isEmpty()) {
 			callback.seekToBeginning(assignments.keySet());
 		}
