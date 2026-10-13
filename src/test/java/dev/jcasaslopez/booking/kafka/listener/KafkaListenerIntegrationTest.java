@@ -14,6 +14,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
+// The logic of the Kafka consumer is checked through unit tests located in this very same package.
+// This integration test just verifies the wiring and the whole process works as expected.
 public class KafkaListenerIntegrationTest extends BaseIntegrationTest {
 	
 	@Value("${kafka.topic.name.classrooms}") private String topicName;
