@@ -19,7 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
+import dev.jcasaslopez.booking.exception.BookingNotFoundException;
 import dev.jcasaslopez.booking.exception.InvalidBookingStatusException;
 import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.repository.BookingRepository;
@@ -88,7 +88,7 @@ public class BookingServiceUnitTest {
 		when(bookingRepository.findById(ID_BOOKING)).thenReturn(Optional.empty());
 
 		// Act & Assert
-		assertThrows(BookingNotFoundExceptions.class, () -> bookingService.cancel(ID_BOOKING, ID_USER, EMAIL));
+		assertThrows(BookingNotFoundException.class, () -> bookingService.cancel(ID_BOOKING, ID_USER, EMAIL));
 		verifyNoInteractions(eventPublisher);
 		verify(bookingRepository, never()).modifyBookingStatus(ID_BOOKING, BookingStatus.CANCELLED);
 	}
@@ -107,7 +107,7 @@ public class BookingServiceUnitTest {
 		when(bookingRepository.findById(ID_BOOKING)).thenReturn(Optional.of(otherUsersBooking));
 
 		// Act & Assert
-		assertThrows(BookingNotFoundExceptions.class, () -> bookingService.cancel(ID_BOOKING, ID_USER, EMAIL));
+		assertThrows(BookingNotFoundException.class, () -> bookingService.cancel(ID_BOOKING, ID_USER, EMAIL));
 		verifyNoInteractions(eventPublisher);
 		verify(bookingRepository, never()).modifyBookingStatus(ID_BOOKING, BookingStatus.CANCELLED);
 	}

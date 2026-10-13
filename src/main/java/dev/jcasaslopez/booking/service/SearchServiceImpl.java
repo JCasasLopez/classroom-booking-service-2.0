@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import dev.jcasaslopez.booking.domain.SlotDuration;
 import dev.jcasaslopez.booking.dto.SlotStatusDto;
 import dev.jcasaslopez.booking.entity.Booking;
-import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
+import dev.jcasaslopez.booking.exception.BookingNotFoundException;
 import dev.jcasaslopez.booking.exception.DataIntegrityException;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.validator.ClassroomValidator;
@@ -90,7 +90,7 @@ public class SearchServiceImpl implements SearchService {
 		
 		if(bookings.isEmpty()) {
 	        logger.error("No active booking found for classroom {} between {} and {}", idClassroom, start, finish);
-			throw new BookingNotFoundExceptions("No active booking found for classroom " + idClassroom + " between " + start + " and " + finish);
+			throw new BookingNotFoundException("No active booking found for classroom " + idClassroom + " between " + start + " and " + finish);
 		} else if(bookings.size() > 1) {
 		    logger.error("Data integrity violation: more than 1 booking for the time period: {}", bookings.toString());
 			throw new DataIntegrityException("An internal data consistency error has occurred");

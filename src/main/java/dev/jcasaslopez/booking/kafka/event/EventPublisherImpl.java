@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.entity.WatchAlert;
-import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
+import dev.jcasaslopez.booking.exception.BookingNotFoundException;
 import dev.jcasaslopez.booking.exception.ClassroomNotFoundException;
 import dev.jcasaslopez.booking.kafka.producer.NotificationEventProducer;
 import dev.jcasaslopez.booking.repository.BookingRepository;
@@ -50,7 +50,7 @@ public class EventPublisherImpl implements EventPublisher {
 			throw new IllegalArgumentException("Invalid notification type for booking event: " + type);
 		}
 		Booking booking = bookingRepository.findById(watchAlert.getIdBooking())
-				.orElseThrow(() -> new BookingNotFoundExceptions("Booking was not found in the database"));		
+				.orElseThrow(() -> new BookingNotFoundException("Booking was not found in the database"));		
 		NotificationEvent notification = createNotificationEvent(type, booking, email);
 		notificationEventProducer.sendNotification(notification);	
 	}

@@ -15,7 +15,7 @@ import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
+import dev.jcasaslopez.booking.exception.BookingNotFoundException;
 import dev.jcasaslopez.booking.exception.InvalidBookingStatusException;
 import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.mapper.BookingMapper;
@@ -78,7 +78,7 @@ public class BookingServiceImpl implements BookingService {
 	    // enumerate valid booking IDs simply by observing which error is returned.
 		Booking booking = bookingRepository.findById(idBooking)
 	            .filter(b -> b.getIdUser() == idUser)
-	            .orElseThrow(() -> new BookingNotFoundExceptions("Booking was not found in the database"));
+	            .orElseThrow(() -> new BookingNotFoundException("Booking was not found in the database"));
 		
 		if(booking.getStatus() != BookingStatus.ACTIVE) {
 			throw new InvalidBookingStatusException("Only ACTIVE bookings can be cancelled");

@@ -23,7 +23,7 @@ import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
+import dev.jcasaslopez.booking.exception.BookingNotFoundException;
 import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.mapper.WatchAlertMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
@@ -68,7 +68,7 @@ public class WatchAlertServiceTest {
 	    when(bookingRepository.findById(BOOKING_ID)).thenReturn(Optional.empty());
 
 	    // Act & Assert
-	    assertThrows(BookingNotFoundExceptions.class, () -> watchAlertService.addWatchAlert(BOOKING_ID, EMAIL));
+	    assertThrows(BookingNotFoundException.class, () -> watchAlertService.addWatchAlert(BOOKING_ID, EMAIL));
 	    verifyNoInteractions(watchAlertRepository);
 	    verifyNoInteractions(eventPublisher);
 	}

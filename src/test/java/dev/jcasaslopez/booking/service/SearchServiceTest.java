@@ -26,7 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import dev.jcasaslopez.booking.domain.SlotDuration;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
+import dev.jcasaslopez.booking.exception.BookingNotFoundException;
 import dev.jcasaslopez.booking.exception.DataIntegrityException;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.validator.ClassroomValidator;
@@ -158,7 +158,7 @@ public class SearchServiceTest {
 	    when(bookingRepository.findActiveBookingsForClassroomByPeriod(ID_CLASSROOM, START, SLOT_FINISH))
 	            .thenReturn(List.of());
 
-	    assertThrows(BookingNotFoundExceptions.class,
+	    assertThrows(BookingNotFoundException.class,
 	            () -> searchService.findBookingByClassroomAndTimePeriod(ID_CLASSROOM, START, SLOT_FINISH));
 	}
 

@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
 	    return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
 	}
 	
-	@ExceptionHandler({BookingNotFoundExceptions.class, 
+	@ExceptionHandler({BookingNotFoundException.class, 
 		ClassroomNotFoundException.class})
 	public ResponseEntity<StandardResponse<Void>> handleNotFound (RuntimeException ex){
 		StandardResponse<Void> response = new StandardResponse<>(ex.getMessage(), null, HttpStatus.NOT_FOUND);

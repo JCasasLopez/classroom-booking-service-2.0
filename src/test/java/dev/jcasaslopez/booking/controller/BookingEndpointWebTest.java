@@ -55,6 +55,7 @@ public class BookingEndpointWebTest {
 	@Autowired ObjectMapper mapper;
 	@MockitoBean BookingService service;
 	
+	private static final int ID_BOOKING = 1;
 	private static final int ID_CLASSROOM = 1;
 	private static final int ID_USER = 1;
 	private static final String EMAIL = "test@gmail";
