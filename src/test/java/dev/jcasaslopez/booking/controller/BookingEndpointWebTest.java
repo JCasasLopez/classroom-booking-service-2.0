@@ -55,7 +55,6 @@ public class BookingEndpointWebTest {
 	@Autowired ObjectMapper mapper;
 	@MockitoBean BookingService service;
 	
-	private static final int ID_BOOKING = 1;
 	private static final int ID_CLASSROOM = 1;
 	private static final int ID_USER = 1;
 	private static final String EMAIL = "test@gmail";
@@ -100,14 +99,16 @@ public class BookingEndpointWebTest {
 	
 	@Test
 	void booking_endpoint_returns_404_when_classroom_is_not_found() throws JsonProcessingException, Exception {
-		// Arrange
+		// Arrange	
 		BookingRequestDto bookingRequest = new BookingRequestDto(ID_CLASSROOM, startTimesList);
-		doThrow(new ClassroomNotFoundException("Classroom not found")).when(service).book(bookingRequest, ID_CLASSROOM, EMAIL);
+		String exceptionMessage = "Classroom not found"; 
+
+		doThrow(new ClassroomNotFoundException(exceptionMessage)).when(service).book(bookingRequest, ID_CLASSROOM, EMAIL);
 
 		mockMvc.perform(post(BookingEndpoints.BOOKINGS)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsString(bookingRequest)))
-		.andExpect(jsonPath("$.message").value("Classroom not found"))
+		.andExpect(jsonPath("$.message").value(exceptionMessage))
 		.andExpect(status().isNotFound())
 		.andExpect(jsonPath("$.status").value("NOT_FOUND"));
 	}
@@ -116,12 +117,14 @@ public class BookingEndpointWebTest {
 	void booking_endpoint_returns_400_when_booking_is_not_valid() throws JsonProcessingException, Exception {
 		// Arrange
 		BookingRequestDto bookingRequest = new BookingRequestDto(ID_CLASSROOM, startTimesList);
-		doThrow(new InvalidBookingException("Invalid booking")).when(service).book(any(BookingRequestDto.class), anyInt(), anyString());
+		String exceptionMessage = "Invalid booking"; 
+
+		doThrow(new InvalidBookingException(exceptionMessage)).when(service).book(any(BookingRequestDto.class), anyInt(), anyString());
 
 		mockMvc.perform(post(BookingEndpoints.BOOKINGS)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsString(bookingRequest)))
-		.andExpect(jsonPath("$.message").value("Invalid booking"))
+		.andExpect(jsonPath("$.message").value(exceptionMessage))
 		.andExpect(status().isBadRequest())
 		.andExpect(jsonPath("$.status").value("BAD_REQUEST"));
 	}
