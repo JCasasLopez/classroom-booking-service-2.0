@@ -19,7 +19,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.awaitility.Awaitility;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
@@ -28,8 +27,8 @@ import dev.jcasaslopez.classroom.shared.event.NotificationEvent;
 
 public final class KafkaTestHelper {
 	
-	@Value("${kafka.topic.name.classrooms}") private static String topicName;
-
+	private static final String topicName = "classrooms";
+	
 	// Wait until the classrooms Kafka topic is available before running the test.
 	public static void waitForClassroomStore(List<?> classroomsStore) {
 		Awaitility.await()
