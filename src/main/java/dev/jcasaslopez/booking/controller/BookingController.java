@@ -74,8 +74,6 @@ public class BookingController {
 		@ApiResponse(responseCode = "401", description = "Unauthorized – missing or invalid access token",
 		content = @Content(schema = @Schema(implementation = StandardResponse.class))),
 		@ApiResponse(responseCode = "404", description = "Classroom does not exist",
-		content = @Content(schema = @Schema(implementation = StandardResponse.class))),
-		@ApiResponse(responseCode = "500", description = "Internal error while serializing/deserializing JSON, or data integrity error",
 		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	})
 	@SecurityRequirement(name = "bearerAuth")
