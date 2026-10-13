@@ -28,23 +28,21 @@ import dev.jcasaslopez.classroom.shared.security.GenerateJwt;
 
 public class BookingsByUserEndpointTest extends BaseIntegrationTest {
 	
-	private static final int SLOT_DURATION = 30;
 	private static final int CLASSROOM_ID = 1;
 	private static final int USER_ID = 1;
-	private static final String secretKey = "MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaMDEyMzQ1Njc4OTA=";
 	
 	@Test
 	void bookings_by_user_endpoint_returns_the_expected_response() {
 		// Arrange
-		TestHelper.createBooking(testRestTemplate, USER_ID, CLASSROOM_ID, SLOT_DURATION);
-		
-		// Act
+		TestHelper.createBooking(testRestTemplate, USER_ID, CLASSROOM_ID, slotDuration.minutes());
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
 		String userBookingsUrl = UriComponentsBuilder.fromPath(BookingEndpoints.BOOKINGS)
 				.queryParam("idUser", USER_ID)
 				.toUriString();
 		HttpEntity<Void> httpRequest = new HttpEntity<>(headers); 
+		
+		// Act
 		ResponseEntity<StandardResponse<List<BookingResponseDto>>> httpResponse = testRestTemplate.exchange(
 				userBookingsUrl, 
 				HttpMethod.GET,
