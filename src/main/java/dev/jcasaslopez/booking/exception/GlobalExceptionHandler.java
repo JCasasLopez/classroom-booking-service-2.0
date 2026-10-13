@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -23,8 +24,9 @@ public class GlobalExceptionHandler {
 		SlotNotValidException.class, 
 		SlotOutOfOpeningHoursException.class, 
 		IllegalStateException.class, 
-		IllegalArgumentException.class})
-	public ResponseEntity<StandardResponse<Void>> handleBadRequest (RuntimeException ex){
+		IllegalArgumentException.class,
+		MissingServletRequestParameterException.class})
+	public ResponseEntity<StandardResponse<Void>> handleBadRequest (Exception ex){
 		StandardResponse<Void> response = new StandardResponse<>(ex.getMessage(), null, HttpStatus.BAD_REQUEST);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
