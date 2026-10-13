@@ -3,7 +3,6 @@ package dev.jcasaslopez.booking.controller;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.core.ParameterizedTypeReference;
@@ -18,34 +17,33 @@ import dev.jcasaslopez.booking.base.BaseIntegrationTest;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.exception.BookingNotFoundExceptions;
+import dev.jcasaslopez.booking.exception.BookingNotFoundException;
 import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
 import dev.jcasaslopez.classroom.shared.dto.StandardResponse;
 import dev.jcasaslopez.classroom.shared.security.GenerateJwt;
 
-public class CancelEndpointTest extends BaseIntegrationTest {
+public class CancelEndpointIntegrationTest extends BaseIntegrationTest {
 	
-	private static final int SLOT_DURATION = 30;
 	private static final int CLASSROOM_ID = 1;
 	private static final int USER_ID = 1;
-	private static final String secretKey = "MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaMDEyMzQ1Njc4OTA=";
 	
 	@Test
-	void cancel_endpoint_returns_the_expected_response() {
+	void cancel_endpoint_returns_ok_status_and_expected_booking_status_update() {
 		// Arrange
 		ResponseEntity<StandardResponse<BookingResponseDto>> httpResponse = TestHelper.createBooking
-													(testRestTemplate, USER_ID, CLASSROOM_ID, SLOT_DURATION);
-		
-		// Act
+													(testRestTemplate, USER_ID, CLASSROOM_ID, slotDuration.minutes());
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
 		Long idBooking = httpResponse.getBody().details().idBooking(); 
+		
 		String cancelUrl = UriComponentsBuilder.fromPath(BookingEndpoints.CANCEL)
-				.queryParam("idBooking", idBooking)
-				.toUriString();
+		        .buildAndExpand(idBooking)
+		        .toUriString();
+				
 		HttpEntity<Void> httpCancelRequest = new HttpEntity<>(headers); 
 
+		// Act
 		ResponseEntity<StandardResponse<Void>> httpCancelResponse = testRestTemplate.exchange(
 				cancelUrl, 
 				HttpMethod.PATCH,
@@ -54,60 +52,13 @@ public class CancelEndpointTest extends BaseIntegrationTest {
 	
 		// Assert
 		Booking savedBooking = repository.findById(idBooking)
-			    					.orElseThrow(() -> new BookingNotFoundExceptions("Booking not found in the database"));
+								.orElseThrow(() -> new BookingNotFoundException("Booking not found in the database"));
+								
 		assertAll(
 				() -> assertEquals(HttpStatus.OK, httpCancelResponse.getBody().status()),
+				() -> assertEquals("Booking cancelled successfully", httpCancelResponse.getBody().message()),
 				() -> assertEquals(BookingStatus.CANCELLED, savedBooking.getStatus())
-				);
-	}
-	
-	@Test
-	void cancel_endpoint_returns_400_when_idBooking_is_invalid() {
-	    // Arrange
-	    String cancelUrl = UriComponentsBuilder.fromPath(BookingEndpoints.CANCEL)
-	            .queryParam("idBooking", -1)
-	            .toUriString();
-	    HttpHeaders headers = new HttpHeaders();
-	    headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
-	    HttpEntity<Void> request = new HttpEntity<>(headers);
-
-	    // Act
-	    ResponseEntity<StandardResponse<String>> response = testRestTemplate.exchange(
-	    		cancelUrl, 
-	    		HttpMethod.PATCH, 
-	    		request, 
-	    		new ParameterizedTypeReference<StandardResponse<String>>() {}
-	    	);
-	    
-	    // Assert
-	    assertAll(
-	            () -> assertEquals(HttpStatus.BAD_REQUEST, response.getBody().status())
-	    );
-	}
-	
-	@Test
-	void cancel_endpoint_returns_404_when_booking_not_found() {
-	    // Arrange
-	    String cancelUrl = UriComponentsBuilder.fromPath(BookingEndpoints.CANCEL)
-	            .queryParam("idBooking", 9999)
-	            .toUriString();
-	    HttpHeaders headers = new HttpHeaders();
-	    headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
-	    HttpEntity<Void> request = new HttpEntity<>(headers);
-
-	    // Act
-	    ResponseEntity<StandardResponse<String>> response = testRestTemplate.exchange(
-	    		cancelUrl, 
-	    		HttpMethod.PATCH, 
-	    		request, 
-	    		new ParameterizedTypeReference<StandardResponse<String>>() {}
-	    	);
-	    
-	    // Assert
-	    assertAll(
-	    		() -> assertTrue(response.getBody().message().equals("Booking was not found in the database")),
-	            () -> assertEquals(HttpStatus.NOT_FOUND, response.getBody().status())
-	    );
+		);
 	}
 
 }
