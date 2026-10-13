@@ -31,6 +31,8 @@ public abstract class BaseIntegrationTest {
     @Autowired protected BookingRepository repository;
     @Autowired protected SlotDuration slotDuration; 
     
+    protected static final String secretKey = "MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaMDEyMzQ1Njc4OTA=";
+    
     @ServiceConnection
     protected static final MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.3");
     
