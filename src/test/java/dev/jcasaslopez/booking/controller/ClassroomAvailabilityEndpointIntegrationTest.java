@@ -28,17 +28,18 @@ import dev.jcasaslopez.classroom.shared.dto.StandardResponse;
 // - SlotOutOfOpeningHoursException    → 400
 // - NoSuchClassroomException          → 404
 
-public class AvailabilityCalendarEndpointTest extends BaseIntegrationTest {
+public class ClassroomAvailabilityEndpointIntegrationTest extends BaseIntegrationTest {
 	
 	@Test
-	void availability_calendar_endpoint_returns_the_expected_response() {
+	void classroom_availability_endpoint_returns_the_expected_response() {
 		// Arrange
+		int id_Classroom = 1;
 		HttpHeaders headers = new HttpHeaders();
 		
 		String availabilityCalendarUrl = UriComponentsBuilder.fromPath(BookingEndpoints.CLASSROOM_AVAILABILITY)
 				.queryParam("start", TestHelper.generateStartSearch())
 				.queryParam("finish", TestHelper.generateFinishSearch(300))
-				.queryParam("idClassroom", 1)
+				.queryParam("idClassroom", id_Classroom)
 				.toUriString();
 		HttpEntity<Void> httpRequest = new HttpEntity<>(headers); 
 		
@@ -51,7 +52,7 @@ public class AvailabilityCalendarEndpointTest extends BaseIntegrationTest {
 				() -> assertEquals(HttpStatus.OK, httpResponse.getBody().status()),
 				() -> assertNotNull(httpResponse.getBody().details()),
 				() -> assertTrue(httpResponse.getBody().message()
-						.equals(String.format("Availability calendar for classroom %s retrieved successfully", 1)))
+						.equals(String.format("Availability calendar for classroom %s retrieved successfully", id_Classroom)))
 				);
 	}
 
