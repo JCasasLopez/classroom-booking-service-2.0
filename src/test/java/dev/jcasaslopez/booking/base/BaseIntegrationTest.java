@@ -16,6 +16,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import dev.jcasaslopez.booking.domain.SlotDuration;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.util.KafkaTestHelper;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
@@ -28,7 +29,8 @@ public abstract class BaseIntegrationTest {
     @Autowired protected List<ClassroomEvent> classroomsStore;
     @Autowired protected ObjectMapper objectMapper;
     @Autowired protected BookingRepository repository;
-
+    @Autowired protected SlotDuration slotDuration; 
+    
     @ServiceConnection
     protected static final MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.3");
     
