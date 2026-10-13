@@ -22,12 +22,6 @@ import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
 import dev.jcasaslopez.classroom.shared.dto.StandardResponse;
 
-// Controller parameter validation and the following exceptions are already covered
-// by existing endpoint tests and are not repeated here:
-// - IllegalArgumentException          → 400
-// - SlotOutOfOpeningHoursException    → 400
-// - NoSuchClassroomException          → 404
-
 public class ClassroomAvailabilityEndpointIntegrationTest extends BaseIntegrationTest {
 	
 	@Test
