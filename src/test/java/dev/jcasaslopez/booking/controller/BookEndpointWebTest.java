@@ -49,7 +49,7 @@ import dev.jcasaslopez.classroom.shared.context.UserContext;
 	        classes = BookingAuthenticationFilter.class
 	    )
 	)
-public class BookingEndpointWebTest {
+public class BookEndpointWebTest {
 	
 	@Autowired MockMvc mockMvc;
 	@Autowired ObjectMapper mapper;
