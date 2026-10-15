@@ -2,12 +2,13 @@ package dev.jcasaslopez.booking.controller;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -18,18 +19,21 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
+import dev.jcasaslopez.booking.exception.ClassroomNotFoundException;
 import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
 import dev.jcasaslopez.classroom.shared.dto.StandardResponse;
+import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 import dev.jcasaslopez.classroom.shared.security.GenerateJwt;
 
-// No negative idUser test needed: @Positive validation and its handling by the GlobalExceptionHandler
+// No negative idBooking test needed: @Positive validation and its handling by the GlobalExceptionHandler
 // are already covered in CancelEndpointTest. No need to duplicate that coverage here.
 
 public class BookingsByUserEndpointTest extends BaseIntegrationTest {
 	
 	private static final int CLASSROOM_ID = 1;
 	private static final int USER_ID = 1;
+	@Autowired private List<ClassroomEvent> classroomsStore;
 	
 	@Test
 	void bookings_by_user_endpoint_returns_the_expected_response() {
@@ -53,9 +57,16 @@ public class BookingsByUserEndpointTest extends BaseIntegrationTest {
 		StandardResponse<List<BookingResponseDto>> responseBody = httpResponse.getBody();
 		List<BookingResponseDto> bookings = httpResponse.getBody().details();
 		
+		BookingResponseDto createdBooking = bookings.get(0);
+		String expectedClassroomName = classroomsStore.stream()
+			    .filter(c -> c.idClassroom() == CLASSROOM_ID)
+			    .findAny()
+			    .orElseThrow(() -> new ClassroomNotFoundException("Classroom not found")).name();
+		
 		assertAll(
 				() -> assertEquals(HttpStatus.OK, responseBody.status()),
-				() -> assertNotNull(bookings),
+				() -> assertEquals(1, bookings.size()),
+				() -> assertEquals(expectedClassroomName, createdBooking.classroomName()),
 				() -> assertTrue(responseBody.message().equals(String.format("Bookings by user %s retrieved successfully", USER_ID)))
 				);
 	}
