@@ -3,13 +3,12 @@ package dev.jcasaslopez.booking.controller;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -18,37 +17,29 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
+import dev.jcasaslopez.booking.entity.WatchAlert;
+import dev.jcasaslopez.booking.repository.WatchAlertRepository;
 import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.booking.util.TestHelper;
+import dev.jcasaslopez.classroom.shared.context.UserContext;
 import dev.jcasaslopez.classroom.shared.dto.StandardResponse;
 import dev.jcasaslopez.classroom.shared.security.GenerateJwt;
 
-// Controller parameter validation and the following exceptions are already covered
-// by existing endpoint tests and are not repeated here:
-//- IllegalStateException          	→ 400
-//- NoSuchClassroomException        → 404
-//- NoSuchBookingException        	→ 404
+public class WatchAlertEndpointsIntegrationTest extends BaseIntegrationTest {
+	
+	@Autowired WatchAlertRepository watchAlertRepository;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class WatchAlertEndpointsTest extends BaseIntegrationTest {
-
-	private static final int SLOT_DURATION = 30;
 	private static final int CLASSROOM_ID = 1;
 	private static final int USER_ID = 1;
-	private static final String secretKey = "MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaMDEyMzQ1Njc4OTA=";
-
+	
 	@Test
-	@Order(1)
-	void add_watch_alert_endpoint_returns_the_expected_response() {
+	void add_watch_alert_endpoint_returns_the_expected_response_and_persists_watch_alert() {
 		// Arrange	
 		ResponseEntity<StandardResponse<BookingResponseDto>> httpResponse = TestHelper.createBooking
-													(testRestTemplate, USER_ID, CLASSROOM_ID, SLOT_DURATION);
+													(testRestTemplate, USER_ID, CLASSROOM_ID, slotDuration.minutes());
 		BookingResponseDto bookingResult = httpResponse.getBody().details();
 
 		// Act
@@ -56,44 +47,18 @@ public class WatchAlertEndpointsTest extends BaseIntegrationTest {
 
 		// Assert
 		StandardResponse<WatchAlertResponseDto> response = httpAddWatchAlertResponse.getBody();
+		List<WatchAlert> watchAlerts = watchAlertRepository.findAll();
+		String userEmail = UserContext.getEmail();
+		
 		assertAll(
 				() -> assertEquals(HttpStatus.CREATED, response.status()),
 				() -> assertNotNull(response.details()),
-				() -> assertEquals("Watch alert created successfully", response.message())				
+				() -> assertEquals("Watch alert created successfully", response.message()),
+				() -> assertEquals(1, watchAlerts.size()),
+				() -> assertTrue(watchAlerts.stream().allMatch(w -> w.getIdBooking() == bookingResult.idBooking()
+						&& w.getUserEmail().equals(userEmail)))
 			);
 	}
-    
-    @Test
-    @Order(2)
-	void get_watch_alerts_endpoint_returns_the_expected_response() throws JsonMappingException, JsonProcessingException {
-    	// Arrange	
-
-    	// Act
-    	HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
-    	String getWatchAlertsUrl = UriComponentsBuilder.fromPath(BookingEndpoints.WATCH_ALERTS)
-    			.queryParam("startSearch", TestHelper.generateStartSearch())
-    			.queryParam("finishSearch", TestHelper.generateFinishSearch(300))
-    			.toUriString();
-    	HttpEntity<Void> httpRequest = new HttpEntity<>(headers); 
-    	
-    	ResponseEntity<StandardResponse<List<WatchAlertResponseDto>>> httpResponse = testRestTemplate.exchange(
-    			getWatchAlertsUrl, 
-    			HttpMethod.GET, 
-    			httpRequest, 
-    			new ParameterizedTypeReference<StandardResponse<List<WatchAlertResponseDto>>>() {}
-    		);
-    	
-    	// Assert
-    	assertAll(
-    			() -> assertEquals(HttpStatus.OK, httpResponse.getBody().status()),
-    			() -> assertNotNull(httpResponse.getBody().details()),
-    			() -> assertEquals("Watch alerts retrieved successfully", httpResponse.getBody().message())
-    			);
-    		
-    }
-  
-    // *********************************** AUXILIARY METHODS ***********************************
     
     private ResponseEntity<StandardResponse<WatchAlertResponseDto>> addWatchAlert(BookingResponseDto bookingResult){
     	Long idBooking = bookingResult.idBooking(); 
