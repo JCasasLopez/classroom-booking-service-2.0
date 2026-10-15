@@ -109,7 +109,7 @@ public class ClassroomsAvailableEndpointWebTest {
 	}
 	
 	@Test
-	void classrooms_available_endpoint_returns_400_when_parameters_are_invalid() throws Exception {		
+	void classrooms_available_endpoint_returns_400_when_SearchValidator_throws_IllegalArgumentException () throws Exception {		
 		String exceptionMessage = "Illegal Argument Exception";
 
 		doThrow(new IllegalArgumentException(exceptionMessage)).when(service)
