@@ -2,7 +2,6 @@ package dev.jcasaslopez.booking.controller;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -27,27 +26,36 @@ public class ClassroomAvailabilityEndpointIntegrationTest extends BaseIntegratio
 	@Test
 	void classroom_availability_endpoint_returns_the_expected_response() {
 		// Arrange
-		int id_Classroom = 1;
+		int idClassroom = 1;
 		HttpHeaders headers = new HttpHeaders();
 		
 		String availabilityCalendarUrl = UriComponentsBuilder.fromPath(BookingEndpoints.CLASSROOM_AVAILABILITY)
-				.queryParam("start", TestHelper.generateStartSearch())
-				.queryParam("finish", TestHelper.generateFinishSearch(300))
-				.queryParam("idClassroom", id_Classroom)
-				.toUriString();
+                .queryParam("start", TestHelper.generateStartSearch())
+                // 300 minutes -> 5 hours
+                .queryParam("finish", TestHelper.generateFinishSearch(300))
+                .buildAndExpand(idClassroom)
+                .toUriString();
+		
 		HttpEntity<Void> httpRequest = new HttpEntity<>(headers); 
 		
 		// Act
-		ResponseEntity<StandardResponse<List<SlotStatusDto>>> httpResponse = testRestTemplate.exchange(availabilityCalendarUrl, HttpMethod.GET,
-								httpRequest, new ParameterizedTypeReference<StandardResponse<List<SlotStatusDto>>>() {});
+		 ResponseEntity<StandardResponse<List<SlotStatusDto>>> httpResponse = testRestTemplate.exchange(
+	                availabilityCalendarUrl,
+	                HttpMethod.GET,
+	                httpRequest,
+	                new ParameterizedTypeReference<StandardResponse<List<SlotStatusDto>>>() {});
+				
+		List<SlotStatusDto> slotStatus = httpResponse.getBody().details();
 		
-		// Assert
+		// Assert	
 		assertAll(
 				() -> assertEquals(HttpStatus.OK, httpResponse.getBody().status()),
-				() -> assertNotNull(httpResponse.getBody().details()),
+				() -> assertEquals(10, slotStatus.size()),
+				() -> assertTrue(slotStatus.stream().allMatch(slot -> slot.available() == true)),
 				() -> assertTrue(httpResponse.getBody().message()
-						.equals(String.format("Availability calendar for classroom %s retrieved successfully", id_Classroom)))
+						.equals(String.format("Availability calendar for classroom %s retrieved successfully", idClassroom)))
 				);
+			
 	}
 
 }
