@@ -2,7 +2,6 @@ package dev.jcasaslopez.booking.controller;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -22,7 +21,7 @@ import dev.jcasaslopez.booking.util.TestHelper;
 import dev.jcasaslopez.classroom.shared.dto.StandardResponse;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
-public class ClassroomsAvailableEndpointTest extends BaseIntegrationTest {
+public class ClassroomsAvailableEndpointIntegrationTest extends BaseIntegrationTest {
 	
 	@Test
 	void classrooms_available_endpoint_returns_the_expected_response() {
@@ -52,11 +51,14 @@ public class ClassroomsAvailableEndpointTest extends BaseIntegrationTest {
 		
 		// Assert
 		StandardResponse<List<ClassroomEvent>> response = httpResponse.getBody();
+		List<ClassroomEvent> classroomsAvailable = response.details();
+		
 		assertAll(
+				// You can find the list of classrooms (or ClassroomEvent) set by the BaseIntegrationTest
+				// in the KafkaTestHelper class (buildClassroomEvents()) -> Only 1 y 3 meet the searching criteria
+				() -> assertEquals(2, classroomsAvailable.size()),
 				() -> assertEquals(HttpStatus.OK, response.status()),
-				() -> assertNotNull(response.details()),
-				() -> assertTrue(response.message()
-		.contains(String.format("(seats: %s - projector: %s - speakers: %s) retrieved successfully", seats, projector, speakers)))
+				() -> assertTrue(response.message().contains(String.format("(seats: %s - projector: %s - speakers: %s) retrieved successfully", seats, projector, speakers)))
 				);	
 	}
 }
