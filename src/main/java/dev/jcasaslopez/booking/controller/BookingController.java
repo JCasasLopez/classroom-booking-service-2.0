@@ -77,7 +77,7 @@ public class BookingController {
 		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	})
 	@SecurityRequirement(name = "bearerAuth")
-	@PostMapping(value=BookingEndpoints.BOOKINGS, consumes=MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value=BookingEndpoints.BOOK, consumes=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<StandardResponse<BookingResponseDto>> book(@Valid @NotNull @RequestBody BookingRequestDto booking){		
 		logger.debug("POST /bookings - Creating booking with idClassroom={}", booking.idClassroom());
 
@@ -112,7 +112,7 @@ public class BookingController {
 	@SecurityRequirement(name = "bearerAuth")
 	@PatchMapping(value=BookingEndpoints.CANCEL)
 	public ResponseEntity<StandardResponse<Void>> cancelBooking(@PathVariable @Positive Long idBooking) {		
-		logger.debug("PATCH /bookings/{} - Cancelling booking with idBooking={}", idBooking);
+		logger.debug("PATCH /bookings/{} - Cancelling booking", idBooking);
 
 		bookingService.cancel(idBooking, UserContext.getIdUser(), UserContext.getEmail());
 
@@ -132,7 +132,7 @@ public class BookingController {
 		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	})
 	@SecurityRequirement(name = "bearerAuth")
-	@GetMapping(value=BookingEndpoints.BOOKINGS)
+	@GetMapping(value=BookingEndpoints.BOOKINGS_BY_USER)
 	public ResponseEntity<StandardResponse<List<BookingResponseDto>>> bookingsByUser(){
 		int idUser = UserContext.getIdUser();
 		

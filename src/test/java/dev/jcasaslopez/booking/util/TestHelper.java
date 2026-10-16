@@ -39,7 +39,7 @@ public final class TestHelper {
 		HttpEntity<BookingRequestDto> httpBookingRequest = new HttpEntity<>(bookingDto, headers);
 
 		return restTemplate.exchange(
-				BookingEndpoints.BOOKINGS, 
+				BookingEndpoints.BOOK, 
 				HttpMethod.POST, 
 				httpBookingRequest, 
 				new ParameterizedTypeReference<StandardResponse<BookingResponseDto>>() {} 

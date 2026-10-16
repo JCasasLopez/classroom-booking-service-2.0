@@ -68,7 +68,7 @@ public class BookEndpointWebTest {
 	@ParameterizedTest
 	@MethodSource("testdata")
 	void booking_endpoint_returns_400_when_booking_request_validations_fail(BookingRequestDto bookingRequest) throws JsonProcessingException, Exception {
-		mockMvc.perform(post(BookingEndpoints.BOOKINGS)
+		mockMvc.perform(post(BookingEndpoints.BOOK)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsString(bookingRequest)))
 		.andExpect(status().isBadRequest())
@@ -88,7 +88,7 @@ public class BookEndpointWebTest {
 	
 	@Test
 	void booking_endpoint_returns_400_when_booking_request_is_malformed() throws JsonProcessingException, Exception {
-		mockMvc.perform(post(BookingEndpoints.BOOKINGS)
+		mockMvc.perform(post(BookingEndpoints.BOOK)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("Malformed booking request"))
 		.andExpect(status().isBadRequest())
@@ -105,7 +105,7 @@ public class BookEndpointWebTest {
 
 		doThrow(new ClassroomNotFoundException(exceptionMessage)).when(service).book(bookingRequest, ID_CLASSROOM, EMAIL);
 
-		mockMvc.perform(post(BookingEndpoints.BOOKINGS)
+		mockMvc.perform(post(BookingEndpoints.BOOK)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsString(bookingRequest)))
 		.andExpect(jsonPath("$.message").value(exceptionMessage))
@@ -121,7 +121,7 @@ public class BookEndpointWebTest {
 
 		doThrow(new InvalidBookingException(exceptionMessage)).when(service).book(any(BookingRequestDto.class), anyInt(), anyString());
 
-		mockMvc.perform(post(BookingEndpoints.BOOKINGS)
+		mockMvc.perform(post(BookingEndpoints.BOOK)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsString(bookingRequest)))
 		.andExpect(jsonPath("$.message").value(exceptionMessage))

@@ -26,7 +26,7 @@ import dev.jcasaslopez.booking.util.TestHelper;
 import dev.jcasaslopez.classroom.shared.context.UserContext;
 import dev.jcasaslopez.classroom.shared.dto.StandardResponse;
 
-public class FindBookingByEndpointTest extends BaseIntegrationTest {
+public class TargetBookingEnspointIntegrationTest extends BaseIntegrationTest {
 	
 	@Autowired BookingRepository repository;
 	@Autowired BookingMapper mapper;
@@ -82,7 +82,7 @@ public class FindBookingByEndpointTest extends BaseIntegrationTest {
 		String bookingBySlotUrl = UriComponentsBuilder.fromPath(BookingEndpoints.TARGET_BOOKING)
 				.queryParam("start", TestHelper.generateStartSearch())
 				.queryParam("finish", TestHelper.generateFinishSearch(30))
-				.queryParam("idClassroom", CLASSROOM_ID)
+				.buildAndExpand(CLASSROOM_ID)
 				.toUriString();
 		HttpEntity<Void> httpRequest =  new HttpEntity<>(headers); 
 

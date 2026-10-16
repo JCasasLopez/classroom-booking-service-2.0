@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dev.jcasaslopez.booking.util.BookingEndpoints;
@@ -39,11 +38,12 @@ public class AuthController {
 	@ApiResponse(responseCode = "200", description = "JWT generated successfully",
 	content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	@GetMapping(value = BookingEndpoints.GENERATE_TOKEN)
-	public ResponseEntity<StandardResponse<String>> generateToken(@RequestParam(defaultValue = "1") int idUser) {
-		logger.debug("GET /generate-token?idUser={} - Generating token", idUser);
-
-		String message = String.format("JWT created successfully for user ID %s", idUser);
-		String jwt = new GenerateJwt(secretKey).withIdUser(idUser).build();
+	public ResponseEntity<StandardResponse<String>> generateToken() {
+		logger.debug("GET /generate-token - Generating token");
+		
+		// By default, GenerateJwt creates a token for a user with ID 1
+		String message = String.format("JWT created successfully for user ID 1");
+		String jwt = new GenerateJwt(secretKey).build();
 		StandardResponse<String> response = new StandardResponse<>(message, jwt, HttpStatus.OK);
 		
 		return ResponseEntity.ok(response);

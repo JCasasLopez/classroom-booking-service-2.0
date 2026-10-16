@@ -53,7 +53,7 @@ public class AuthFilterUnitTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = {
-			BookingEndpoints.BOOKINGS,
+			BookingEndpoints.BOOKINGS_BY_USER,
 			BookingEndpoints.CANCEL,
 			BookingEndpoints.WATCH_ALERTS
 	})

@@ -36,7 +36,7 @@ public class AuthFilterIntegrationTest extends BaseIntegrationTest {
 		
 		// Act
 		ResponseEntity<String> response = testRestTemplate.exchange(
-				BookingEndpoints.BOOKINGS,
+				BookingEndpoints.BOOKINGS_BY_USER,
 		        HttpMethod.GET,
 		        requestEntity,
 		        String.class

@@ -18,9 +18,12 @@ import jakarta.servlet.http.HttpServletRequest;
 public class BookingAuthenticationFilter extends AuthenticationFilterBase {
 	
 	private static final Set<String> EXCLUDED_PATHS = Set.of(
-	        BookingEndpoints.CLASSROOMS_AVAILABLE,
-	        BookingEndpoints.TARGET_BOOKING, BookingEndpoints.GENERATE_TOKEN,
-	        PublicSwaggerPaths.SWAGGER_UI, PublicSwaggerPaths.API_DOCS
+	        "classrooms",
+	        "target-booking",
+	        BookingEndpoints.TARGET_BOOKING, 
+	        BookingEndpoints.GENERATE_TOKEN,
+	        PublicSwaggerPaths.SWAGGER_UI, 
+	        PublicSwaggerPaths.API_DOCS
 	    );
 
 	    public BookingAuthenticationFilter(JwtService jwtService, @Value("${jwt.secretKey}") String secretKey, 

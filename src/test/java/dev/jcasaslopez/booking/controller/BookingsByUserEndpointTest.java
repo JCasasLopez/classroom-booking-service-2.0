@@ -40,7 +40,7 @@ public class BookingsByUserEndpointTest extends BaseIntegrationTest {
 		TestHelper.createBooking(testRestTemplate, USER_ID, CLASSROOM_ID, slotDuration.minutes());
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
-		String userBookingsUrl = UriComponentsBuilder.fromPath(BookingEndpoints.BOOKINGS)
+		String userBookingsUrl = UriComponentsBuilder.fromPath(BookingEndpoints.BOOKINGS_BY_USER)
 				.queryParam("idUser", USER_ID)
 				.toUriString();
 		HttpEntity<Void> httpRequest = new HttpEntity<>(headers); 

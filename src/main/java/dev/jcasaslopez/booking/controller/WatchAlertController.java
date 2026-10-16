@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -64,13 +65,13 @@ public class WatchAlertController {
 				content = @Content(schema = @Schema(implementation = StandardResponse.class))),
 		@ApiResponse(responseCode = "401", description = "Unauthorized – missing or invalid access token",
 		content = @Content(schema = @Schema(implementation = StandardResponse.class))),
-		@ApiResponse(responseCode = "404", description = "Booking not found, or its classroom no longer exists",
+		@ApiResponse(responseCode = "404", description = "Booking not found",
 		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	})
 	@SecurityRequirement(name = "bearerAuth")
 	@PostMapping(value=BookingEndpoints.WATCH_ALERTS)
-	public ResponseEntity<StandardResponse<WatchAlertResponseDto>> addWatchAlert(@RequestParam @NotNull @Positive Long idBooking) {
-		logger.debug("POST /watch-alerts - Creating watch alert for idBooking={}", idBooking);
+	public ResponseEntity<StandardResponse<WatchAlertResponseDto>> addWatchAlert(@PathVariable @NotNull @Positive Long idBooking) {
+		logger.debug("POST /watch-alerts/{} - Creating watch alert", idBooking);
 
 		WatchAlertResponseDto watchAlert = watchAlertService.addWatchAlert(idBooking, UserContext.getEmail());
 
@@ -141,9 +142,9 @@ public class WatchAlertController {
 	public ResponseEntity<StandardResponse<Long>> bookingBySlot(
 			@RequestParam @NotNull LocalDateTime start,
 			@RequestParam @NotNull LocalDateTime finish,
-			@RequestParam @Positive int idClassroom){
+			@PathVariable @NotNull @Positive int idClassroom){
 
-		logger.debug("GET /watch-alerts/target-booking - Retrieving target booking for classroom={}, start={}, finish={}", 
+		logger.debug("GET /watch-alerts/{}/target-booking - Retrieving target booking, start={}, finish={}", 
 				idClassroom, start, finish);
 
 		Long idbooking = searchService.findBookingByClassroomAndTimePeriod(idClassroom, start, finish);
