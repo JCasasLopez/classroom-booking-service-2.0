@@ -20,7 +20,7 @@ public class FailedNotificationEventMapper {
 	public NotificationEvent toKafkaRecord (FailedNotificationEvent failedNotificationEvent) { 
 		return (new NotificationEvent 
 				(failedNotificationEvent.getSubject(),
-						failedNotificationEvent.getEmailBody(),
+						failedNotificationEvent.getMessage(),
 						failedNotificationEvent.getEmailAddress()
 						));
 	}

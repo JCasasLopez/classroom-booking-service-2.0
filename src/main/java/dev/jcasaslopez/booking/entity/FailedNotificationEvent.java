@@ -16,13 +16,13 @@ public class FailedNotificationEvent {
 	private long idNotification;
 	private String subject;
 	@Column(columnDefinition = "TEXT")
-	private String emailBody;
+	private String message;
 	private String emailAddress;
 
-	public FailedNotificationEvent(long idNotification, String subject, String emailBody, String emailAddress) {
+	public FailedNotificationEvent(long idNotification, String subject, String message, String emailAddress) {
 		this.idNotification = idNotification;
 		this.subject = subject;
-		this.emailBody = emailBody;
+		this.message = message;
 		this.emailAddress = emailAddress;
 	}
 
@@ -37,8 +37,8 @@ public class FailedNotificationEvent {
 		return subject;
 	}
 
-	public String getEmailBody() {
-		return emailBody;
+	public String getMessage() {
+		return message;
 	}
 
 	public String getEmailAddress() {
@@ -53,8 +53,8 @@ public class FailedNotificationEvent {
 		this.subject = subject;
 	}
 
-	public void setEmailBody(String emailBody) {
-		this.emailBody = emailBody;
+	public void setMessage(String message) {
+		this.message = message;
 	}
 
 	public void setEmailAddress(String emailAddress) {
