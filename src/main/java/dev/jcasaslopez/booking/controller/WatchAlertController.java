@@ -69,7 +69,7 @@ public class WatchAlertController {
 		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
 	})
 	@SecurityRequirement(name = "bearerAuth")
-	@PostMapping(value=BookingEndpoints.WATCH_ALERTS)
+	@PostMapping(value=BookingEndpoints.ADD_WATCH_ALERT)
 	public ResponseEntity<StandardResponse<WatchAlertResponseDto>> addWatchAlert(@PathVariable @NotNull @Positive Long idBooking) {
 		logger.debug("POST /watch-alerts/{} - Creating watch alert", idBooking);
 
@@ -149,7 +149,7 @@ public class WatchAlertController {
 
 		Long idbooking = searchService.findBookingByClassroomAndTimePeriod(idClassroom, start, finish);
 
-		String message = String.format("Active booking for classroom %s between %s and %s retrieved successfully", idClassroom, start, finish);
+		String message = String.format("Target booking search for classroom %s between %s and %s completed successfully", idClassroom, start, finish);
 		StandardResponse<Long> response = new StandardResponse<>(message, idbooking, HttpStatus.OK);
 
 		return ResponseEntity.ok(response);
