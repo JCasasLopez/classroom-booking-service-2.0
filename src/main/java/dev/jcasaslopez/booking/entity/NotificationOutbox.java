@@ -1,5 +1,7 @@
 package dev.jcasaslopez.booking.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -8,8 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="failed_notification_events")
-public class FailedNotificationEvent {
+@Table(name="notification_outbox")
+public class NotificationOutbox {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -18,15 +20,17 @@ public class FailedNotificationEvent {
 	@Column(columnDefinition = "TEXT")
 	private String message;
 	private String emailAddress;
+	private LocalDateTime timestamp;
 
-	public FailedNotificationEvent(long idNotification, String subject, String message, String emailAddress) {
+	public NotificationOutbox(long idNotification, String subject, String message, String emailAddress) {
 		this.idNotification = idNotification;
 		this.subject = subject;
 		this.message = message;
 		this.emailAddress = emailAddress;
+		this.timestamp = LocalDateTime.now();
 	}
 
-	public FailedNotificationEvent() {
+	public NotificationOutbox() {
 	}
 
 	public long getIdNotification() {
@@ -59,5 +63,13 @@ public class FailedNotificationEvent {
 
 	public void setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress;
+	}
+
+	public LocalDateTime getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(LocalDateTime timestamp) {
+		this.timestamp = timestamp;
 	}
 }

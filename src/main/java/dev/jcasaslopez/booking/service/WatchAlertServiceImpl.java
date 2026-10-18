@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import dev.jcasaslopez.booking.dto.WatchAlertRequestDto;
 import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
@@ -13,7 +14,6 @@ import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.BookingNotFoundException;
-import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.mapper.WatchAlertMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.repository.WatchAlertRepository;
@@ -28,19 +28,20 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 	private final WatchAlertMapper mapper; 
 	private final WatchAlertRepository watchAlertRepository;
 	private final BookingRepository bookingRepository;
-	private final EventPublisher eventPublisher;
+	private final NotificationOutboxService notificationOutboxService;
 	private final List<ClassroomEvent> classroomsStore;
 	
 	public WatchAlertServiceImpl(WatchAlertMapper mapper, WatchAlertRepository watchAlertRepository,
-			BookingRepository bookingRepository, EventPublisher eventPublisher,
+			BookingRepository bookingRepository, NotificationOutboxService notificationOutboxService,
 			List<ClassroomEvent> classroomsStore) {
 		this.mapper = mapper;
 		this.watchAlertRepository = watchAlertRepository;
 		this.bookingRepository = bookingRepository;
-		this.eventPublisher = eventPublisher;
+		this.notificationOutboxService = notificationOutboxService;
 		this.classroomsStore = classroomsStore;
 	}
 
+	@Transactional
 	@Override
 	public WatchAlertResponseDto addWatchAlert(Long idBooking, String email) {		
 		Booking booking = bookingRepository.findById(idBooking)
@@ -51,7 +52,7 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 		}
 								
 		WatchAlert savedWatchAlert = watchAlertRepository.save(mapper.toEntity(new WatchAlertRequestDto(idBooking)));
-		eventPublisher.publishBookingRelatedEvent(NotificationType.WATCH_ALERT_CONFIRMED, savedWatchAlert, email);
+		notificationOutboxService.persistNotificationOutbox(NotificationType.WATCH_ALERT_CONFIRMED, savedWatchAlert, email);
 	
 		logger.info("Watch alert created: Classroom ID= {}, User ID= {}, Start= {}, Finish= {}", 
 				booking.getIdClassroom(), booking.getIdUser(), booking.getStart(), booking.getFinish());

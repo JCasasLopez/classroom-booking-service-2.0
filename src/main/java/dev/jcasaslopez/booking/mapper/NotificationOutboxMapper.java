@@ -2,14 +2,14 @@ package dev.jcasaslopez.booking.mapper;
 
 import org.springframework.stereotype.Component;
 
-import dev.jcasaslopez.booking.entity.FailedNotificationEvent;
+import dev.jcasaslopez.booking.entity.NotificationOutbox;
 import dev.jcasaslopez.classroom.shared.event.NotificationEvent;
 
 @Component
-public class FailedNotificationEventMapper {
+public class NotificationOutboxMapper {
 
-	public FailedNotificationEvent toEntity (NotificationEvent notificationEvent) {
-		return (new FailedNotificationEvent 
+	public NotificationOutbox toEntity (NotificationEvent notificationEvent) {
+		return (new NotificationOutbox 
 				(0L,
 						notificationEvent.subject(),
 						notificationEvent.message(),
@@ -17,7 +17,7 @@ public class FailedNotificationEventMapper {
 						));
 	}
 
-	public NotificationEvent toKafkaRecord (FailedNotificationEvent failedNotificationEvent) { 
+	public NotificationEvent toKafkaRecord (NotificationOutbox failedNotificationEvent) { 
 		return (new NotificationEvent 
 				(failedNotificationEvent.getSubject(),
 						failedNotificationEvent.getMessage(),

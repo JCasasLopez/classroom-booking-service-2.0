@@ -1,4 +1,4 @@
-package dev.jcasaslopez.booking.kafka.event;
+package dev.jcasaslopez.booking.service;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -6,53 +6,64 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.exception.BookingNotFoundException;
 import dev.jcasaslopez.booking.exception.ClassroomNotFoundException;
-import dev.jcasaslopez.booking.kafka.producer.NotificationEventProducer;
+import dev.jcasaslopez.booking.mapper.NotificationOutboxMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
+import dev.jcasaslopez.booking.repository.OutboxRepository;
 import dev.jcasaslopez.classroom.shared.enums.NotificationType;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 import dev.jcasaslopez.classroom.shared.event.NotificationEvent;
 
-@Component
-public class EventPublisherImpl implements EventPublisher {
+@Service
+public class NotificationOutboxServiceImpl implements NotificationOutboxService {
 
-	private static final Logger logger = LoggerFactory.getLogger(EventPublisherImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(NotificationOutboxServiceImpl.class);
 	
 	private final List<ClassroomEvent> classroomsStore;
-	private final NotificationEventProducer notificationEventProducer;
 	private final BookingRepository bookingRepository;
+	private final OutboxRepository outboxRepository;
+	private final NotificationOutboxMapper mapper;
 
-	public EventPublisherImpl(List<ClassroomEvent> classroomsStore, NotificationEventProducer notificationEventProducer,
-			BookingRepository bookingRepository) {
+	public NotificationOutboxServiceImpl(
+			List<ClassroomEvent> classroomsStore, 
+			BookingRepository bookingRepository,
+			OutboxRepository outboxRepository, 
+			NotificationOutboxMapper mapper) {
 		this.classroomsStore = classroomsStore;
-		this.notificationEventProducer = notificationEventProducer;
 		this.bookingRepository = bookingRepository;
+		this.outboxRepository = outboxRepository;
+		this.mapper = mapper;
 	}
 
 	@Override
-	public void publishBookingRelatedEvent(NotificationType type, Booking booking, String email) {
+	public void persistNotificationOutbox(NotificationType type, Booking booking, String email) {
 		if (!Set.of(NotificationType.BOOKING_CONFIRMED, NotificationType.BOOKING_CANCELLED, 
 				NotificationType.WATCH_ALERT_TRIGGERED).contains(type)) {	
 			throw new IllegalArgumentException("Invalid notification type for booking event: " + type);
 		}
+		
 		NotificationEvent notification = createNotificationEvent(type, booking, email);
-		notificationEventProducer.sendNotification(notification);
+		
+		outboxRepository.save(mapper.toEntity(notification));
 	}
 
 	@Override
-	public void publishBookingRelatedEvent(NotificationType type, WatchAlert watchAlert, String email) {
+	public void persistNotificationOutbox(NotificationType type, WatchAlert watchAlert, String email) {
 		if (!Set.of(NotificationType.WATCH_ALERT_CONFIRMED).contains(type)) {
 			throw new IllegalArgumentException("Invalid notification type for booking event: " + type);
 		}
+		
 		Booking booking = bookingRepository.findById(watchAlert.getIdBooking())
-				.orElseThrow(() -> new BookingNotFoundException("Booking was not found in the database"));		
+				.orElseThrow(() -> new BookingNotFoundException("Booking was not found in the database"));	
+		
 		NotificationEvent notification = createNotificationEvent(type, booking, email);
-		notificationEventProducer.sendNotification(notification);	
+		
+		outboxRepository.save(mapper.toEntity(notification));
 	}
 	
 	

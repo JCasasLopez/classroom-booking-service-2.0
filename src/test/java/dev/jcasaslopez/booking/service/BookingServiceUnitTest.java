@@ -21,7 +21,6 @@ import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.BookingNotFoundException;
 import dev.jcasaslopez.booking.exception.InvalidBookingStatusException;
-import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.repository.WatchAlertRepository;
 import dev.jcasaslopez.classroom.shared.enums.NotificationType;
@@ -39,7 +38,7 @@ public class BookingServiceUnitTest {
 	
 	@Mock BookingRepository bookingRepository;
 	@Mock WatchAlertRepository watchAlertRepository;
-	@Mock EventPublisher eventPublisher;
+	@Mock NotificationOutboxService eventPublisher;
 
 	@InjectMocks private BookingServiceImpl bookingService;
 	
@@ -65,7 +64,7 @@ public class BookingServiceUnitTest {
 		bookingService.cancel(ID_BOOKING, ID_USER, EMAIL);
 
 		// Assert
-		verify(eventPublisher).publishBookingRelatedEvent(NotificationType.BOOKING_CANCELLED, booking, EMAIL);
+		verify(eventPublisher).persistNotificationOutbox(NotificationType.BOOKING_CANCELLED, booking, EMAIL);
 	}
 
 	@Test
@@ -78,8 +77,8 @@ public class BookingServiceUnitTest {
 		bookingService.cancel(ID_BOOKING, ID_USER, EMAIL);
 
 		// Assert
-		verify(eventPublisher).publishBookingRelatedEvent(NotificationType.WATCH_ALERT_TRIGGERED, booking, OTHER_EMAIL);
-		verify(eventPublisher).publishBookingRelatedEvent(NotificationType.WATCH_ALERT_TRIGGERED, booking, THIRD_EMAIL);
+		verify(eventPublisher).persistNotificationOutbox(NotificationType.WATCH_ALERT_TRIGGERED, booking, OTHER_EMAIL);
+		verify(eventPublisher).persistNotificationOutbox(NotificationType.WATCH_ALERT_TRIGGERED, booking, THIRD_EMAIL);
 	}
 
 	@Test

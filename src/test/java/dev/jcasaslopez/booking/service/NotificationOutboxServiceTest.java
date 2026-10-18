@@ -1,4 +1,4 @@
-package dev.jcasaslopez.booking.kafka.event;
+package dev.jcasaslopez.booking.service;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,21 +23,25 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import dev.jcasaslopez.booking.entity.Booking;
+import dev.jcasaslopez.booking.entity.NotificationOutbox;
 import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.kafka.producer.NotificationEventProducer;
+import dev.jcasaslopez.booking.mapper.NotificationOutboxMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
+import dev.jcasaslopez.booking.repository.OutboxRepository;
 import dev.jcasaslopez.classroom.shared.enums.NotificationType;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
-import dev.jcasaslopez.classroom.shared.event.NotificationEvent;
 
 @ExtendWith(MockitoExtension.class)
-public class EventPublisherTest {
+public class NotificationOutboxServiceTest {
 	
 	@Mock NotificationEventProducer notificationEventProducer;
 	@Mock BookingRepository bookingRepository;
+	@Mock OutboxRepository outboxRepository;
 
-	private EventPublisherImpl eventPublisher;
+	private NotificationOutboxServiceImpl service;
+	private NotificationOutboxMapper mapper = new NotificationOutboxMapper();;
 	
 	private static final String EMAIL = "test@gmail.com";
 	
@@ -56,10 +60,11 @@ public class EventPublisherTest {
 	
 	@BeforeEach
 	void setUp() {
-	    eventPublisher = new EventPublisherImpl(
+	    service = new NotificationOutboxServiceImpl(
 	        allClassrooms,
-	        notificationEventProducer,
-	        bookingRepository
+	        bookingRepository,
+	        outboxRepository, 
+	        mapper
 	    );
 	}
 	
@@ -69,18 +74,19 @@ public class EventPublisherTest {
 		// Arrange
 		
 		// Act
-		eventPublisher.publishBookingRelatedEvent(type, BOOKING, EMAIL);
+		service.persistNotificationOutbox(type, BOOKING, EMAIL);
 		
-		// Assert
-		ArgumentCaptor<NotificationEvent> captor = ArgumentCaptor.forClass(NotificationEvent.class);
-		verify(notificationEventProducer).sendNotification(captor.capture());
+		// Assert		
+		ArgumentCaptor<NotificationOutbox> captor = ArgumentCaptor.forClass(NotificationOutbox.class);
 		
-		NotificationEvent notification = captor.getValue();
+		verify(outboxRepository).save(captor.capture());
+		
+		NotificationOutbox notification = captor.getValue();
 		assertAll(
-				() -> assertEquals(type.getSubject(), notification.subject()),
+				() -> assertEquals(type.getSubject(), notification.getSubject()),
 				// Contains instead of equals because the message is wrapped in HTML tags
-				() -> assertTrue(notification.message().contains(expectedMessage)),
-				() -> assertEquals(EMAIL, notification.emailAddress())
+				() -> assertTrue(notification.getMessage().contains(expectedMessage)),
+				() -> assertEquals(EMAIL, notification.getEmailAddress())
 				);
 		
 	}
@@ -103,7 +109,7 @@ public class EventPublisherTest {
 		
 		// Act & Assert
 		assertThrows(IllegalArgumentException.class, 
-				() -> eventPublisher.publishBookingRelatedEvent(NotificationType.WATCH_ALERT_CONFIRMED, BOOKING, EMAIL));
+				() -> service.persistNotificationOutbox(NotificationType.WATCH_ALERT_CONFIRMED, BOOKING, EMAIL));
 		
 	}
 	
@@ -116,16 +122,17 @@ public class EventPublisherTest {
 		String expectedMessage = "We are pleased to confirm your watch alert for classroom Main Auditorium on the 11/5/2026 from 11:00 to 12:00. If the booking is cancelled you will be notified.";
 	
 		// Act
-		eventPublisher.publishBookingRelatedEvent(NotificationType.WATCH_ALERT_CONFIRMED, WATCH_ALERT, EMAIL);
+		service.persistNotificationOutbox(NotificationType.WATCH_ALERT_CONFIRMED, WATCH_ALERT, EMAIL);
 		
 		// Assert
-		ArgumentCaptor<NotificationEvent> captor = ArgumentCaptor.forClass(NotificationEvent.class);
-		verify(notificationEventProducer).sendNotification(captor.capture());
-		NotificationEvent notification = captor.getValue();
+		ArgumentCaptor<NotificationOutbox> captor = ArgumentCaptor.forClass(NotificationOutbox.class);
+		verify(outboxRepository).save(captor.capture());
+		
+		NotificationOutbox notification = captor.getValue();
 		assertAll(
-				() -> assertEquals(expectedSubject, notification.subject()),
+				() -> assertEquals(expectedSubject, notification.getSubject()),
 				// Contains instead of equals because the message is wrapped in HTML tags
-				() -> assertTrue(notification.message().contains(expectedMessage))
+				() -> assertTrue(notification.getMessage().contains(expectedMessage))
 				);
 		
 	}
@@ -136,7 +143,7 @@ public class EventPublisherTest {
 		
 		// Act & Assert
 		assertThrows(IllegalArgumentException.class, 
-				() -> eventPublisher.publishBookingRelatedEvent(NotificationType.BOOKING_CANCELLED, WATCH_ALERT, EMAIL));
+				() -> service.persistNotificationOutbox(NotificationType.BOOKING_CANCELLED, WATCH_ALERT, EMAIL));
 		
 	}
 }

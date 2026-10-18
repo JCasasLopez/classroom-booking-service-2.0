@@ -17,7 +17,6 @@ import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.BookingNotFoundException;
 import dev.jcasaslopez.booking.exception.InvalidBookingStatusException;
-import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.mapper.BookingMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.repository.WatchAlertRepository;
@@ -32,22 +31,23 @@ public class BookingServiceImpl implements BookingService {
 	
 	private final BookingRepository bookingRepository;
 	private final WatchAlertRepository watchAlertRepository;
-	private final EventPublisher eventPublisher;
+	private final NotificationOutboxService notificationOutboxService;
 	private final BookingMapper mapper;
 	private final List<ClassroomEvent> classroomsStore;
 	private final BookingValidator bookingValidator;
 	
 	public BookingServiceImpl(BookingRepository bookingRepository, WatchAlertRepository watchAlertRepository,
-			EventPublisher eventPublisher, BookingMapper mapper,
+			NotificationOutboxService notificationOutboxService, BookingMapper mapper,
 			List<ClassroomEvent> classroomsStore, BookingValidator bookingValidator) {
 		this.bookingRepository = bookingRepository;
 		this.watchAlertRepository = watchAlertRepository;
-		this.eventPublisher = eventPublisher;
+		this.notificationOutboxService = notificationOutboxService;
 		this.mapper = mapper;
 		this.classroomsStore = classroomsStore;
 		this.bookingValidator = bookingValidator;
 	}
 
+	@Transactional
 	@Override
 	public BookingResponseDto book(BookingRequestDto booking, int idUser, String userEmail) {
 		// It returns a list with the booking start and finish
@@ -63,7 +63,7 @@ public class BookingServiceImpl implements BookingService {
 				BookingStatus.ACTIVE)
 				);
 		
-		eventPublisher.publishBookingRelatedEvent(NotificationType.BOOKING_CONFIRMED, savedBooking, userEmail);
+		notificationOutboxService.persistNotificationOutbox(NotificationType.BOOKING_CONFIRMED, savedBooking, userEmail);
 		logger.info("Booking created: ID= {}, User ID= {}, Classroom ID= {}, Start= {}, Finish= {}", 
 		        savedBooking.getIdBooking(), savedBooking.getIdUser(), savedBooking.getIdClassroom(), 
 		        savedBooking.getStart(), savedBooking.getFinish());
@@ -85,7 +85,7 @@ public class BookingServiceImpl implements BookingService {
 		}
 		
 		bookingRepository.modifyBookingStatus(idBooking, BookingStatus.CANCELLED);
-		eventPublisher.publishBookingRelatedEvent(NotificationType.BOOKING_CANCELLED, booking, userEmail);
+		notificationOutboxService.persistNotificationOutbox(NotificationType.BOOKING_CANCELLED, booking, userEmail);
 		triggerWatchAlerts(booking);
 		
 		logger.info("Booking cancelled: ID= {}, User ID= {}, Classroom ID= {}", 
@@ -118,7 +118,7 @@ public class BookingServiceImpl implements BookingService {
     // we publish to Kafka with zero latency and microservices are completely independent from each other.
 	private void triggerWatchAlerts(Booking cancelledBooking) {
 		List<WatchAlert> watchAlertsForBooking = watchAlertRepository.findWatchAlertsByBooking(cancelledBooking.getIdBooking());
-		watchAlertsForBooking.forEach(watchAlert -> eventPublisher.publishBookingRelatedEvent 
+		watchAlertsForBooking.forEach(watchAlert -> notificationOutboxService.persistNotificationOutbox 
 						(NotificationType.WATCH_ALERT_TRIGGERED, cancelledBooking, watchAlert.getUserEmail()));
 	}
 

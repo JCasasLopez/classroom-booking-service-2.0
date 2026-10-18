@@ -24,7 +24,6 @@ import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.BookingNotFoundException;
-import dev.jcasaslopez.booking.kafka.event.EventPublisher;
 import dev.jcasaslopez.booking.mapper.WatchAlertMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.repository.WatchAlertRepository;
@@ -37,7 +36,7 @@ public class WatchAlertServiceTest {
 	@Mock WatchAlertMapper watchAlertMapper;
 	@Mock WatchAlertRepository watchAlertRepository;
 	@Mock BookingRepository bookingRepository;
-	@Mock EventPublisher eventPublisher;
+	@Mock NotificationOutboxService eventPublisher;
 	@InjectMocks WatchAlertServiceImpl watchAlertService;
 	
 	private static final long BOOKING_ID = 1L;
@@ -96,7 +95,7 @@ public class WatchAlertServiceTest {
 	    // Act & Assert
 	    assertDoesNotThrow(() -> watchAlertService.addWatchAlert(BOOKING_ID, EMAIL));
 	    verify(watchAlertRepository).save(watchAlert);
-	    verify(eventPublisher).publishBookingRelatedEvent(NotificationType.WATCH_ALERT_CONFIRMED, watchAlert, EMAIL);
+	    verify(eventPublisher).persistNotificationOutbox(NotificationType.WATCH_ALERT_CONFIRMED, watchAlert, EMAIL);
 	}
 	
 	@Test
