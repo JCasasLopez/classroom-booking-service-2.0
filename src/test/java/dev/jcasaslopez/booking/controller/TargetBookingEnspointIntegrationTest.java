@@ -38,7 +38,7 @@ public class TargetBookingEnspointIntegrationTest extends BaseIntegrationTest {
 	private static final String EMAIL = "user@example.com";
 	
 	@Test
-	void find_booking_endpoint_returns_the_expected_response() {
+	void target_booking_endpoint_returns_200_and_the_expected_messsage() {
 		// Arrange
 		TestHelper.createBooking(testRestTemplate, USER_ID, CLASSROOM_ID, SLOT_DURATION);
 		
@@ -50,13 +50,13 @@ public class TargetBookingEnspointIntegrationTest extends BaseIntegrationTest {
 		assertAll(
 				() -> assertEquals(HttpStatus.OK, response.status()),
 				() -> assertInstanceOf(Long.class, response.details()),
-				() -> assertTrue(response.message().startsWith("Active booking for classroom 1 between") 
-		                  && response.message().endsWith("retrieved successfully"))
+				() -> assertTrue(response.message().startsWith("Target booking search for classroom") 
+		                  && response.message().endsWith("completed successfully"))
 				);	
 	}
 	
 	@Test
-	void find_booking_endpoint_returns_500_if_finds_more_than_one_booking() {
+	void target_booking_endpoint_returns_500_if_finds_more_than_one_booking() {
 		// Arrange
 		TestHelper.createBooking(testRestTemplate, USER_ID, CLASSROOM_ID, SLOT_DURATION);
 		
