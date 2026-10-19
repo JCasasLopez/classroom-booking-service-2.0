@@ -8,9 +8,7 @@ The entire Classrooms application is deployed and available at [www.book-your-cl
 - [Purpose](#purpose)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
-- [Running with Docker (recommended)](#running-with-docker-recommended)
-- [Running locally, outside Docker](#running-locally-outside-docker)
-- [Deployment](#deployment)
+- [Docker Deployment](#docker-deployment)
 - [Configuration and environment variables](#configuration-and-environment-variables)
 - [Tests](#tests)
 - [Limitations of deploying Booking on its own](#limitations-of-deploying-booking-on-its-own)
@@ -22,7 +20,9 @@ The entire Classrooms application is deployed and available at [www.book-your-cl
 
 ## Purpose
 
-The purpose of this repository is to allow exploring the microservice individually, as opposed to as a part of the entire application. The accompanying database and Kafka Docker containers come with some pre-loaded data - bookings, watch alerts and classrooms- for convenience (see the 'Authentication & Pre-loaded data' section).
+The purpose of this repository is to allow exploring the microservice individually, as opposed to as a part of the entire application found at [www.book-your-classroom.com](https://www.book-your-classroom.com). 
+
+The accompanying database and Kafka Docker containers come with some pre-loaded data - bookings, watch alerts and classrooms- for convenience (see the 'Authentication & Pre-loaded data' section).
 
 
 ## Features
@@ -30,61 +30,56 @@ The purpose of this repository is to allow exploring the microservice individual
 - Makes classroom reservations *
 - Cancels classroom reservations *
 - Retrieves booking history by user * 
-- Retrieves availability calendar by classroom
+- Retrieves a classroom availability calendar
 - Searches available classrooms by time period / features
 - Creates watch alerts *
 - Retrieves watch alert history by user and time period * 
-- Generates a valid JWT: obviously in a production environment would compromise the system security, but as this is only a demo has been added to allow microservice exploration.
+- Generates a valid JWT: obviously in a production environment this would compromise the system security, but as this is only a demo has been added to allow microservice exploration (all JWTs are created for a user with ID=1 and a fake email address).
 
 \* Endpoints marked with an asterisk require authentication (a valid JWT).
 
 
 ## Tech Stack
 
-- Java 17
-- Spring Boot 3.4.5
-- MySQL
-- Kafka
-- Docker
-- JJWT
-- Maven
+- **Java 17**
+- **Spring Boot 3.4.5**
+- **Persistence & DB**: MySQL
+- **Messaging**: Apache Kafka
+- **API Documentation**: OpenAPI / Swagger (Springdoc 2.7.0)
+- **Containerization**: Docker
+- **Build Tool**: Maven
 
 **Testing**
-- JUnit
-- Mockito
-- Testcontainers
+- JUnit 5 & Mockito
+- Testcontainers (MySQL & Kafka)
+- Spring Kafka Test
 
 **Internal dependency**
-- `classroom-shared-library` — shared DTOs, JWT validation, Kafka event payloads and global exception handling across the ecosystem.
+- `classroom-shared-library` — shared DTOs, JWT creation and validation, Kafka event payloads and an authentication base filter that is extended by each microservice.
 
 
-## Running with Docker (recommended)
+## Docker Deployment
 
-Prerequisites: Docker Desktop only (see Deployment section).
+Prerequisites: Docker Desktop only.
 
 This builds the application (Maven and Java run inside the build container — nothing needs to be installed locally) and starts MySQL, Kafka and the microservice together.
 
-
-## Running locally, outside Docker
-
-Prerequisites:
-
-* Java 17
-* Maven
-* Docker Desktop — used to run MySQL and Kafka locally, even when the application itself runs outside a container.
-
-Note: this project depends on an internal shared library, fetched automatically by Maven via JitPack from the library's GitHub repository.
-
-## Deployment
+1. Clone the repository:
 
 ```bash
-git clone https://github.com/JCasasLopez/classroom-booking-service-2.0
+   git clone https://github.com/JCasasLopez/classroom-booking-service-2.0
 ```
+
+2. Move into the project directory:
+
 ```bash
-cd classroom-booking-service-2.0
+   cd classroom-booking-service-2.0
 ```
+
+3. Build and start the containers:
+
 ```bash
-docker compose up --build
+   docker compose up --build
 ```
 
 ## Configuration and environment variables
@@ -95,45 +90,48 @@ For convenience, the `.env` file is committed to this repository with demo value
 
 This is a deliberate decision for a demo/portfolio project, not an oversight. In a real production environment:
 
-- The `.env` file would **not** be committed to version control.
+- The `.env` file would **NOT** be committed to version control.
 - Secrets (JWT key, database credentials) would be stored in a secure, access-controlled system designed for that purpose, instead of a plain text file, and injected into each service only at deploy time.
 
 Since no real infrastructure or user data is involved here, the values in `.env` are safe to expose publicly, and doing so keeps the project easy to run for anyone evaluating it.
 
 ## Tests
 
-Since the Booking microservice has a fairly complex business logic, the microservice functionalities are tested comprehensively, with both unit and integration tests. Integration tests use **Testcontainers**, so they spin up their own isolated MySQL and Kafka instances — no manual setup required, and they don't interfere with the `docker-compose.yml` environment used for manual exploration.
+Since the Booking microservice has a fairly complex business logic, the microservice functionalities are tested comprehensively, with both unit, web and integration tests. Integration tests use **Testcontainers**, so they spin up their own isolated MySQL and Kafka instances — no manual setup required, and they don't interfere with the `docker-compose.yml` environment used for manual exploration.
 
 Tests are skipped during the Docker build (`-DskipTests`) to keep `docker-compose up` fast for manual exploration of the running application. To run the full test suite:
 
 ```bash
-mvn test
+mvn clean test
 ```
 
 ## Limitations of deploying Booking on its own
 
-As already mentioned at the very beginning of this README, the deployment described above only allows working with the Booking microservice on its own — the rest of the Classrooms application is left out. 
+As already mentioned at the beginning of this README, the deployment described above only allows working with the Booking microservice on its own — the rest of the Classrooms application is left out. 
 
-Note that while the technical documentation details a production deployment using **2 Kafka brokers** (classrooms and notifications), with 3 replications each for fault tolerance, this single-service setup uses **only 1 Kafka broker** (classrooms, which fulfills both roles) with only one replication for local simplicity.
+Note that the technical documentation describes a production deployment with 3 Kafka brokers for fault tolerance (replication factor of 3, with `min.insync.replicas=2`), which tolerates the loss of one broker without data loss. The `docker-compose.yml` in this repository runs a single broker for local development, so no replication is in effect.
 
-Apart from the obvious inability to work with data from other microservices (Users or Classrooms), the main shortcoming of this approach is that the user will never receive the notifications sent by the system. This is due to two reasons: the email associated with the JWT is a made-up address, and the Notification microservice — which reads the Kafka topic and actually sends the notifications — is not spun up.
+Apart from the obvious inability to work with data from other microservices (Users or Classrooms), the main shortcoming of this approach is that the user will never receive the notifications sent by the system. This is due to two reasons: the email associated with the JWT is a fake email address, and the Notification microservice — which reads the Kafka topic and actually sends the notifications — is not spun up.
 
 To explore the notifications, you can check the `notifications` Kafka topic (obviously, the topic is empty before you perform any action that triggers a notification, which are creating a booking, cancelling a booking, and creating a watch alert):
 
-```bash
-docker exec -it kafka-broker bash
-```
+1. Open a shell inside the Kafka container:
 
 ```bash
-kafka-console-consumer --bootstrap-server localhost:9092 --topic notifications --from-beginning
+   docker exec -it kafka-broker bash
+```
+
+2. Inside the container, start a consumer to read the messages from the `notifications` topic:
+
+```bash
+   kafka-console-consumer --bootstrap-server localhost:9092 --topic notifications --from-beginning
 ```
 
 ## Exploring the Booking Microservice I: Authentication and Pre-loaded Data
 As mentioned in the "Features" section, all endpoints except the search-related ones are protected, and an endpoint to generate a valid JWT is provided.
 
-By default, the JWT is built with `idUser=1`, which corresponds to the user associated with the pre-loaded bookings in the database container. Using this default token gives you access to that pre-loaded data out of the box.
+The JWT built by this endpoint generates a token with the claim `idUser=1`, which corresponds to the user associated with the pre-loaded bookings in the database container. Using this default token gives you access to that pre-loaded data out of the box.
 
-If you'd rather start from a clean slate, generate a token with a different `idUser` (see "Endpoints Exploration > Generate a valid JWT"). Bookings and watch alerts created with that token won't have any pre-loaded data associated with them.
 
 **All pre-loaded bookings belong to `idUser=1`, `idClassroom=1`**:
 
@@ -174,12 +172,7 @@ To generate a token with the default idUser=1
 curl --location 'http://localhost:9000/classroom-booking/generate-token'
 ```
 
-Or to build the token with a different user ID:
-```bash
-curl --location 'http://localhost:9000/classroom-booking/generate-token?idUser=<OTHER_ID_USER>'
-```
-
-This token must be used in the `Authorization: Bearer <VALID_JWT>` header for all other endpoints below. 
+This token must be used in the `Authorization: Bearer <VALID_JWT>` header in all the protected endpoints (only search-related endpoints are public). 
 
 </details>
 
@@ -191,16 +184,17 @@ curl --location 'http://localhost:9000/classroom-booking/bookings' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer <VALID_JWT>' \
 --data '{
-  "idUser": 1,
   "idClassroom": 1,
   "startTimeSlotList": [
-    "<FUTURE_DATE e.g. 2027-07-27T10:00:00>",
-    "<FUTURE_DATE e.g. 2027-07-27T10:30:00>"
+    "2028-07-27T10:00:00",
+    "2028-07-27T10:30:00"
   ]
 }'
 ```
 
-Note that each entry in `startTimeSlotList` marks the start of a 30-minute slot (or whatever time slot duration is set to. Default value is 30 minutes). See full [technical documentation](#) for details. In this example, two consecutive slots are booked, resulting in a 10:00–11:00 reservation.
+Note that each entry in `startTimeSlotList` marks the start of a 30-minute slot (or whatever time slot duration is set to. Default value is 30 minutes). See full [technical documentation](#) for details. 
+
+In this example, two consecutive slots are booked, resulting in a 10:00–11:00 reservation for Tuesday the 27th of July 2028. The date have to be in the future, and the time within the opening hours (by default Monday to Friday from 9h to 22h. Weekends closed). 
 
 </details>
 
@@ -208,12 +202,12 @@ Note that each entry in `startTimeSlotList` marks the start of a 30-minute slot 
 <summary><b>Cancel a booking</b></summary>
 
 ```bash
-curl --location --request PATCH 'http://localhost:9000/classroom-booking/bookings/cancel?idBooking=1' \
---header 'Authorization: Bearer <VALID_JWT>' \
---data ''
+curl --location --request PATCH 'http://localhost:9000/classroom-booking/bookings/1/cancel' \
+--header 'Authorization: Bearer <VALID_JWT>' 
 ```
+Replace '.../bookings/**1**...' with any other valid idBooking.
 
-Only a booking with ACTIVE status can be cancelled.
+Only a booking with ACTIVE status can be cancelled (when a booking is cancelled, it is not deleted from the database, but its status is updated from ACTIVE to CANCELLED).
 
 </details>
 
@@ -230,15 +224,15 @@ The system extracts the user ID from the JWT and searches the booking history fo
 </details>
 
 <details>
-<summary><b>Retrieve availability calendar by classroom</b></summary>
+<summary><b>Retrieve classroom availability calendar</b></summary>
 
-```bash
-curl --location 'http://localhost:9000/classroom-booking/searches/availability-calendar?start=<FUTURE_DATE e.g. 2027-07-27T10:00:00>&finish=<FUTURE_DATE e.g. 2027-07-27T18:00:00>&idClassroom=1'
+```basht
+curl --location 'http://localhost:9000/classroom-booking/classrooms/1/availability?start=2029-01-01T10:00:00&finish=2029-01-01T18:00:00&idClassroom=1'
 ```
 
-Replace `start` and `finish` with actual future dates in ISO-8601 format (`yyyy-MM-ddTHH:mm:ss`) before running the request. This endpoint is public and doesn't require a token.
+Replace '.../classrooms/**1**...' with any other valid idClassroom, and `start` and `finish` with any future date in ISO-8601 format (`yyyy-MM-ddTHH:mm:ss`) before running the request. This endpoint is public and does not require a token.
 
-Keep in mind that `start` and `finish` must be on the same day, on a day the classroom is open (default: Monday to Friday, 9:00–22:00; closed on weekends), and must be valid time slots (default slot duration: 30 minutes, so 10:00, 10:30, etc. are valid, but not 10:15). See the technical documentation for full details.
+`start` and `finish` must be on the same day, on a day the classroom is open (default: Monday to Friday, 9:00–22:00; closed on weekends), and must be valid time slots (default slot duration: 30 minutes, so 10:00, 10:30, etc. are valid, but not 10:15). See the technical documentation for full details.
 
 </details>
 
@@ -246,36 +240,26 @@ Keep in mind that `start` and `finish` must be on the same day, on a day the cla
 <summary><b>Search available classrooms by time period / features</b></summary>
 
 ```bash
-curl --location 'http://localhost:9000/classroom-booking/searches/classrooms-available?start=<FUTURE_DATE e.g. 2027-07-27T10:00:00>&finish=<FUTURE_DATE e.g. 2027-07-27T11:00:00>&seats=10&projector=true&speakers=false'
+curl --location 'http://localhost:9000/classroom-booking/classrooms?start=2029-01-01T10:00:00&finish=2029-01-01T18:00:00&seats=10&projector=true&speakers=false'
 ```
 
 Replace `start` and `finish` with actual future dates in ISO-8601 format (`yyyy-MM-ddTHH:mm:ss`) before running the request. This endpoint is public and doesn't require a token.
 
-`seats`, `projector` and `speakers` must all be present in the request (they can't be omitted), but that doesn't mean you have to filter by them: set `seats=0`, `projector=false` and `speakers=false` to ignore that criterion and include all classrooms regardless of capacity or features.
+`seats`, `projector` and `speakers` must all be present in the request (they cannot be omitted), but that does not mean you have to filter by them: set `seats=0`, `projector=false` and `speakers=false` to ignore that criterion and include all classrooms regardless of capacity or features.
 
 Same criteria about `start` and `finish` as in the previous endpoint applies.
 </details>
 
-<details>
-<summary><b>Find booking by classroom/time slot</b> <i>(supporting endpoint)</i></summary>
-
-```bash
-curl --location 'http://localhost:9000/classroom-booking/searches/booking-by-slot?start=<FUTURE_DATE e.g. 2027-07-27T10:00:00>&finish=<FUTURE_DATE e.g. 2027-07-27T11:00:00>&idClassroom=1'
-```
-
-This endpoint is not meant to be called directly — it's used internally by the front-end when a user clicks an already-booked slot to request the ID of the booking that falls in that time slot. Since creating a watch alert requires an `idBooking` (not a time slot), this endpoint resolves the clicked classroom + time period into the corresponding `idBooking`. Included here for completeness.
-
-</details>
 
 <details>
 <summary><b>Create a watch alert</b></summary>
 
 ```bash
-curl --location --request POST 'http://localhost:9000/classroom-booking/watch-alerts?idBooking=1' \
+curl --location --request POST 'http://localhost:9000/classroom-booking/watch-alerts/1' \
 --header 'Authorization: Bearer <VALID_JWT>'
 ```
 
-`idBooking` must reference an existing ACTIVE booking.
+`idBooking` (with the value of 1 in this example: ...watch-alerts/**1**...) must reference an existing ACTIVE booking.
 </details>
 
 <details>
@@ -287,6 +271,23 @@ curl --location 'http://localhost:9000/classroom-booking/watch-alerts?startSearc
 ```
 
 Returns the watch alerts belonging to the authenticated user (resolved from the JWT, no need to pass any user information as a parameter) that fall within the given `startSearch`–`finishSearch` period.
+</details>
+
+<details>
+<summary><b>Find booking by classroom/time slot</b> <i>(supporting endpoint)</i></summary>
+
+```bash
+curl --location 'http://localhost:9000/classroom-booking/watch-alerts/1/target-booking?start=2029-01-01T10:00:00&finish=2029-01-01T10:30:00'
+```
+
+Replace '.../watch-alerts/**1**/...' with any valid idClassroom.
+
+This endpoint is not meant to be called directly (so it is included here just for completeness) — it is used internally by the front-end when a user clicks an already-booked slot to request the ID of the booking that falls in that time slot. This ID will be used in the next step to create a watch alert on that booking. 
+
+The reason why there is an independent endpoint for this is that the whole process is resolved in two stages: 1) First, the front-end obtains the ID for the booking, and asks the user for confirmation. 2) If the user confirms that he wants to create a watch alert on that booking, it uses the ID obtained in the first step to do so.
+
+'start' and 'finish' have to coincide with a valid slot, that is, for a slot duration of 30 minutes, e.g. 10:30 to 11:00, but not 10:15 to 10:45, or 10:00 to 11:00.
+
 </details>
 
 ## Swagger
