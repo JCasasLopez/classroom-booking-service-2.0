@@ -10,6 +10,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import dev.jcasaslopez.booking.base.BaseIntegrationTest;
@@ -22,8 +23,8 @@ public class KafkaProducerIntegrationTest extends BaseIntegrationTest {
 	@Value("${kafka.topic.name.notifications}") private String topicName;
 	
 	private KafkaConsumer<String, NotificationEvent> consumer;
+	@Autowired NotificationEventProducer notificationProducer;
 	
-	private static final int SLOT_DURATION = 30;
 	private static final int CLASSROOM_ID = 1;
 	private static final int USER_ID = 1;
 	
@@ -40,8 +41,10 @@ public class KafkaProducerIntegrationTest extends BaseIntegrationTest {
         consumer = KafkaTestHelper.createNotificationConsumer(kafkaContainer.getBootstrapServers(), topicName);
 
         // Act
-        TestHelper.createBooking(testRestTemplate, USER_ID, CLASSROOM_ID, SLOT_DURATION);
-        List<ConsumerRecord<String, NotificationEvent>> records = KafkaTestHelper.pollRecords(consumer, Duration.ofSeconds(10));
+        TestHelper.createBooking(testRestTemplate, USER_ID, CLASSROOM_ID, slotDuration.minutes());
+        notificationProducer.processOutboxEvents();
+        
+        List<ConsumerRecord<String, NotificationEvent>> records = KafkaTestHelper.pollRecords(consumer, Duration.ofSeconds(2));
 
         // Assert
         assertFalse(records.isEmpty(), "No NotificationEvent received within 10 seconds");
