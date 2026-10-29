@@ -11,8 +11,11 @@ public sealed interface DaySchedule {
         public Open {
             Objects.requireNonNull(openingTime, "openingTime");
             Objects.requireNonNull(closingTime, "closingTime");
-            if (!closingTime.isAfter(openingTime)) {
-                throw new IllegalArgumentException("Closing time must be after opening time");
+
+            // This validation also works for the case where closing time exceeds midnight (which is against the rules,
+            // for instance opening time: 9am and closing time: 1am (next day), closing time would be before opening time.
+            if (!openingTime.isBefore(closingTime)) {
+            	throw new IllegalArgumentException("Invalid opening times");
             }
         }
     }

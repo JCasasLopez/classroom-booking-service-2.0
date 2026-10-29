@@ -15,8 +15,8 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,8 +61,15 @@ public class BookingValidatorTest {
 	private BookingValidator bookingValidator;
 	
 	private WeeklySchedule buildTestWeeklySchedule() {
-	    List<String> hours = new ArrayList<> (List.of("09:00-22:00", "09:00-22:00", "09:00-22:00", "09:00-22:00", "09:00-22:00", "10:00-14:00", "CLOSED"));
-	    return new WeeklySchedule(hours, SLOT_DURATION_30);
+		Map<DayOfWeek, String> hours = Map.of(
+				DayOfWeek.MONDAY, "09:00-22:00",
+				DayOfWeek.TUESDAY, "09:00-22:00",
+				DayOfWeek.WEDNESDAY, "09:00-22:00",
+				DayOfWeek.THURSDAY, "09:00-22:00",
+				DayOfWeek.FRIDAY, "09:00-22:00",
+				DayOfWeek.SATURDAY, "10:00-14:00",
+				DayOfWeek.SUNDAY, "CLOSED");
+		return WeeklySchedule.from(hours, SLOT_DURATION_30);
 	}
 	
 	@BeforeEach

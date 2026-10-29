@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -18,14 +17,13 @@ import dev.jcasaslopez.booking.domain.TimeSlot;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.exception.SlotNotValidException;
 import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
+import dev.jcasaslopez.booking.util.TestHelper;
 
 public class SlotValidationTest {
 	
 	private static final SlotDuration SLOT_DURATION_30 = new SlotDuration(30);
 	
-	private final WeeklySchedule weeklySchedule = 
-			new WeeklySchedule(List.of("9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "CLOSED", "CLOSED"),
-					SLOT_DURATION_30);
+	private final WeeklySchedule weeklySchedule = TestHelper.weekdaysOpenWeekendClosed(SLOT_DURATION_30);
 	
 	@ParameterizedTest
 	@MethodSource("openSlots")

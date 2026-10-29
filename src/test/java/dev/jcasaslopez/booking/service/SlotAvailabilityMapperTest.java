@@ -22,6 +22,7 @@ import dev.jcasaslopez.booking.dto.SlotStatusDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.mapper.TimeSlotMapper;
+import dev.jcasaslopez.booking.util.TestHelper;
 
 public class SlotAvailabilityMapperTest {
 
@@ -31,9 +32,7 @@ public class SlotAvailabilityMapperTest {
 	private static final SlotDuration SLOT_DURATION_60 = new SlotDuration(60);
 	private static final int SLOT_DURATION_IN_MINUTES_60 = SLOT_DURATION_60.minutes();
 
-	private final WeeklySchedule weeklySchedule = 
-			new WeeklySchedule(List.of("9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "CLOSED", "CLOSED"), 
-					SLOT_DURATION_30);
+	private final WeeklySchedule weeklySchedule = TestHelper.weekdaysOpenWeekendClosed(SLOT_DURATION_30);
 	private final TimeSlotMapper timeSlotMapper = new TimeSlotMapper();
 
 	private SlotAvailabilityMapper mapperWith(SlotDuration slotDuration) {

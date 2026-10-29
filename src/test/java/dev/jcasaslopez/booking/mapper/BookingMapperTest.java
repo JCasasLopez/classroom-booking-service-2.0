@@ -17,6 +17,7 @@ import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.ClassroomNotFoundException;
+import dev.jcasaslopez.booking.util.TestHelper;
 import dev.jcasaslopez.classroom.shared.context.UserContext;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
@@ -29,9 +30,7 @@ public class BookingMapperTest {
 	private static final String ANY_EMAIL = "user@example.com";
 	private static final int USER_ID = 1;
 	
-	private final WeeklySchedule weeklySchedule = 
-			new WeeklySchedule(List.of("9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "9:00-21:00", "CLOSED", "CLOSED"), 
-					SLOT_DURATION_30);
+	private final WeeklySchedule weeklySchedule = TestHelper.weekdaysOpenWeekendClosed(SLOT_DURATION_30);
 
 	private final List<ClassroomEvent> classroomsStore = List.of(
 		    new ClassroomEvent(1, "Blue Whale Auditorium", 30, true, true),

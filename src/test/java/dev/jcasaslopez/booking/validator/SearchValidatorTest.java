@@ -8,7 +8,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
-import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -31,8 +31,15 @@ public class SearchValidatorTest {
 	private static final SlotDuration SLOT_DURATION_30 = new SlotDuration(30);
 	
 	private WeeklySchedule buildTestWeeklySchedule() {
-	    List<String> hours = List.of("9:00-22:00", "9:00-22:00", "9:00-22:00", "9:00-22:00", "9:00-22:00", "10:00-14:00", "CLOSED");
-	    return new WeeklySchedule(hours, SLOT_DURATION_30);
+		Map<DayOfWeek, String> hours = Map.of(
+				DayOfWeek.MONDAY, "09:00-22:00",
+				DayOfWeek.TUESDAY, "09:00-22:00",
+				DayOfWeek.WEDNESDAY, "09:00-22:00",
+				DayOfWeek.THURSDAY, "09:00-22:00",
+				DayOfWeek.FRIDAY, "09:00-22:00",
+				DayOfWeek.SATURDAY, "10:00-14:00",
+				DayOfWeek.SUNDAY, "CLOSED");
+		return WeeklySchedule.from(hours, SLOT_DURATION_30);
 	}
 	
 	private static LocalDateTime next(DayOfWeek day) {

@@ -8,6 +8,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
@@ -16,6 +17,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
+import dev.jcasaslopez.booking.domain.SlotDuration;
+import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.classroom.shared.context.UserContext;
@@ -83,6 +86,17 @@ public final class TestHelper {
 				.map(c -> c.name())
 				.findFirst()
 			    .orElseThrow(() -> new RuntimeException("Classroom not found with id: " + classroomId));
+	}
+	
+	public static WeeklySchedule weekdaysOpenWeekendClosed(SlotDuration slotDuration) {
+		return WeeklySchedule.from(Map.of(
+				DayOfWeek.MONDAY, "9:00-21:00",
+				DayOfWeek.TUESDAY, "9:00-21:00",
+				DayOfWeek.WEDNESDAY, "9:00-21:00",
+				DayOfWeek.THURSDAY, "9:00-21:00",
+				DayOfWeek.FRIDAY, "9:00-21:00",
+				DayOfWeek.SATURDAY, "CLOSED",
+				DayOfWeek.SUNDAY, "CLOSED"), new SlotDuration(slotDuration.minutes()));
 	}
 
 }
