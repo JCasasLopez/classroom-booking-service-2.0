@@ -44,27 +44,25 @@ public class BookingValidator {
 		List<LocalDateTime> sortedStartTimes = booking.startTimeSlotList().stream()
 		        .sorted()
 		        .toList();
+		
+		checkSlotsAreConsecutive(sortedStartTimes);
 
 		// The list of  start time slots in BookingRequestDto is annotated with @NotEmpty, so this line is safe
 		LocalDateTime bookingStart = sortedStartTimes.get(0);
 		LocalDateTime bookingFinish = sortedStartTimes.get(sortedStartTimes.size()-1).plusMinutes(slotDuration.minutes());
 		
-		checkTimeStartTimesAreValid(sortedStartTimes, weeklySchedule, slotDuration);
-		
 		if(bookingStart.isBefore(LocalDateTime.now())) {
 			throw new IllegalArgumentException("Booking a past period is not allowed");
 		}
 		
-		checkSlotsAreConsecutive(sortedStartTimes);
+		TimePointValidator.validate(bookingStart, weeklySchedule, slotDuration);
+		TimePointValidator.validate(bookingFinish, weeklySchedule, slotDuration);
+		
 		checkBookDoesNotExceedMaxAllowedTime(sortedStartTimes);
 		checkClassroomHasNoOverlappingBookings(booking.idClassroom(), bookingStart, bookingFinish);
 		checkUserHasBookingsLeft(idUser, bookingStart);
 		
 		return new BookingPeriod(bookingStart, bookingFinish);
-	}
-	
-	private void checkTimeStartTimesAreValid(List<LocalDateTime> startTimes,  WeeklySchedule weeklySchedule, SlotDuration slotDuration) {
-	    startTimes.forEach(start -> TimePointValidator.validate(start, weeklySchedule, slotDuration));
 	}
 	
 	private void checkSlotsAreConsecutive(List<LocalDateTime> listSlots) {
