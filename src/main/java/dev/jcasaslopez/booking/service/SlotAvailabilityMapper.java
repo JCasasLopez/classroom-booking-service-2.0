@@ -14,7 +14,7 @@ import dev.jcasaslopez.booking.domain.TimeSlot;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.SlotStatusDto;
 import dev.jcasaslopez.booking.entity.Booking;
-import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
+import dev.jcasaslopez.booking.exception.TimePointOutOfOpeningHoursException;
 import dev.jcasaslopez.booking.mapper.TimeSlotMapper;
 
 @Component
@@ -64,7 +64,7 @@ public class SlotAvailabilityMapper {
 		while (cursor.isBefore(periodEnd)) {
 			try {
 				grid.add(new TimeSlot(cursor, weeklySchedule, slotDuration));
-			} catch (SlotOutOfOpeningHoursException e) {
+			} catch (TimePointOutOfOpeningHoursException e) {
 				// Out-of-opening-hours slot is skipped
 			    logger.debug("Skipping slot at {}: out of opening hours", cursor);
 			}

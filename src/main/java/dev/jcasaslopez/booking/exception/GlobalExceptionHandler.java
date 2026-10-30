@@ -22,8 +22,9 @@ import jakarta.validation.ConstraintViolationException;
 public class GlobalExceptionHandler {
 				
 	@ExceptionHandler({InvalidBookingException.class, 
+		TimePointMisalignedException.class,
 		SlotNotValidException.class, 
-		SlotOutOfOpeningHoursException.class, 
+		TimePointOutOfOpeningHoursException.class, 
 		IllegalStateException.class, 
 		IllegalArgumentException.class,
 		MissingServletRequestParameterException.class,

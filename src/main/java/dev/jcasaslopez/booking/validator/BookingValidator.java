@@ -64,7 +64,7 @@ public class BookingValidator {
 	}
 	
 	private void checkTimeStartTimesAreValid(List<LocalDateTime> startTimes,  WeeklySchedule weeklySchedule, SlotDuration slotDuration) {
-	    startTimes.forEach(start -> SlotValidator.validate(start, weeklySchedule, slotDuration));
+	    startTimes.forEach(start -> TimePointValidator.validate(start, weeklySchedule, slotDuration));
 	}
 	
 	private void checkSlotsAreConsecutive(List<LocalDateTime> listSlots) {

@@ -6,7 +6,7 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.jcasaslopez.booking.validator.SlotValidator;
+import dev.jcasaslopez.booking.validator.TimePointValidator;
 
 public class TimeSlot implements Comparable<TimeSlot>{
 	
@@ -19,14 +19,14 @@ public class TimeSlot implements Comparable<TimeSlot>{
 	
 	public TimeSlot(LocalDateTime start, WeeklySchedule weeklySchedule, SlotDuration slotDuration) {		
 		if (start == null) throw new IllegalArgumentException("The start of a TimeSlot cannot be null");
-		this.start = start;
 		this.slotDuration = slotDuration;
 		this.weeklySchedule = weeklySchedule;
-		
-		SlotValidator.validate(start, weeklySchedule, slotDuration);
-		
-		// Built after validation of 'start'
+		this.start = start;
 		this.finish = start.plusMinutes(slotDuration.minutes());
+		
+		TimePointValidator.validate(start, weeklySchedule, slotDuration);
+		TimePointValidator.validate(finish, weeklySchedule, slotDuration);
+		
 		logger.debug("TimeSlot created: start={}, finish={}", this.start, this.finish);
 	}
 	

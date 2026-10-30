@@ -20,7 +20,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import dev.jcasaslopez.booking.domain.SlotDuration;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
-import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
+import dev.jcasaslopez.booking.exception.TimePointOutOfOpeningHoursException;
 
 public class SearchValidatorTest {
 	
@@ -48,7 +48,7 @@ public class SearchValidatorTest {
 		
 	@BeforeEach
 	void setUp() {
-		searchValidator = new SearchValidator(buildTestWeeklySchedule());
+		searchValidator = new SearchValidator(buildTestWeeklySchedule(), SLOT_DURATION_30);
 	}
 
 	@Test
@@ -99,12 +99,19 @@ public class SearchValidatorTest {
 	void search_validator_does_not_allow_searches_on_a_closed_day() {
 		// Act & Assert
 		LocalDateTime nextSunday = next(DayOfWeek.SUNDAY);
-		SlotOutOfOpeningHoursException ex = assertThrows(SlotOutOfOpeningHoursException.class, 
+		TimePointOutOfOpeningHoursException ex = assertThrows(TimePointOutOfOpeningHoursException.class, 
 				() -> searchValidator.validateSearch(nextSunday, nextSunday.plusHours(10)));
 
-		assertEquals("The center is closed that day", ex.getMessage());			
+		assertEquals("Center is closed on this day", ex.getMessage());			
 	}
 
+	@ParameterizedTest
+	@MethodSource("validSearches")
+	void valid_searches_do_not_throw_exception(LocalDateTime start, LocalDateTime finish) {
+		// Act & Assert
+		assertDoesNotThrow(() -> searchValidator.validateSearch(start, finish));
+	}
+	
 	static Stream<Arguments> validSearches() {
 		LocalDate monday = next(DayOfWeek.MONDAY).toLocalDate();
 		LocalDate saturday = next(DayOfWeek.SATURDAY).toLocalDate();
@@ -119,12 +126,15 @@ public class SearchValidatorTest {
 	}
 
 	@ParameterizedTest
-	@MethodSource("validSearches")
-	void valid_searches_do_not_throw_exception(LocalDateTime start, LocalDateTime finish) {
+	@MethodSource("searchesOutOfOpeningHours")
+	void searches_out_of_opening_hours_throw_exception(LocalDateTime start, LocalDateTime finish) {
 		// Act & Assert
-		assertDoesNotThrow(() -> searchValidator.validateSearch(start, finish));
-	}
+		TimePointOutOfOpeningHoursException ex = assertThrows(TimePointOutOfOpeningHoursException.class,
+				() -> searchValidator.validateSearch(start, finish));
 
+		assertEquals("Time point out of opening hours", ex.getMessage());
+	}
+	
 	static Stream<Arguments> searchesOutOfOpeningHours() {
 		LocalDate monday = next(DayOfWeek.MONDAY).toLocalDate();
 		LocalDate saturday = next(DayOfWeek.SATURDAY).toLocalDate();
@@ -137,16 +147,6 @@ public class SearchValidatorTest {
 			Arguments.of(saturday.atTime(9, 0),  saturday.atTime(12, 0)),
 			Arguments.of(saturday.atTime(11, 0), saturday.atTime(15, 0))
 		);
-	}
-
-	@ParameterizedTest
-	@MethodSource("searchesOutOfOpeningHours")
-	void searches_out_of_opening_hours_throw_exception(LocalDateTime start, LocalDateTime finish) {
-		// Act & Assert
-		SlotOutOfOpeningHoursException ex = assertThrows(SlotOutOfOpeningHoursException.class,
-				() -> searchValidator.validateSearch(start, finish));
-
-		assertEquals("Start or finish out of opening hours", ex.getMessage());
 	}
 
 }

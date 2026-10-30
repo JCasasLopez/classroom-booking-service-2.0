@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import dev.jcasaslopez.booking.exception.ClassroomNotFoundException;
 import dev.jcasaslopez.booking.exception.GlobalExceptionHandler;
-import dev.jcasaslopez.booking.exception.SlotOutOfOpeningHoursException;
+import dev.jcasaslopez.booking.exception.TimePointOutOfOpeningHoursException;
 import dev.jcasaslopez.booking.filter.BookingAuthenticationFilter;
 import dev.jcasaslopez.booking.service.SearchService;
 import dev.jcasaslopez.booking.util.BookingEndpoints;
@@ -94,7 +94,7 @@ public class ClassroomAvailabilityEndpointWebTest {
 	void classroom_availability_endpoint_returns_400_when_slot_is_out_of_opening_hours() throws Exception {		
 		String exceptionMessage = "Slot out of opening hours";
 
-		doThrow(new SlotOutOfOpeningHoursException(exceptionMessage)).when(service).availabilityCalendarByClassroom(anyInt(), any(), any());
+		doThrow(new TimePointOutOfOpeningHoursException(exceptionMessage)).when(service).availabilityCalendarByClassroom(anyInt(), any(), any());
 
 		mockMvc.perform(get(BookingEndpoints.CLASSROOM_AVAILABILITY, ID_CLASSROOM)
 				.param("start", START.toString())
