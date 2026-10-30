@@ -52,7 +52,7 @@ public class BookingValidator {
 		LocalDateTime bookingFinish = sortedStartTimes.get(sortedStartTimes.size()-1).plusMinutes(slotDuration.minutes());
 		
 		if(bookingStart.isBefore(LocalDateTime.now())) {
-			throw new IllegalArgumentException("Booking a past period is not allowed");
+			throw new InvalidBookingException("Booking a past period is not allowed");
 		}
 		
 		TimePointValidator.validate(bookingStart, weeklySchedule, slotDuration);

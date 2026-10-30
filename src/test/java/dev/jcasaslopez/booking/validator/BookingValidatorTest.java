@@ -118,11 +118,11 @@ public class BookingValidatorTest {
 	void if_the_booking_in_the_past_throws_exception() {
 		// Arrange
 		LocalDateTime pastStart = LocalDateTime.of(2026, 5, 4, 9, 0);
-		LocalDateTime pastSlot2 = LocalDateTime.of(2026, 5, 4, 10, 0);
+		LocalDateTime pastSlot2 = LocalDateTime.of(2026, 5, 4, 9, 30);
 		BookingRequestDto bookingRequest = new BookingRequestDto(CLASSROOM_ID, List.of(pastStart, pastSlot2));
 		
 		// Act & Assert
-		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, 
+		InvalidBookingException ex = assertThrows(InvalidBookingException.class, 
 											() -> bookingValidator.validateBooking(bookingRequest, USER_ID));	
 		assertEquals("Booking a past period is not allowed", ex.getMessage());
 	}
