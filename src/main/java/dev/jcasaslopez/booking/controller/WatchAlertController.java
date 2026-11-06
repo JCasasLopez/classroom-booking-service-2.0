@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dev.jcasaslopez.booking.dto.WatchAlertResponseDto;
-import dev.jcasaslopez.booking.service.SearchService;
 import dev.jcasaslopez.booking.service.WatchAlertService;
 import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.classroom.shared.context.UserContext;
@@ -40,11 +39,9 @@ public class WatchAlertController {
 	private static final Logger logger = LoggerFactory.getLogger(WatchAlertController.class);
 
 	private final WatchAlertService watchAlertService;
-	private final SearchService searchService;
 
-	public WatchAlertController(WatchAlertService watchAlertService, SearchService searchService) {
+	public WatchAlertController(WatchAlertService watchAlertService) {
 		this.watchAlertService = watchAlertService;
-		this.searchService = searchService;
 	}
 
 	@Operation(
@@ -108,50 +105,4 @@ public class WatchAlertController {
 
 		return ResponseEntity.ok(response);
 	}
-
-	// When creating a watch alert, user hits an already booked time slot on the front-end. This endpoint returns the idBooking
-	// corresponding to that booking, which is the parameter needed to create a watch alert.
-	@Operation(
-			summary = "Retrieves the booking ID occupying a given time slot",
-			description = """
-					Returns the `idBooking` of the active booking that occupies the exact slot `start`–`finish` for the given classroom.
-					Used by the front-end when a user clicks an already-booked slot, so a watch alert can be created for that booking.
-					`finish - start` must match exactly the configured minimum time-slot duration.
-					"""
-			)
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "Booking id retrieved successfully",
-				content = @Content(schema = @Schema(implementation = StandardResponse.class))),
-		@ApiResponse(responseCode = "400", description = """
-				Bad request. Possible causes:
-				- idClassroom missing or not positive
-				- start/finish missing
-				- start is not before finish
-				- Search range is in the past
-				- start and finish are not on the same day
-				- Range falls outside opening hours, or the center is closed that day
-				- finish - start does not match exactly the minimum time-slot duration
-				""",
-				content = @Content(schema = @Schema(implementation = StandardResponse.class))),
-		@ApiResponse(responseCode = "404", description = "No active booking found for that classroom and time slot",
-		content = @Content(schema = @Schema(implementation = StandardResponse.class))),
-		@ApiResponse(responseCode = "500", description = "Data integrity error – more than one active booking found for the same slot",
-		content = @Content(schema = @Schema(implementation = StandardResponse.class)))
-	})
-	@GetMapping(value=BookingEndpoints.TARGET_BOOKING)
-	public ResponseEntity<StandardResponse<Long>> bookingBySlot(
-			@RequestParam @NotNull LocalDateTime start,
-			@RequestParam @NotNull LocalDateTime finish,
-			@PathVariable @NotNull @Positive int idClassroom){
-
-		logger.debug("GET /watch-alerts/{}/target-booking - Retrieving target booking, start={}, finish={}", 
-				idClassroom, start, finish);
-
-		Long idbooking = searchService.findBookingByClassroomAndTimePeriod(idClassroom, start, finish);
-
-		String message = String.format("Target booking search for classroom %s between %s and %s completed successfully", idClassroom, start, finish);
-		StandardResponse<Long> response = new StandardResponse<>(message, idbooking, HttpStatus.OK);
-
-		return ResponseEntity.ok(response);
-	}		
 }

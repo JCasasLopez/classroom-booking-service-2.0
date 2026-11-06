@@ -23,11 +23,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import dev.jcasaslopez.booking.domain.SlotDuration;
-import dev.jcasaslopez.booking.entity.Booking;
-import dev.jcasaslopez.booking.enums.BookingStatus;
-import dev.jcasaslopez.booking.exception.BookingNotFoundException;
-import dev.jcasaslopez.booking.exception.DataIntegrityException;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.validator.ClassroomValidator;
 import dev.jcasaslopez.booking.validator.SearchValidator;
@@ -41,10 +36,7 @@ public class SearchServiceTest {
 	@Mock SearchValidator searchValidator;
 	@Mock SlotAvailabilityMapper slotAvailabilityMapper;
 	SearchServiceImpl searchService;
-	
-	private static final SlotDuration SLOT_DURATION_30 = new SlotDuration(30);
-	private static final int SLOT_DURATION_IN_MINUTES = SLOT_DURATION_30.minutes();
-		
+			
 	private static LocalDateTime nextMonday() {
 	    LocalDate today = LocalDate.now();
 	    LocalDate nextMonday = today.with(TemporalAdjusters.next(DayOfWeek.MONDAY));
@@ -53,15 +45,7 @@ public class SearchServiceTest {
 	
 	private static final LocalDateTime START = nextMonday();
 	private static final LocalDateTime FINISH = START.plusHours(10);
-	private static final int ID_CLASSROOM = 1;
-	private static final long ID_BOOKING = 5;
-	private static final LocalDateTime SLOT_FINISH = START.plusMinutes(SLOT_DURATION_IN_MINUTES);
 
-	private Booking bookingInSlot(long idBooking) {
-	    return new Booking(idBooking, 1, ID_CLASSROOM, START, SLOT_FINISH,
-	            START.minusDays(1), BookingStatus.ACTIVE);
-	}
-	
 	private static List<ClassroomEvent> ALL_CLASSROOMS = List.of(
 		    new ClassroomEvent(1, "Main Auditorium", 150, true, true),
 		    new ClassroomEvent(2, "Standard Seminar Room", 30, true, false),
@@ -79,7 +63,6 @@ public class SearchServiceTest {
 				bookingRepository,
 				slotAvailabilityMapper,
 				ALL_CLASSROOMS,
-				SLOT_DURATION_30,
 				classroomValidator,
 				searchValidator		
 		);
@@ -142,43 +125,4 @@ public class SearchServiceTest {
 	            Arguments.of(20, false, true, List.of(1, 3, 5, 6, 7))
 	    );
 	}
-	
-	@Test
-	void findBooking_returns_the_id_of_the_only_active_booking() {
-	    when(bookingRepository.findActiveBookingsForClassroomByPeriod(ID_CLASSROOM, START, SLOT_FINISH))
-	            .thenReturn(List.of(bookingInSlot(ID_BOOKING)));
-
-	    Long result = searchService.findBookingByClassroomAndTimePeriod(ID_CLASSROOM, START, SLOT_FINISH);
-
-	    assertEquals(ID_BOOKING, result);
-	}
-
-	@Test
-	void findBooking_without_active_booking_throws_not_found() {
-	    when(bookingRepository.findActiveBookingsForClassroomByPeriod(ID_CLASSROOM, START, SLOT_FINISH))
-	            .thenReturn(List.of());
-
-	    assertThrows(BookingNotFoundException.class,
-	            () -> searchService.findBookingByClassroomAndTimePeriod(ID_CLASSROOM, START, SLOT_FINISH));
-	}
-
-	@Test
-	void findBooking_with_more_than_one_booking_throws_data_integrity() {
-	    when(bookingRepository.findActiveBookingsForClassroomByPeriod(ID_CLASSROOM, START, SLOT_FINISH))
-	            .thenReturn(List.of(bookingInSlot(ID_BOOKING), bookingInSlot(ID_BOOKING + 1)));
-
-	    assertThrows(DataIntegrityException.class,
-	            () -> searchService.findBookingByClassroomAndTimePeriod(ID_CLASSROOM, START, SLOT_FINISH));
-	}
-
-	@Test
-	void findBooking_with_period_longer_than_a_slot_throws_illegal_argument() {
-	    LocalDateTime tooLong = START.plusMinutes(60);
-
-	    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-	            () -> searchService.findBookingByClassroomAndTimePeriod(ID_CLASSROOM, START, tooLong));
-
-	    assertEquals("The search period must match exactly the minimum time slot duration", ex.getMessage());
-	}
-	
 }
