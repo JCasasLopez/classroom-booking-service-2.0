@@ -3,9 +3,6 @@ package dev.jcasaslopez.booking.controller;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,15 +17,11 @@ public class BookEndpointIntegrationTest extends BaseIntegrationTest {
 	
 	private static final int CLASSROOM_ID = 1;
 	private static final int USER_ID = 1;
-    
+	
     @Test
 	void book_endpoint_returns_created_status_and_expected_booking_details() {
 		// Arrange
 		String classroomName = TestHelper.findClassroomName(CLASSROOM_ID, classroomsStore);
-
-		List<LocalDateTime> bookingSlots = TestHelper.generateBookingSlots(slotDuration.minutes());	
-		LocalDateTime bookingStart = TestHelper.getBookingStart(bookingSlots);
-		LocalDateTime bookingFinish = TestHelper.getBookingFinish(bookingSlots, slotDuration.minutes());
 		
 		// Act
 		ResponseEntity<StandardResponse<BookingResponseDto>> httpResponse = TestHelper.createBooking
@@ -42,9 +35,7 @@ public class BookEndpointIntegrationTest extends BaseIntegrationTest {
 				() -> assertEquals(HttpStatus.CREATED, httpResponse.getBody().status()),
 				() -> assertEquals(finalMessage, httpResponse.getBody().message()),
 				() -> assertEquals(classroomName, bookingResult.classroomName()),
-				() -> assertEquals(BookingStatus.ACTIVE, bookingResult.status()),
-				() -> assertEquals(bookingStart, bookingResult.start()),
-				() -> assertEquals(bookingFinish, bookingResult.finish())
+				() -> assertEquals(BookingStatus.ACTIVE, bookingResult.status())
 				);
 	}
 

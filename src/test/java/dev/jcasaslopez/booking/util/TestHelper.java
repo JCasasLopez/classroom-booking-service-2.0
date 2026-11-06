@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +32,17 @@ public final class TestHelper {
 
 	public static ResponseEntity<StandardResponse<BookingResponseDto>> createBooking
 								(TestRestTemplate restTemplate, int idUser, int classroomId, int slotDuration) {
-		BookingRequestDto bookingDto = new BookingRequestDto(classroomId, TestHelper.generateBookingSlots(slotDuration));
-
+		
+		LocalDateTime nextMonday10 = LocalDate.now()
+		        .with(TemporalAdjusters.next(DayOfWeek.MONDAY))
+		        .atTime(10, 0);
+		
+		LocalDateTime nextMonday11 = LocalDate.now()
+		        .with(TemporalAdjusters.next(DayOfWeek.MONDAY))
+		        .atTime(11, 0);
+		
+		BookingRequestDto bookingDto = new BookingRequestDto(classroomId, nextMonday10, nextMonday11);
+		       
 		UserContext.setContext(EMAIL, idUser);
 		
 		HttpHeaders headers = new HttpHeaders();
@@ -47,17 +55,6 @@ public final class TestHelper {
 				httpBookingRequest, 
 				new ParameterizedTypeReference<StandardResponse<BookingResponseDto>>() {} 
 				);
-	}
-	
-	// The system only allows bookings in a future date, so we look for next Monday's date
-	public static List<LocalDateTime> generateBookingSlots(int slotDuration) {
-		LocalTime start = LocalTime.of(10, 0);
-		LocalDate nextMonday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY));
-		return new ArrayList<>(List.of(
-				nextMonday.atTime(start),
-				nextMonday.atTime(start.plusMinutes(slotDuration))
-				)
-			);
 	}
 	
 	// Start search next Monday at 10am

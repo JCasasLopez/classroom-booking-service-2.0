@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -25,7 +24,7 @@ public class BookingMapperTest {
 	
 	private static final SlotDuration SLOT_DURATION_30 = new SlotDuration(30);
 
-	private static final BookingMapper mapper = new BookingMapper(SLOT_DURATION_30);
+	private static final BookingMapper mapper = new BookingMapper();
 	
 	private static final String ANY_EMAIL = "user@example.com";
 	private static final int USER_ID = 1;
@@ -42,12 +41,9 @@ public class BookingMapperTest {
 	void when_slots_are_valid_mapper_returns_correct_entity () {
 		// Arrange
 		BookingRequestDto bookingRequestDto = new BookingRequestDto(1, 
-				// The list has to be mutable, since it will have to be sorted in convertStartToTimeSlots()
-				new ArrayList<>(List.of(
 					    LocalDateTime.of(2026, 4, 22, 10, 0),
-					    LocalDateTime.of(2026, 4, 22, 10, 30),
-					    LocalDateTime.of(2026, 4, 22, 11, 0)
-					)));
+					    LocalDateTime.of(2026, 4, 22, 11, 30)
+					);
 		
 		UserContext.setContext(ANY_EMAIL, USER_ID);
 	

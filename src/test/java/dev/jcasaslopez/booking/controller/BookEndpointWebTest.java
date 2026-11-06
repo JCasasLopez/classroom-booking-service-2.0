@@ -10,8 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -58,7 +56,9 @@ public class BookEndpointWebTest {
 	private static final int ID_CLASSROOM = 1;
 	private static final int ID_USER = 1;
 	private static final String EMAIL = "test@gmail";
-	private static final List<LocalDateTime> startTimesList = List.of(LocalDateTime.of(2026, 10, 13, 10, 00));
+	private static final LocalDateTime START_BOOKING = LocalDateTime.of(2026, 10, 13, 10, 00);
+	private static final LocalDateTime FINISH_BOOKING = LocalDateTime.of(2026, 10, 13, 11, 00);
+
 	
 	@BeforeAll
 	static void setUpUserContext() {
@@ -80,9 +80,9 @@ public class BookEndpointWebTest {
 	private static Stream<Arguments> testdata(){
 		return Stream.of(
 				Arguments.of((Object) null),
-				Arguments.of(new BookingRequestDto(null, startTimesList)),
-				Arguments.of(new BookingRequestDto(ID_CLASSROOM, null)),
-				Arguments.of(new BookingRequestDto(ID_CLASSROOM, Collections.emptyList()))
+				Arguments.of(new BookingRequestDto(null, START_BOOKING, FINISH_BOOKING)),
+				Arguments.of(new BookingRequestDto(ID_CLASSROOM, null, FINISH_BOOKING)),
+				Arguments.of(new BookingRequestDto(ID_CLASSROOM, START_BOOKING, null))
 						);
 	}
 	
@@ -100,7 +100,7 @@ public class BookEndpointWebTest {
 	@Test
 	void booking_endpoint_returns_404_when_classroom_is_not_found() throws JsonProcessingException, Exception {
 		// Arrange	
-		BookingRequestDto bookingRequest = new BookingRequestDto(ID_CLASSROOM, startTimesList);
+		BookingRequestDto bookingRequest = new BookingRequestDto(ID_CLASSROOM, START_BOOKING, FINISH_BOOKING);
 		String exceptionMessage = "Classroom not found"; 
 
 		doThrow(new ClassroomNotFoundException(exceptionMessage)).when(service).book(bookingRequest, ID_CLASSROOM, EMAIL);
@@ -116,7 +116,7 @@ public class BookEndpointWebTest {
 	@Test
 	void booking_endpoint_returns_400_when_booking_is_not_valid() throws JsonProcessingException, Exception {
 		// Arrange
-		BookingRequestDto bookingRequest = new BookingRequestDto(ID_CLASSROOM, startTimesList);
+		BookingRequestDto bookingRequest = new BookingRequestDto(ID_CLASSROOM, START_BOOKING, FINISH_BOOKING);
 		String exceptionMessage = "Invalid booking"; 
 
 		doThrow(new InvalidBookingException(exceptionMessage)).when(service).book(any(BookingRequestDto.class), anyInt(), anyString());

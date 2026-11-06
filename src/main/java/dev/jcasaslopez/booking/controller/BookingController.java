@@ -62,10 +62,9 @@ public class BookingController {
 		@ApiResponse(responseCode = "400", description = """
 				Bad request. Possible causes:
 				- Malformed or unreadable JSON body
-				- Field validation failed (e.g. missing idUser/idClassroom)
+				- Field validation failed (e.g. missing idClassroom)
 				- Requested period is in the past
-				- Time slots are not consecutive
-				- Time slots fall outside opening hours or are invalid
+				- Requested period outside of opening hours or are invalid
 				- Booking exceeds maximum allowed duration
 				- Classroom is not available for the requested period
 				- User has reached the maximum number of weekly bookings

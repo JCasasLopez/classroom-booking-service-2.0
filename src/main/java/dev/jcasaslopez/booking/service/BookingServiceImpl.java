@@ -9,7 +9,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dev.jcasaslopez.booking.domain.BookingPeriod;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
 import dev.jcasaslopez.booking.entity.Booking;
@@ -50,15 +49,14 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional
 	@Override
 	public BookingResponseDto book(BookingRequestDto booking, int idUser, String userEmail) {
-		// It returns a list with the booking start and finish
-		BookingPeriod bookingPeriod = bookingValidator.validateBooking(booking, idUser);
+		bookingValidator.validateBooking(booking, idUser);
 		
 		Booking savedBooking = bookingRepository.save(new Booking(
 				0, 
 				idUser, 
 				booking.idClassroom(), 
-				bookingPeriod.start(),
-				bookingPeriod.finish(),
+				booking.start(),
+				booking.finish(),
 				LocalDateTime.now(),
 				BookingStatus.ACTIVE)
 				);

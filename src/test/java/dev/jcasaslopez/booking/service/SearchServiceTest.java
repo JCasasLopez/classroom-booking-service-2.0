@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import java.time.DayOfWeek;
@@ -23,9 +22,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import dev.jcasaslopez.booking.domain.SlotDuration;
+import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.repository.BookingRepository;
+import dev.jcasaslopez.booking.util.TestHelper;
 import dev.jcasaslopez.booking.validator.ClassroomValidator;
-import dev.jcasaslopez.booking.validator.SearchValidator;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,7 +34,6 @@ public class SearchServiceTest {
 	
 	@Mock BookingRepository bookingRepository;
 	@Mock ClassroomValidator classroomValidator;
-	@Mock SearchValidator searchValidator;
 	@Mock SlotAvailabilityMapper slotAvailabilityMapper;
 	SearchServiceImpl searchService;
 			
@@ -45,7 +45,10 @@ public class SearchServiceTest {
 	
 	private static final LocalDateTime START = nextMonday();
 	private static final LocalDateTime FINISH = START.plusHours(10);
-
+	private static final SlotDuration SLOT_DURATION_30 = new SlotDuration(30);
+	
+	private static final WeeklySchedule weeklySchedule = TestHelper.weekdaysOpenWeekendClosed(SLOT_DURATION_30);
+	
 	private static List<ClassroomEvent> ALL_CLASSROOMS = List.of(
 		    new ClassroomEvent(1, "Main Auditorium", 150, true, true),
 		    new ClassroomEvent(2, "Standard Seminar Room", 30, true, false),
@@ -64,16 +67,17 @@ public class SearchServiceTest {
 				slotAvailabilityMapper,
 				ALL_CLASSROOMS,
 				classroomValidator,
-				searchValidator		
+				SLOT_DURATION_30,
+				weeklySchedule
 		);
 	}
 	
 	@Test
 	void classroomsAvailableByPeriod_with_invalid_period_propagates_the_exception() {
-		doThrow(new IllegalArgumentException("invalid")).when(searchValidator).validateSearch(START, FINISH);
+		LocalDateTime invalidFinish = START.minusHours(1); 
 
-		assertThrows(IllegalArgumentException.class,
-				() -> searchService.classroomsAvailableByPeriod(START, FINISH));
+	    assertThrows(IllegalArgumentException.class,
+	            () -> searchService.classroomsAvailableByPeriod(START, invalidFinish));
 	}
 	
 	@Test

@@ -1,13 +1,12 @@
 package dev.jcasaslopez.booking.validator;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import dev.jcasaslopez.booking.domain.BookingPeriod;
 import dev.jcasaslopez.booking.domain.SlotDuration;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
@@ -38,50 +37,38 @@ public class BookingValidator {
 		this.classroomValidator = classroomValidator;
 	}
 
-	public BookingPeriod validateBooking(BookingRequestDto booking, int idUser) {
+	public void validateBooking(BookingRequestDto booking, int idUser) {
 		classroomValidator.validateClassroomExists(booking.idClassroom());
-
-		List<LocalDateTime> sortedStartTimes = booking.startTimeSlotList().stream()
-		        .sorted()
-		        .toList();
-		
-		checkSlotsAreConsecutive(sortedStartTimes);
-
-		// The list of  start time slots in BookingRequestDto is annotated with @NotEmpty, so this line is safe
-		LocalDateTime bookingStart = sortedStartTimes.get(0);
-		LocalDateTime bookingFinish = sortedStartTimes.get(sortedStartTimes.size()-1).plusMinutes(slotDuration.minutes());
+	
+		LocalDateTime bookingStart = booking.start();
+		LocalDateTime bookingFinish = booking.finish();
 		
 		if(bookingStart.isBefore(LocalDateTime.now())) {
 			throw new InvalidBookingException("Booking a past period is not allowed");
 		}
 		
+		if(!bookingFinish.isAfter(bookingStart)) {
+			throw new InvalidBookingException("Finish must be after start");
+		}
+		
+		// Validates alignment with the grid and the time points fall within opening hours
 		TimePointValidator.validate(bookingStart, weeklySchedule, slotDuration);
 		TimePointValidator.validate(bookingFinish, weeklySchedule, slotDuration);
 		
-		checkBookDoesNotExceedMaxAllowedTime(sortedStartTimes);
+		checkBookDoesNotExceedMaxAllowedTime(bookingStart, bookingFinish);
 		checkClassroomHasNoOverlappingBookings(booking.idClassroom(), bookingStart, bookingFinish);
 		checkUserHasBookingsLeft(idUser, bookingStart);
-		
-		return new BookingPeriod(bookingStart, bookingFinish);
 	}
-	
-	private void checkSlotsAreConsecutive(List<LocalDateTime> listSlots) {
-		for(int i=0; i < listSlots.size() - 1; i++) {
-			if(!listSlots.get(i).plusMinutes(slotDuration.minutes()).equals(listSlots.get(i+1))) {
-				throw new InvalidBookingException("Booking slots are not consecutive");
-			}
-		}
-	}
-	
-	private void checkBookDoesNotExceedMaxAllowedTime(List<LocalDateTime> listSlots) {
-		int intendedBookingDuration = listSlots.size() * slotDuration.minutes();
-		if(intendedBookingDuration >  bookingMaxDuration) {
+
+	private void checkBookDoesNotExceedMaxAllowedTime(LocalDateTime start, LocalDateTime finish) {
+		Duration bookingDuration = Duration.between(start, finish);
+		if(bookingDuration.toMinutes() >  bookingMaxDuration) {
 			throw new InvalidBookingException("Booking exceeds maximum duration allowed");
 		}
 	}
 	
 	private void checkClassroomHasNoOverlappingBookings(int idClassroom, LocalDateTime start, LocalDateTime finish) {
-		if(bookingRepository.findActiveBookingsForClassroomByPeriod(idClassroom, start, finish).size() != 0) {
+		if(!bookingRepository.findActiveBookingsForClassroomByPeriod(idClassroom, start, finish).isEmpty()) {
 			throw new InvalidBookingException("Classroom is not available for this time period");
 		}
 	}

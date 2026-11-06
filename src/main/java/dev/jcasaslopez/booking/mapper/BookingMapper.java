@@ -1,15 +1,12 @@
 package dev.jcasaslopez.booking.mapper;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import dev.jcasaslopez.booking.domain.SlotDuration;
-import dev.jcasaslopez.booking.domain.TimeSlot;
 import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
 import dev.jcasaslopez.booking.dto.BookingResponseDto;
@@ -23,27 +20,19 @@ import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 public class BookingMapper {
 	
 	private static final Logger logger = LoggerFactory.getLogger(BookingMapper.class);
-	
-	private final SlotDuration slotDuration; 
-	
-	public BookingMapper(SlotDuration slotDuration) {
-		this.slotDuration = slotDuration;
-	}
-	
+		
 	public Booking toEntity(BookingRequestDto booking, WeeklySchedule weeklySchedule) {
 
 		int idUser = UserContext.getIdUser();
 
-		logger.debug("Mapping BookingRequestDto to Booking: idUser={}, idClassroom={}, slots={}", 
-				idUser, booking.idClassroom(), booking.startTimeSlotList().size());
-		
-		List<TimeSlot> timeSlots = convertStartToTimeSlots(booking, weeklySchedule);
-	
+		logger.debug("Mapping BookingRequestDto to Booking: idUser={}, idClassroom={}, start={}, finish={}", 
+				idUser, booking.idClassroom(), booking.start(), booking.finish());
+			
 		return new Booking(0,
 				idUser,
 				booking.idClassroom(),
-				timeSlots.get(0).getStart(),
-				timeSlots.get(timeSlots.size()-1).getFinish(),
+				booking.start(),
+				booking.finish(),
 				LocalDateTime.now(),
 				BookingStatus.ACTIVE);		
 	}
@@ -58,15 +47,4 @@ public class BookingMapper {
 				booking.getFinish(),
 				booking.getStatus());
 	}
-	
-	private List<TimeSlot> convertStartToTimeSlots (BookingRequestDto booking, WeeklySchedule weeklySchedule) {
-		Collections.sort(booking.startTimeSlotList());
-		
-		// By converting the start times of every slot into an TimeSlot object, we are validating that the booking times 
-		// are within opening hours, etc. (see TimeSlot for validations).
-		return booking.startTimeSlotList().stream()
-				.map(b -> new TimeSlot(b, weeklySchedule, slotDuration))
-				.toList();
-	}
-
 }

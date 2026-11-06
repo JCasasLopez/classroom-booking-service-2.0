@@ -8,11 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import dev.jcasaslopez.booking.domain.SlotDuration;
+import dev.jcasaslopez.booking.domain.WeeklySchedule;
 import dev.jcasaslopez.booking.dto.SlotStatusDto;
 import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.repository.BookingRepository;
 import dev.jcasaslopez.booking.validator.ClassroomValidator;
-import dev.jcasaslopez.booking.validator.SearchValidator;
+import dev.jcasaslopez.booking.validator.RangeValidator;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
 @Service
@@ -24,24 +26,25 @@ public class SearchServiceImpl implements SearchService {
 	private final SlotAvailabilityMapper slotAvailabilityMapper;
 	private final List<ClassroomEvent> classroomsStore;
 	private final ClassroomValidator classroomValidator;
-	private final SearchValidator searchValidator;
+	private final SlotDuration slotDuration;
+	private final WeeklySchedule weeklySchedule;
 	
 	public SearchServiceImpl(BookingRepository bookingRepository, SlotAvailabilityMapper slotAvailabilityMapper,
-			List<ClassroomEvent> classroomsStore, ClassroomValidator classroomValidator,
-			SearchValidator searchValidator) {
+			List<ClassroomEvent> classroomsStore, ClassroomValidator classroomValidator, 
+			SlotDuration slotDuration, WeeklySchedule weeklySchedule) {
 		this.bookingRepository = bookingRepository;
 		this.slotAvailabilityMapper = slotAvailabilityMapper;
 		this.classroomsStore = classroomsStore;
 		this.classroomValidator = classroomValidator;
-		this.searchValidator = searchValidator;
-	
+		this.slotDuration = slotDuration;
+		this.weeklySchedule = weeklySchedule;
 	}
 
 	@Override
 	public List<SlotStatusDto> availabilityCalendarByClassroom(int idClassroom, LocalDate startDate, LocalDate endDate) {
 		logger.info("Fetching availability calendar for classroom {} from {} to {}", idClassroom, startDate, endDate);
 		
-		searchValidator.validateCalendarAvailabilityDates(startDate, endDate);
+		RangeValidator.validateCalendarAvailabilityDates(startDate, endDate);
 
 		LocalDateTime start = startDate.atStartOfDay();
 		LocalDateTime finish = endDate.plusDays(1).atStartOfDay();
@@ -58,7 +61,7 @@ public class SearchServiceImpl implements SearchService {
 	public List<ClassroomEvent> classroomsAvailableByPeriod(LocalDateTime start, LocalDateTime finish) {
 		logger.info("Fetching available classrooms from {} to {}", start, finish);
 	   
-		searchValidator.validateSearch(start, finish);
+		RangeValidator.validateRange(start, finish, weeklySchedule, slotDuration);
 	    
 		List<Integer> occupiedClassrooms = bookingRepository.findOccupiedClassroomsbyPeriod(start, finish);
 		
