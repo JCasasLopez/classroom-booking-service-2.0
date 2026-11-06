@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -25,7 +25,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import dev.jcasaslopez.booking.exception.ClassroomNotFoundException;
 import dev.jcasaslopez.booking.exception.GlobalExceptionHandler;
-import dev.jcasaslopez.booking.exception.TimePointOutOfOpeningHoursException;
 import dev.jcasaslopez.booking.filter.BookingAuthenticationFilter;
 import dev.jcasaslopez.booking.service.SearchService;
 import dev.jcasaslopez.booking.util.BookingEndpoints;
@@ -49,8 +48,8 @@ public class ClassroomAvailabilityEndpointWebTest {
 	private static final int ID_USER = 1;
 	private static final String EMAIL = "test@gmail";
 	private static final int ID_CLASSROOM = 1;
-	private static final LocalDateTime START = LocalDateTime.of(2026, 10, 13, 11, 0);
-	private static final LocalDateTime FINISH = LocalDateTime.of(2026, 10, 13, 12, 0);
+	private static final LocalDate START = LocalDate.of(2026, 10, 13);
+	private static final LocalDate FINISH = LocalDate.of(2026, 10, 13);
 
 	
 	@BeforeAll
@@ -60,7 +59,7 @@ public class ClassroomAvailabilityEndpointWebTest {
 	
 	@ParameterizedTest
 	@MethodSource("classroomAvailabilityRequest")
-	void classroom_availability_endpoint_returns_400_when_request_is_bad(Integer idClassroom, LocalDateTime start, LocalDateTime finish) throws Exception {
+	void classroom_availability_endpoint_returns_400_when_request_is_bad(Integer idClassroom, LocalDate start, LocalDate finish) throws Exception {
 	    
 	    var requestBuilder = get(BookingEndpoints.CLASSROOM_AVAILABILITY, idClassroom);
 	    
@@ -90,20 +89,6 @@ public class ClassroomAvailabilityEndpointWebTest {
 	    );
 	}
 	
-	@Test
-	void classroom_availability_endpoint_returns_400_when_slot_is_out_of_opening_hours() throws Exception {		
-		String exceptionMessage = "Slot out of opening hours";
-
-		doThrow(new TimePointOutOfOpeningHoursException(exceptionMessage)).when(service).availabilityCalendarByClassroom(anyInt(), any(), any());
-
-		mockMvc.perform(get(BookingEndpoints.CLASSROOM_AVAILABILITY, ID_CLASSROOM)
-				.param("start", START.toString())
-				.param("finish", FINISH.toString()))
-		.andExpect(jsonPath("$.message").value(exceptionMessage))
-		.andExpect(status().isBadRequest())
-	    .andExpect(jsonPath("$.status").value("BAD_REQUEST"));
-	}
-
 	@Test
 	void classroom_availability_endpoint_returns_404_when_classroom_is_not_found() throws Exception {				
 		String exceptionMessage = "Classroom not found";

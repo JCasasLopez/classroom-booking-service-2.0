@@ -1,5 +1,6 @@
 package dev.jcasaslopez.booking.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -25,7 +26,6 @@ public class SearchServiceImpl implements SearchService {
 	private final ClassroomValidator classroomValidator;
 	private final SearchValidator searchValidator;
 	
-	
 	public SearchServiceImpl(BookingRepository bookingRepository, SlotAvailabilityMapper slotAvailabilityMapper,
 			List<ClassroomEvent> classroomsStore, ClassroomValidator classroomValidator,
 			SearchValidator searchValidator) {
@@ -34,13 +34,18 @@ public class SearchServiceImpl implements SearchService {
 		this.classroomsStore = classroomsStore;
 		this.classroomValidator = classroomValidator;
 		this.searchValidator = searchValidator;
+	
 	}
 
 	@Override
-	public List<SlotStatusDto> availabilityCalendarByClassroom(int idClassroom, LocalDateTime start, LocalDateTime finish) {
-		logger.info("Fetching availability calendar for classroom {} from {} to {}", idClassroom, start, finish);
+	public List<SlotStatusDto> availabilityCalendarByClassroom(int idClassroom, LocalDate startDate, LocalDate endDate) {
+		logger.info("Fetching availability calendar for classroom {} from {} to {}", idClassroom, startDate, endDate);
 		
-		searchValidator.validateCalendarAvailability(start, finish);
+		searchValidator.validateCalendarAvailabilityDates(startDate, endDate);
+
+		LocalDateTime start = startDate.atStartOfDay();
+		LocalDateTime finish = endDate.plusDays(1).atStartOfDay();
+		
 		classroomValidator.validateClassroomExists(idClassroom);
 		
 		List<Booking> bookingsForPeriod = bookingRepository.findActiveBookingsForClassroomByPeriod(idClassroom, start, finish);
@@ -75,4 +80,5 @@ public class SearchServiceImpl implements SearchService {
 				.filter(c -> speakers ? c.speakers() : true)
 				.toList();
 	}
+
 }

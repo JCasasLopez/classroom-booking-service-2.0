@@ -30,9 +30,8 @@ public class ClassroomAvailabilityEndpointIntegrationTest extends BaseIntegratio
 		HttpHeaders headers = new HttpHeaders();
 		
 		String availabilityCalendarUrl = UriComponentsBuilder.fromPath(BookingEndpoints.CLASSROOM_AVAILABILITY)
-                .queryParam("start", TestHelper.generateStartSearch())
-                // 300 minutes -> 5 hours
-                .queryParam("finish", TestHelper.generateFinishSearch(300))
+                .queryParam("start", TestHelper.generateStartSearch().toLocalDate())
+                .queryParam("finish", TestHelper.generateFinishSearch(300).toLocalDate())
                 .buildAndExpand(idClassroom)
                 .toUriString();
 		
@@ -50,7 +49,7 @@ public class ClassroomAvailabilityEndpointIntegrationTest extends BaseIntegratio
 		// Assert	
 		assertAll(
 				() -> assertEquals(HttpStatus.OK, httpResponse.getBody().status()),
-				() -> assertEquals(10, slotStatus.size()),
+				() -> assertEquals(26, slotStatus.size()),
 				() -> assertTrue(slotStatus.stream().allMatch(slot -> slot.available() == true)),
 				() -> assertTrue(httpResponse.getBody().message()
 						.equals(String.format("Availability calendar for classroom %s retrieved successfully", idClassroom)))

@@ -52,7 +52,7 @@ public class SearchValidatorTest {
 	}
 
 	@Test
-	void search_validator_does_not_allow_searches_for_the_past() {
+	void validate_search_does_not_allow_searches_for_the_past() {
 		// Arrange
 		LocalDateTime pastStart = LocalDateTime.of(2026, 5, 27, 11, 0);
 		LocalDateTime pastFinish = LocalDateTime.of(2026, 5, 27, 21, 0);
@@ -66,7 +66,7 @@ public class SearchValidatorTest {
 
 	@ParameterizedTest
 	@ValueSource(longs = {0, -30})
-	void search_validator_does_not_allow_start_equal_or_after_finish(long minutesFromStart) {
+	void validate_search_does_not_allow_start_equal_or_after_finish(long minutesFromStart) {
 		// Arrange
 		LocalDateTime finish = START.plusMinutes(minutesFromStart);
 
@@ -78,7 +78,7 @@ public class SearchValidatorTest {
 	}
 
 	@Test
-	void search_validator_does_not_allow_searches_spanning_longer_than_a_day() {
+	void validate_search_does_not_allow_searches_spanning_longer_than_a_day() {
 		// Act & Assert
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, 
 				() -> searchValidator.validateSearch(START, START.plusDays(2)));
@@ -87,7 +87,7 @@ public class SearchValidatorTest {
 	}
 
 	@Test
-	void search_validator_does_not_allow_searches_on_the_same_weekday_of_different_weeks() {
+	void validate_search_does_not_allow_searches_on_the_same_weekday_of_different_weeks() {
 		// Act & Assert
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
 				() -> searchValidator.validateSearch(START, START.plusDays(7)));
@@ -96,7 +96,7 @@ public class SearchValidatorTest {
 	}
 
 	@Test
-	void search_validator_does_not_allow_searches_on_a_closed_day() {
+	void validate_search_does_not_allow_searches_on_a_closed_day() {
 		// Act & Assert
 		LocalDateTime nextSunday = next(DayOfWeek.SUNDAY);
 		TimePointOutOfOpeningHoursException ex = assertThrows(TimePointOutOfOpeningHoursException.class, 
@@ -147,6 +147,53 @@ public class SearchValidatorTest {
 			Arguments.of(saturday.atTime(9, 0),  saturday.atTime(12, 0)),
 			Arguments.of(saturday.atTime(11, 0), saturday.atTime(15, 0))
 		);
+	}
+	
+	@Test
+	void validate_calendar_availability_dates_does_not_allow_searches_for_the_past() {
+		// Arrange
+		LocalDate pastStart = LocalDate.of(2026, 5, 27);
+		LocalDate pastFinish = LocalDate.of(2026, 5, 27);
+
+		// Act & Assert
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, 
+				() -> searchValidator.validateCalendarAvailabilityDates(pastStart, pastFinish));
+
+		assertEquals("Search range cannot be in the past", ex.getMessage());				
+	}
+	
+	@ParameterizedTest
+	@MethodSource("validDates")
+	void validate_calendar_availability_dates_does_not_throw_exception_if_start_is_not_after_finish(LocalDate start, LocalDate finish) {
+		// Act & Assert
+		assertDoesNotThrow(() ->searchValidator.validateCalendarAvailabilityDates(start, finish));
+	}
+	
+	static Stream<Arguments> validDates(){
+		LocalDate today = LocalDate.now();
+		
+		return Stream.of(
+				// We have to make sure the dates are in the future, otherwise will fail the second
+				// validation ("Search range cannot be in the past")
+				
+				// Same day
+				Arguments.of(today.plusDays(7), today.plusDays(7)),
+				// Two days apart
+				Arguments.of(today.plusDays(7), today.plusDays(9))
+				);
+	}
+	
+	@Test
+	void validate_calendar_availability_dates_throws_exception_if_start_is_after_finish() {
+		// Arrange
+		LocalDate start = LocalDate.of(2026, 11, 3);
+		LocalDate finish = LocalDate.of(2026, 11, 2);
+		
+		// Act & Assert
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, 
+				() -> searchValidator.validateCalendarAvailabilityDates(start, finish));
+
+		assertEquals("Start date cannot be after finish date", ex.getMessage());		
 	}
 
 }

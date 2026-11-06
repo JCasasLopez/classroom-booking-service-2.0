@@ -1,5 +1,6 @@
 package dev.jcasaslopez.booking.controller;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -47,7 +48,6 @@ public class SearchController {
 			summary = "Retrieves the availability calendar for a classroom",
 			description = """
 					Returns the time-slot grid (booked/free) for the given classroom between `start` and `finish`.
-					Both must fall on the same day and within opening hours.
 					"""
 			)
 	@ApiResponses({
@@ -59,8 +59,6 @@ public class SearchController {
 				- start/finish missing
 				- start is not before finish
 				- Search range is in the past
-				- start and finish are not on the same day
-				- Range falls outside opening hours, or the center is closed that day
 				""",
 				content = @Content(schema = @Schema(implementation = StandardResponse.class))),
 		@ApiResponse(responseCode = "404", description = "Classroom does not exist",
@@ -69,8 +67,8 @@ public class SearchController {
 	@GetMapping(value=BookingEndpoints.CLASSROOM_AVAILABILITY)
 	public ResponseEntity<StandardResponse<List<SlotStatusDto>>> availabilityCalendar(
 			@PathVariable @Positive int idClassroom,
-			@RequestParam @NotNull LocalDateTime start,
-			@RequestParam @NotNull LocalDateTime finish) {
+			@RequestParam @NotNull LocalDate start,
+			@RequestParam @NotNull LocalDate finish) {
 		logger.debug("GET /classrooms/{}/availability - Retrieving availability calendar with start={}, finish={}", idClassroom, start, finish);
 
 		List<SlotStatusDto> availabilityCalendar = searchService.availabilityCalendarByClassroom(idClassroom, start, finish);
