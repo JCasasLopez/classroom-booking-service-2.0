@@ -39,4 +39,16 @@ public class SearchValidator {
 
 	}
 
+	public void validateCalendarAvailability(LocalDateTime start, LocalDateTime finish) {
+		if (!finish.isAfter(start)) {
+			throw new IllegalArgumentException("Finish must be after start");
+		}
+
+		LocalDateTime now = LocalDateTime.now();
+		if(start.isBefore(now) || finish.isBefore(now)) {
+			throw new IllegalArgumentException("Search range cannot be in the past");
+		}
+
+	}
+
 }

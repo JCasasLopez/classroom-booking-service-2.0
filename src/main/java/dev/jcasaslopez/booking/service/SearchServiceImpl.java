@@ -45,7 +45,7 @@ public class SearchServiceImpl implements SearchService {
 	public List<SlotStatusDto> availabilityCalendarByClassroom(int idClassroom, LocalDateTime start, LocalDateTime finish) {
 		logger.info("Fetching availability calendar for classroom {} from {} to {}", idClassroom, start, finish);
 		
-		searchValidator.validateSearch(start, finish);
+		searchValidator.validateCalendarAvailability(start, finish);
 		classroomValidator.validateClassroomExists(idClassroom);
 		
 		List<Booking> bookingsForPeriod = bookingRepository.findActiveBookingsForClassroomByPeriod(idClassroom, start, finish);
