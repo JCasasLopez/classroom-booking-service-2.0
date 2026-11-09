@@ -51,7 +51,7 @@ public class RangeValidatorTest {
 
 		// Act & Assert
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, 
-				() -> RangeValidator.validateRange(pastStart, pastFinish, buildTestWeeklySchedule(), SLOT_DURATION_30));
+				() -> RangeValidator.validateTimeRange(pastStart, pastFinish, buildTestWeeklySchedule(), SLOT_DURATION_30));
 
 		assertEquals("Search range cannot be in the past", ex.getMessage());				
 	}
@@ -64,7 +64,7 @@ public class RangeValidatorTest {
 
 		// Act & Assert
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-				() -> RangeValidator.validateRange(START, finish, buildTestWeeklySchedule(), SLOT_DURATION_30));
+				() -> RangeValidator.validateTimeRange(START, finish, buildTestWeeklySchedule(), SLOT_DURATION_30));
 
 		assertEquals("Finish must be after start", ex.getMessage());
 	}
@@ -73,18 +73,18 @@ public class RangeValidatorTest {
 	void validate_range_does_not_allow_searches_spanning_longer_than_a_day() {
 		// Act & Assert
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, 
-				() -> RangeValidator.validateRange(START, START.plusDays(2), buildTestWeeklySchedule(), SLOT_DURATION_30));
+				() -> RangeValidator.validateTimeRange(START, START.plusDays(2), buildTestWeeklySchedule(), SLOT_DURATION_30));
 
-		assertEquals("Start and finish have to be in the same day", ex.getMessage());			
+		assertEquals("Start and finish have to be on the same day", ex.getMessage());			
 	}
 
 	@Test
 	void validate_range_does_not_allow_searches_on_the_same_weekday_of_different_weeks() {
 		// Act & Assert
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-				() -> RangeValidator.validateRange(START, START.plusDays(7), buildTestWeeklySchedule(), SLOT_DURATION_30));
+				() -> RangeValidator.validateTimeRange(START, START.plusDays(7), buildTestWeeklySchedule(), SLOT_DURATION_30));
 
-		assertEquals("Start and finish have to be in the same day", ex.getMessage());
+		assertEquals("Start and finish have to be on the same day", ex.getMessage());
 	}
 
 	@Test
@@ -92,7 +92,7 @@ public class RangeValidatorTest {
 		// Act & Assert
 		LocalDateTime nextSunday = next(DayOfWeek.SUNDAY);
 		TimePointOutOfOpeningHoursException ex = assertThrows(TimePointOutOfOpeningHoursException.class, 
-				() -> RangeValidator.validateRange(nextSunday, nextSunday.plusHours(10), buildTestWeeklySchedule(), SLOT_DURATION_30));
+				() -> RangeValidator.validateTimeRange(nextSunday, nextSunday.plusHours(10), buildTestWeeklySchedule(), SLOT_DURATION_30));
 
 		assertEquals("Center is closed on this day", ex.getMessage());			
 	}
@@ -101,7 +101,7 @@ public class RangeValidatorTest {
 	@MethodSource("validSearches")
 	void valid_ranges_do_not_throw_exception(LocalDateTime start, LocalDateTime finish) {
 		// Act & Assert
-		assertDoesNotThrow(() -> RangeValidator.validateRange(start, finish, buildTestWeeklySchedule(), SLOT_DURATION_30));
+		assertDoesNotThrow(() -> RangeValidator.validateTimeRange(start, finish, buildTestWeeklySchedule(), SLOT_DURATION_30));
 	}
 	
 	static Stream<Arguments> validSearches() {
@@ -122,7 +122,7 @@ public class RangeValidatorTest {
 	void ranges_out_of_opening_hours_throw_exception(LocalDateTime start, LocalDateTime finish) {
 		// Act & Assert
 		TimePointOutOfOpeningHoursException ex = assertThrows(TimePointOutOfOpeningHoursException.class,
-				() -> RangeValidator.validateRange(start, finish, buildTestWeeklySchedule(), SLOT_DURATION_30));
+				() -> RangeValidator.validateTimeRange(start, finish, buildTestWeeklySchedule(), SLOT_DURATION_30));
 
 		assertEquals("Time point out of opening hours", ex.getMessage());
 	}
@@ -149,7 +149,7 @@ public class RangeValidatorTest {
 
 		// Act & Assert
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, 
-				() -> RangeValidator.validateCalendarAvailabilityDates(pastStart, pastFinish));
+				() -> RangeValidator.validateDateRange(pastStart, pastFinish));
 
 		assertEquals("Search range cannot be in the past", ex.getMessage());				
 	}
@@ -158,7 +158,7 @@ public class RangeValidatorTest {
 	@MethodSource("validDates")
 	void validate_calendar_availability_dates_does_not_throw_exception_if_start_is_not_after_finish(LocalDate start, LocalDate finish) {
 		// Act & Assert
-		assertDoesNotThrow(() ->RangeValidator.validateCalendarAvailabilityDates(start, finish));
+		assertDoesNotThrow(() ->RangeValidator.validateDateRange(start, finish));
 	}
 	
 	static Stream<Arguments> validDates(){
@@ -183,9 +183,9 @@ public class RangeValidatorTest {
 		
 		// Act & Assert
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, 
-				() -> RangeValidator.validateCalendarAvailabilityDates(start, finish));
+				() -> RangeValidator.validateDateRange(start, finish));
 
-		assertEquals("Start date cannot be after finish date", ex.getMessage());		
+		assertEquals("Finish cannot be before start", ex.getMessage());		
 	}
 
 }

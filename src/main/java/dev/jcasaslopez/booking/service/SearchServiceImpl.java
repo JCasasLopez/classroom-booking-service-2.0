@@ -44,7 +44,7 @@ public class SearchServiceImpl implements SearchService {
 	public List<SlotStatusDto> availabilityCalendarByClassroom(int idClassroom, LocalDate startDate, LocalDate endDate) {
 		logger.info("Fetching availability calendar for classroom {} from {} to {}", idClassroom, startDate, endDate);
 		
-		RangeValidator.validateCalendarAvailabilityDates(startDate, endDate);
+		RangeValidator.validateDateRange(startDate, endDate);
 
 		LocalDateTime start = startDate.atStartOfDay();
 		LocalDateTime finish = endDate.plusDays(1).atStartOfDay();
@@ -61,7 +61,7 @@ public class SearchServiceImpl implements SearchService {
 	public List<ClassroomEvent> classroomsAvailableByPeriod(LocalDateTime start, LocalDateTime finish) {
 		logger.info("Fetching available classrooms from {} to {}", start, finish);
 	   
-		RangeValidator.validateRange(start, finish, weeklySchedule, slotDuration);
+		RangeValidator.validateTimeRange(start, finish, weeklySchedule, slotDuration);
 	    
 		List<Integer> occupiedClassrooms = bookingRepository.findOccupiedClassroomsbyPeriod(start, finish);
 		
