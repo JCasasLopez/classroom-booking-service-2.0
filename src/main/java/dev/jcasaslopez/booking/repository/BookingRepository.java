@@ -43,13 +43,15 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 	List<Integer> findOccupiedClassroomsbyPeriod(LocalDateTime queryStart, LocalDateTime queryFinish);
 
 	// Here, we are after the COMPLETE history of booking for a user, including active, cancelled, and complete ones,
-	// Later, we will filter depending on our needs.
+	// restricted to a date range (both limits inclusive).
 	@Query("""
 			SELECT b FROM Booking b
 			WHERE b.idUser = :queryIdUser
+			AND b.start < :finishSearch
+			AND b.finish > :startSearch
 			ORDER BY b.start DESC
 			""")
-	List<Booking> findBookingsByUser(int queryIdUser);
+	List<Booking> findBookingsByUser(int queryIdUser, LocalDateTime startSearch, LocalDateTime finishSearch);
 	
 	// Counts the bookings of a user whose start falls within [weekStart, nextWeekStart).
 	// ACTIVE and COMPLETED count towards the weekly limit; CANCELLED ones do not.

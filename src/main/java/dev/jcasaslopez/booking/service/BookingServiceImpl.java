@@ -91,10 +91,10 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	@Override
-	public List<BookingResponseDto> bookingsByUser(int idUser) {
-		logger.debug("Searching booking history for user {}", idUser);
+	public List<BookingResponseDto> bookingsByUser(int idUser, LocalDateTime startSearch, LocalDateTime finishSearch) {
+		logger.debug("Searching booking history for user {} with startSearch={}, finishSearch={}", idUser, startSearch, finishSearch);
 				
-		return bookingRepository.findBookingsByUser(idUser).stream()
+		return bookingRepository.findBookingsByUser(idUser, startSearch, finishSearch).stream()
 				.map(booking -> mapper.toResponseDto(booking, classroomsStore))
 				.toList();
 			

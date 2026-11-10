@@ -10,7 +10,6 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -39,20 +38,41 @@ public class BookingQueriesRepositoryTest extends BaseRepositoryTest{
 	}
 
 	@ParameterizedTest
-    @CsvSource({
-        "10,   4",
-        "8,   3"
-        })
-	void findBookingsByUser_returns_expected_result(int idUser, int totalNumberOfBookings) {
+	@MethodSource("findBookingsByUserResultCases")
+	void findBookingsByUser_returns_expected_result(int idUser, int totalNumberOfBookings, LocalDateTime startSearch, 
+			LocalDateTime finishSearch) {
 		// Arrange
 		setupTestBookings();
 
 		// Act
-		List<Booking> bookingsFound = bookingRepository.findBookingsByUser(idUser);
+		List<Booking> bookingsFound = bookingRepository.findBookingsByUser(idUser, startSearch, finishSearch);
 
 		// Assert	
 		assertAll(
 				() -> assertEquals(totalNumberOfBookings, bookingsFound.size())
+				);
+	}
+	
+	static Stream<Arguments> findBookingsByUserResultCases(){
+		return Stream.of(
+				// Bookings fully within the search period
+				Arguments.of(10, 4, LocalDateTime.of(2025, 3, 2, 9, 0), LocalDateTime.of(2025, 3, 2, 22, 0)),
+				Arguments.of(8, 3, LocalDateTime.of(2025, 3, 2, 9, 0), LocalDateTime.of(2025, 3, 2, 22, 0)),
+				
+				// Search period partially overlaps some bookings -> those bookings should be included
+				Arguments.of(10, 4, LocalDateTime.of(2025, 3, 2, 14, 30), LocalDateTime.of(2025, 3, 2, 21, 0)),
+				Arguments.of(8, 3, LocalDateTime.of(2025, 3, 2, 10, 30), LocalDateTime.of(2025, 3, 2, 17, 30)),
+				
+				// Search period only touches bookings at their boundaries (starts exactly when one ends,
+				// finishes exactly when another starts) -> those bookings should be excluded
+				Arguments.of(10, 2, LocalDateTime.of(2025, 3, 2, 15, 30), LocalDateTime.of(2025, 3, 2, 20, 0)),
+				Arguments.of(8, 1, LocalDateTime.of(2025, 3, 2, 11, 0), LocalDateTime.of(2025, 3, 2, 17, 0)),
+				
+				// Search period fully contained within a single booking -> that booking should be included
+				Arguments.of(10, 1, LocalDateTime.of(2025, 3, 2, 14, 10), LocalDateTime.of(2025, 3, 2, 14, 20)),
+
+				// User with no bookings -> result should be empty, even if other users have bookings in the period
+				Arguments.of(99, 0, LocalDateTime.of(2025, 3, 2, 9, 0), LocalDateTime.of(2025, 3, 2, 22, 0))
 				);
 	}
 	

@@ -1,5 +1,6 @@
 package dev.jcasaslopez.booking.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dev.jcasaslopez.booking.dto.BookingRequestDto;
@@ -121,8 +123,8 @@ public class BookingController {
 	}
 
 	@Operation(
-			summary = "Retrieves all bookings for the authenticated user",
-			description = "Returns the full booking history (active, cancelled and completed) for the currently authenticated user, resolved from the security context."
+			summary = "Retrieves bookings for the authenticated user for a time period",
+			description = "Returns the booking history for a time period (active, cancelled and completed) for the currently authenticated user, resolved from the security context."
 			)
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "Bookings retrieved successfully",
@@ -132,12 +134,14 @@ public class BookingController {
 	})
 	@SecurityRequirement(name = "bearerAuth")
 	@GetMapping(value=BookingEndpoints.BOOKINGS_BY_USER)
-	public ResponseEntity<StandardResponse<List<BookingResponseDto>>> bookingsByUser(){
+	public ResponseEntity<StandardResponse<List<BookingResponseDto>>> bookingsByUser(
+			@RequestParam @NotNull LocalDateTime startSearch, 
+			@RequestParam @NotNull LocalDateTime finishSearch) {
 		int idUser = UserContext.getIdUser();
 		
-		logger.debug("GET /bookings - Retrieving bookings for idUser={}", idUser);
+		logger.debug("GET /bookings - Retrieving bookings for idUser={} with startSearch={}, finishSearch={}", idUser, startSearch, finishSearch);
 
-		List<BookingResponseDto> bookings = bookingService.bookingsByUser(idUser);
+		List<BookingResponseDto> bookings = bookingService.bookingsByUser(idUser, startSearch, finishSearch);
 
 		String message = String.format("Bookings by user %s retrieved successfully", idUser);
 		StandardResponse<List<BookingResponseDto>> response = new StandardResponse<>(message, bookings, HttpStatus.OK);

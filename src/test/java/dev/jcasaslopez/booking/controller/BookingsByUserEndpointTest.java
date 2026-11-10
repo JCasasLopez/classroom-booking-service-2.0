@@ -1,9 +1,13 @@
 package dev.jcasaslopez.booking.controller;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -38,36 +42,66 @@ public class BookingsByUserEndpointTest extends BaseIntegrationTest {
 	void bookings_by_user_endpoint_returns_the_expected_response() {
 		// Arrange
 		TestHelper.createBooking(testRestTemplate, USER_ID, CLASSROOM_ID, slotDuration.minutes());
-		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
-		String userBookingsUrl = UriComponentsBuilder.fromPath(BookingEndpoints.BOOKINGS_BY_USER)
-				.queryParam("idUser", USER_ID)
-				.toUriString();
-		HttpEntity<Void> httpRequest = new HttpEntity<>(headers); 
 		
 		// Act
 		ResponseEntity<StandardResponse<List<BookingResponseDto>>> httpResponse = testRestTemplate.exchange(
-				userBookingsUrl, 
+				createURL(), 
 				HttpMethod.GET,
-				httpRequest, 
-				new ParameterizedTypeReference<StandardResponse<List<BookingResponseDto>>>() {});
+				new HttpEntity<>(createHeader()), 
+				new ParameterizedTypeReference<StandardResponse<List<BookingResponseDto>>>() {});		
 		
 		// Assert
-		StandardResponse<List<BookingResponseDto>> responseBody = httpResponse.getBody();
-		List<BookingResponseDto> bookings = httpResponse.getBody().details();
-		
-		BookingResponseDto createdBooking = bookings.get(0);
-		String expectedClassroomName = classroomsStore.stream()
+		List<BookingResponseDto> bookings = httpResponse.getBody().details();	
+
+		assertAll(
+				() -> assertEquals(HttpStatus.OK, getResponseHttpStatus(httpResponse)),
+				() -> assertEquals(1, bookings.size()),
+				() -> assertEquals(getExpectedClassroomName(), bookings.get(0).classroomName()),
+				() -> assertTrue(getHttpResponseBody(httpResponse).message().equals(String.format("Bookings by user %s retrieved successfully", USER_ID)))
+				);
+	}
+	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	private LocalDateTime nextMondayAt9() {
+		return LocalDate.now()
+		        .with(TemporalAdjusters.next(DayOfWeek.MONDAY))
+		        .atTime(9, 0);
+	}
+	
+	private LocalDateTime nextMondayAt12() {
+		return LocalDate.now()
+		        .with(TemporalAdjusters.next(DayOfWeek.MONDAY))
+		        .atTime(12, 0);
+	}
+	
+	private HttpHeaders createHeader() {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setBearerAuth(new GenerateJwt(secretKey).withIdUser(USER_ID).build());
+		return headers;
+	}
+	
+	private String createURL() {
+		return UriComponentsBuilder.fromPath(BookingEndpoints.BOOKINGS_BY_USER)
+				.queryParam("idUser", USER_ID)
+				.queryParam("startSearch", nextMondayAt9())
+				.queryParam("finishSearch", nextMondayAt12())
+				.toUriString();
+	}
+	
+	private String getExpectedClassroomName() {
+		return classroomsStore.stream()
 			    .filter(c -> c.idClassroom() == CLASSROOM_ID)
 			    .findAny()
 			    .orElseThrow(() -> new ClassroomNotFoundException("Classroom not found")).name();
-		
-		assertAll(
-				() -> assertEquals(HttpStatus.OK, responseBody.status()),
-				() -> assertEquals(1, bookings.size()),
-				() -> assertEquals(expectedClassroomName, createdBooking.classroomName()),
-				() -> assertTrue(responseBody.message().equals(String.format("Bookings by user %s retrieved successfully", USER_ID)))
-				);
+	}
+	
+	private StandardResponse<List<BookingResponseDto>> getHttpResponseBody(ResponseEntity<StandardResponse<List<BookingResponseDto>>> httpResponse) {
+		return httpResponse.getBody();
+	}
+	
+	private HttpStatus getResponseHttpStatus(ResponseEntity<StandardResponse<List<BookingResponseDto>>> httpResponse) {
+		return httpResponse.getBody().status();
 	}
 
 }
