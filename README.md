@@ -29,7 +29,7 @@ The accompanying database and Kafka Docker containers come with some pre-loaded 
 
 - Makes classroom reservations *
 - Cancels classroom reservations *
-- Retrieves booking history by user * 
+- Retrieves booking history by user by time period * 
 - Retrieves a classroom availability calendar
 - Searches available classrooms by time period / features
 - Creates watch alerts *
@@ -185,16 +185,12 @@ curl --location 'http://localhost:9000/classroom-booking/bookings' \
 --header 'Authorization: Bearer <VALID_JWT>' \
 --data '{
   "idClassroom": 1,
-  "startTimeSlotList": [
-    "2028-07-27T10:00:00",
-    "2028-07-27T10:30:00"
-  ]
+  "start": "2028-07-27T10:00:00",
+  "finish": "2028-07-27T10:30:00"
 }'
 ```
 
-Note that each entry in `startTimeSlotList` marks the start of a 30-minute slot (or whatever time slot duration is set to. Default value is 30 minutes). See full [technical documentation](#) for details. 
-
-In this example, two consecutive slots are booked, resulting in a 10:00–11:00 reservation for Tuesday the 27th of July 2028. The date have to be in the future, and the time within the opening hours (by default Monday to Friday from 9h to 22h. Weekends closed). 
+The date have to be in the future, and the start and finish times aligned with the time-grid and within opening hours (by default Monday to Friday from 9h to 22h. Weekends closed). The longest booking allowed is 2 hours and there is a weekly limit of 3 bookings per user (both default values that can be changed in the configuration). See full [technical documentation](#) for details. 
 
 </details>
 
@@ -212,14 +208,14 @@ Only a booking with ACTIVE status can be cancelled (when a booking is cancelled,
 </details>
 
 <details>
-<summary><b>Retrieve booking history by user</b></summary>
+<summary><b>Retrieve user's booking history by time period</b></summary>
 
 ```bash
-curl --location 'http://localhost:9000/classroom-booking/bookings' \
+curl --location 'http://localhost:9000/classroom-booking/bookings?startSearch=2025-01-01T10:00:00&finishSearch=2027-01-01T10:00:00' \
 --header 'Authorization: Bearer <VALID_JWT>'
 ```
 
-The system extracts the user ID from the JWT and searches the booking history for that user. Since the user ID in the JWT is fixed, only bookings for `idUser = 1` can be retrieved.
+The system extracts the user ID from the JWT and searches the booking history for that user within the search period (including overlapping bookings). Since the user ID in the JWT is fixed, only bookings for `idUser = 1` can be retrieved.
 
 </details>
 
@@ -227,12 +223,12 @@ The system extracts the user ID from the JWT and searches the booking history fo
 <summary><b>Retrieve classroom availability calendar</b></summary>
 
 ```basht
-curl --location 'http://localhost:9000/classroom-booking/classrooms/1/availability?start=2029-01-01T10:00:00&finish=2029-01-01T18:00:00&idClassroom=1'
+curl --location 'http://localhost:9000/classroom-booking/classrooms/1/availability?start=2029-01-01&finish=2029-01-01&idClassroom=1'
 ```
 
-Replace '.../classrooms/**1**...' with any other valid idClassroom, and `start` and `finish` with any future date in ISO-8601 format (`yyyy-MM-ddTHH:mm:ss`) before running the request. This endpoint is public and does not require a token.
+Replace '.../classrooms/**1**...' with any other valid idClassroom, and `start` and `finish` with any future date in ISO-8601 format (`yyyy-MM-dd`) before running the request. This endpoint is public and does not require a token.
 
-`start` and `finish` must be on the same day, on a day the classroom is open (default: Monday to Friday, 9:00–22:00; closed on weekends), and must be valid time slots (default slot duration: 30 minutes, so 10:00, 10:30, etc. are valid, but not 10:15). See the technical documentation for full details.
+`start` and `finish` cannot be in the past. They can be the same date, in which case the schedule for that date will be shown, but obviously finish cannot be before start. See the technical documentation for full details.
 
 </details>
 
@@ -247,7 +243,7 @@ Replace `start` and `finish` with actual future dates in ISO-8601 format (`yyyy-
 
 `seats`, `projector` and `speakers` must all be present in the request (they cannot be omitted), but that does not mean you have to filter by them: set `seats=0`, `projector=false` and `speakers=false` to ignore that criterion and include all classrooms regardless of capacity or features.
 
-Same criteria about `start` and `finish` as in the previous endpoint applies.
+`start` and `finish` cannot be in the past, have to be on the same day and finish has to be after the start. As usual with time points, they have to be aligned with the time-grid and be within opening hours. See the technical documentation for full details.
 </details>
 
 
@@ -271,23 +267,6 @@ curl --location 'http://localhost:9000/classroom-booking/watch-alerts?startSearc
 ```
 
 Returns the watch alerts belonging to the authenticated user (resolved from the JWT, no need to pass any user information as a parameter) that fall within the given `startSearch`–`finishSearch` period.
-</details>
-
-<details>
-<summary><b>Find booking by classroom/time slot</b> <i>(supporting endpoint)</i></summary>
-
-```bash
-curl --location 'http://localhost:9000/classroom-booking/watch-alerts/1/target-booking?start=2029-01-01T10:00:00&finish=2029-01-01T10:30:00'
-```
-
-Replace '.../watch-alerts/**1**/...' with any valid idClassroom.
-
-This endpoint is not meant to be called directly (so it is included here just for completeness) — it is used internally by the front-end when a user clicks an already-booked slot to request the ID of the booking that falls in that time slot. This ID will be used in the next step to create a watch alert on that booking. 
-
-The reason why there is an independent endpoint for this is that the whole process is resolved in two stages: 1) First, the front-end obtains the ID for the booking, and asks the user for confirmation. 2) If the user confirms that he wants to create a watch alert on that booking, it uses the ID obtained in the first step to do so.
-
-'start' and 'finish' have to coincide with a valid slot, that is, for a slot duration of 30 minutes, e.g. 10:30 to 11:00, but not 10:15 to 10:45, or 10:00 to 11:00.
-
 </details>
 
 ## Swagger
