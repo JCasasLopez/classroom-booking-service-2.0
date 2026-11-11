@@ -14,6 +14,8 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
+import dev.jcasaslopez.booking.entity.ClassroomLock;
+import dev.jcasaslopez.booking.repository.ClassroomLockRepository;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 
 @Component
@@ -24,9 +26,12 @@ public class ClassroomsStoreListener implements ConsumerSeekAware {
 
 	// This bean represents the list of classrooms.
 	private List<ClassroomEvent> classroomsStore;
+	private ClassroomLockRepository classroomLockRepository;
 
-	public ClassroomsStoreListener(List<ClassroomEvent> classroomsStore) {
+	public ClassroomsStoreListener(List<ClassroomEvent> classroomsStore,
+			ClassroomLockRepository classroomLockRepository) {
 		this.classroomsStore = classroomsStore;
+		this.classroomLockRepository = classroomLockRepository;
 	}
 
 	@Override
@@ -42,21 +47,28 @@ public class ClassroomsStoreListener implements ConsumerSeekAware {
 
 	@KafkaHandler
 	public void classroomListenerHandler(
-	        @Header(KafkaHeaders.RECEIVED_KEY) Integer classroomId, 
-	        @Payload(required = false) ClassroomEvent classroom) {  
-	    
-		// Handle Kafka tombstone (classroom deletion)
-	    if (classroom == null) {
-	        for (int i = 0; i < classroomsStore.size(); i++) {
-	            if (classroomsStore.get(i).idClassroom() == classroomId) {
-	                logger.info("Removing classroom {} from classroomsStore due to Tombstone", classroomId);
-	                classroomsStore.remove(i);
-	                return;
-	            }
-	        }
-	        return; 
+	        @Header(KafkaHeaders.RECEIVED_KEY) Integer classroomId,
+	        @Payload(required = false) ClassroomEvent classroom) {
+
+	    if (classroom == null) {   // tombstone
+	        removeFromStore(classroomId);
+	        logger.info("Removing classroom {} from table ClassroomLock", classroomId);
+	        classroomLockRepository.deleteById(classroomId);
+	        return;
 	    }
 
+	    // Lock row first: if this fails, the classroom does not reach the store
+	    classroomLockRepository.save(new ClassroomLock(classroomId));
+	    upsertInStore(classroomId, classroom);
+	}
+
+	private void removeFromStore(int classroomId) {
+	    if (classroomsStore.removeIf(c -> c.idClassroom() == classroomId)) {
+	        logger.info("Removing classroom {} from classroomsStore due to Tombstone", classroomId);
+	    }
+	}
+
+	private void upsertInStore(int classroomId, ClassroomEvent classroom) {
 	    for (int i = 0; i < classroomsStore.size(); i++) {
 	        if (classroomsStore.get(i).idClassroom() == classroomId) {
 	            logger.info("Updating classroom {} ({}) in classroomsStore", classroomId, classroom.name());

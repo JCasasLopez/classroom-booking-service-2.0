@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.listener.ConsumerSeekAware.ConsumerSeekCallback;
 
+import dev.jcasaslopez.booking.repository.ClassroomLockRepository;
 import dev.jcasaslopez.classroom.shared.event.ClassroomEvent;
 	
 @ExtendWith(MockitoExtension.class)
@@ -29,14 +30,14 @@ class KafkaListenerUnitTest {
 	
 	private ClassroomEvent classroom = new ClassroomEvent(ID_CLASSROOM, "Maths", 30, true, true);
 	
-	@Mock
-	private ConsumerSeekCallback seekCallback;
+	@Mock private ConsumerSeekCallback seekCallback;
+	@Mock private ClassroomLockRepository classroomLockRepository;
 
 	@Test
 	void classroom_store_listener_should_seek_to_beginning_when_store_is_empty() {
 		// Arrange
 		List<ClassroomEvent> emptyStore = new ArrayList<>();
-		ClassroomsStoreListener listener = new ClassroomsStoreListener(emptyStore);
+		ClassroomsStoreListener listener = new ClassroomsStoreListener(emptyStore, classroomLockRepository);
 
 		TopicPartition partition = new TopicPartition(TOPIC_NAME, 0);
 		Map<TopicPartition, Long> assignments = Map.of(partition, 0L);
@@ -53,7 +54,7 @@ class KafkaListenerUnitTest {
 		// Arrange
 		List<ClassroomEvent> populatedStore = new ArrayList<>();
 		populatedStore.add(classroom);
-		ClassroomsStoreListener listener = new ClassroomsStoreListener(populatedStore);
+		ClassroomsStoreListener listener = new ClassroomsStoreListener(populatedStore, classroomLockRepository);
 
 		TopicPartition partition = new TopicPartition(TOPIC_NAME, 0);
 		Map<TopicPartition, Long> assignments = Map.of(partition, 0L);
@@ -70,7 +71,7 @@ class KafkaListenerUnitTest {
 		// Arrange
 		List<ClassroomEvent> populatedStore = new ArrayList<>();
 		populatedStore.add(classroom);
-		ClassroomsStoreListener listener = new ClassroomsStoreListener(populatedStore);
+		ClassroomsStoreListener listener = new ClassroomsStoreListener(populatedStore, classroomLockRepository);
 
 		// Act
 		listener.classroomListenerHandler(ID_CLASSROOM, null);
@@ -85,7 +86,7 @@ class KafkaListenerUnitTest {
 		// Arrange
 		List<ClassroomEvent> store = new ArrayList<>();
 		store.add(classroom);
-		ClassroomsStoreListener listener = new ClassroomsStoreListener(store);
+		ClassroomsStoreListener listener = new ClassroomsStoreListener(store, classroomLockRepository);
 
 		// Act
 		listener.classroomListenerHandler(ID_CLASSROOM, new ClassroomEvent(ID_CLASSROOM, "Maths", 50, true, true));
@@ -99,7 +100,7 @@ class KafkaListenerUnitTest {
 	void classroom_store_listener_adds_classroom_if_does_not_exist(){
 		// Arrange
 		List<ClassroomEvent> store = new ArrayList<>();
-		ClassroomsStoreListener listener = new ClassroomsStoreListener(store);
+		ClassroomsStoreListener listener = new ClassroomsStoreListener(store, classroomLockRepository);
 
 		// Act
 		listener.classroomListenerHandler(ID_CLASSROOM, classroom);
