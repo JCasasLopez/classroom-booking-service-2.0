@@ -3,9 +3,13 @@ package dev.jcasaslopez.booking.exception;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.transaction.TransactionTimedOutException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -20,6 +24,8 @@ import jakarta.validation.ConstraintViolationException;
 
 @ControllerAdvice	
 public class GlobalExceptionHandler {
+	
+	private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 				
 	@ExceptionHandler({InvalidBookingException.class, 
 		TimePointMisalignedException.class,
@@ -47,6 +53,15 @@ public class GlobalExceptionHandler {
 	    return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
 	}
 	
+	@ExceptionHandler({PessimisticLockingFailureException.class, TransactionTimedOutException.class})
+	public ResponseEntity<StandardResponse<Void>> handleBookingTimeout(Exception ex) {
+	    logger.warn("Booking could not be completed in time: {}", ex.toString());
+	    StandardResponse<Void> response = new StandardResponse<>(
+	            "The booking could not be completed right now. Please try again in a moment.",
+	            null, HttpStatus.SERVICE_UNAVAILABLE);
+	    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+	}
+
 	@ExceptionHandler({BookingNotFoundException.class, 
 		ClassroomNotFoundException.class})
 	public ResponseEntity<StandardResponse<Void>> handleNotFound (RuntimeException ex){
