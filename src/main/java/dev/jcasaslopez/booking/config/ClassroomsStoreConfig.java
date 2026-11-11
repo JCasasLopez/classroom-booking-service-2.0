@@ -1,7 +1,7 @@
 package dev.jcasaslopez.booking.config;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +17,7 @@ public class ClassroomsStoreConfig {
 	// data this service needs, with no divergence expected.
 	@Bean
 	List<ClassroomEvent> classroomsStore() {
-		return new ArrayList<ClassroomEvent>();
+		return new CopyOnWriteArrayList<ClassroomEvent>();
 	}
 
 }
