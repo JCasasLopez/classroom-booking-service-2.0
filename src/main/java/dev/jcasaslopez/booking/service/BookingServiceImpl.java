@@ -15,9 +15,11 @@ import dev.jcasaslopez.booking.entity.Booking;
 import dev.jcasaslopez.booking.entity.WatchAlert;
 import dev.jcasaslopez.booking.enums.BookingStatus;
 import dev.jcasaslopez.booking.exception.BookingNotFoundException;
+import dev.jcasaslopez.booking.exception.ClassroomNotFoundException;
 import dev.jcasaslopez.booking.exception.InvalidBookingStatusException;
 import dev.jcasaslopez.booking.mapper.BookingMapper;
 import dev.jcasaslopez.booking.repository.BookingRepository;
+import dev.jcasaslopez.booking.repository.ClassroomLockRepository;
 import dev.jcasaslopez.booking.repository.WatchAlertRepository;
 import dev.jcasaslopez.booking.validator.BookingValidator;
 import dev.jcasaslopez.classroom.shared.enums.NotificationType;
@@ -34,21 +36,27 @@ public class BookingServiceImpl implements BookingService {
 	private final BookingMapper mapper;
 	private final List<ClassroomEvent> classroomsStore;
 	private final BookingValidator bookingValidator;
+	private final ClassroomLockRepository classroomLockRepository;
 	
 	public BookingServiceImpl(BookingRepository bookingRepository, WatchAlertRepository watchAlertRepository,
 			NotificationOutboxService notificationOutboxService, BookingMapper mapper,
-			List<ClassroomEvent> classroomsStore, BookingValidator bookingValidator) {
+			List<ClassroomEvent> classroomsStore, BookingValidator bookingValidator,
+			ClassroomLockRepository classroomLockRepository) {
 		this.bookingRepository = bookingRepository;
 		this.watchAlertRepository = watchAlertRepository;
 		this.notificationOutboxService = notificationOutboxService;
 		this.mapper = mapper;
 		this.classroomsStore = classroomsStore;
 		this.bookingValidator = bookingValidator;
+		this.classroomLockRepository = classroomLockRepository;
 	}
 
-	@Transactional
+	@Transactional(timeout = 5)
 	@Override
 	public BookingResponseDto book(BookingRequestDto booking, int idUser, String userEmail) {
+		classroomLockRepository.lockByIdClassroom(booking.idClassroom())
+        			.orElseThrow(() -> new ClassroomNotFoundException("Classroom not found: " + booking.idClassroom()));
+		
 		bookingValidator.validateBooking(booking, idUser);
 		
 		Booking savedBooking = bookingRepository.save(new Booking(
