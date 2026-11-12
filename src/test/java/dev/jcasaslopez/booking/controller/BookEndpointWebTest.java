@@ -21,9 +21,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.TransactionTimedOutException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -128,6 +130,38 @@ public class BookEndpointWebTest {
 		.andExpect(status().isBadRequest())
 		.andExpect(jsonPath("$.status").value("BAD_REQUEST"));
 	}
+	
+	@Test
+	void booking_endpoint_returns_503_when_transaction_times_out() throws Exception {
+		// Arrange	
+		BookingRequestDto bookingRequest = new BookingRequestDto(ID_CLASSROOM, START_BOOKING, FINISH_BOOKING);
+		String internalDetail = "Transaction timed out: deadline was Thu Nov 12 15:46:00"; 
 
+		doThrow(new TransactionTimedOutException(internalDetail)).when(service).book(bookingRequest, ID_USER, EMAIL);
 
+		// Act + Assert
+		mockMvc.perform(post(BookingEndpoints.BOOK)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(bookingRequest)))
+		.andExpect(status().isServiceUnavailable())
+		.andExpect(jsonPath("$.status").value("SERVICE_UNAVAILABLE"))
+		.andExpect(jsonPath("$.message").value("The booking could not be completed right now. Please try again in a moment."));
+	}
+
+	@Test
+	void booking_endpoint_returns_503_when_classroom_lock_cannot_be_acquired() throws Exception {
+		// Arrange	
+		BookingRequestDto bookingRequest = new BookingRequestDto(ID_CLASSROOM, START_BOOKING, FINISH_BOOKING);
+		String internalDetail = "Pessimistic lock failed on table classroom_locks for id " + ID_CLASSROOM; 
+
+		doThrow(new PessimisticLockingFailureException(internalDetail)).when(service).book(bookingRequest, ID_USER, EMAIL);
+
+		// Act + Assert
+		mockMvc.perform(post(BookingEndpoints.BOOK)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(bookingRequest)))
+		.andExpect(status().isServiceUnavailable())
+		.andExpect(jsonPath("$.status").value("SERVICE_UNAVAILABLE"))
+		.andExpect(jsonPath("$.message").value("The booking could not be completed right now. Please try again in a moment."));
+	}
 }
