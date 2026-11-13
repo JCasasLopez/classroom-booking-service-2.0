@@ -62,7 +62,7 @@ public class WatchAlertServiceImpl implements WatchAlertService {
 
 	@Override
 	public List<WatchAlertResponseDto> watchAlertsListByUserAndTimePeriod(LocalDateTime startSearch, LocalDateTime finishSearch, String email) {
-		if(!startSearch.isBefore(finishSearch)) throw new IllegalArgumentException("Start time has to preced finish time");
+		if(!startSearch.isBefore(finishSearch)) throw new IllegalArgumentException("Finish must be after start");
 		
 		return watchAlertRepository.findWatchAlertsByUserAndTimePeriod(email, startSearch, finishSearch)
 						.stream()

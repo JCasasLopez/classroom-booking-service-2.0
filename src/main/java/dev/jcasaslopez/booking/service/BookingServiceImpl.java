@@ -100,12 +100,13 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	public List<BookingResponseDto> bookingsByUser(int idUser, LocalDateTime startSearch, LocalDateTime finishSearch) {
+		if(!startSearch.isBefore(finishSearch)) throw new IllegalArgumentException("Finish must be after start");
+		
 		logger.debug("Searching booking history for user {} with startSearch={}, finishSearch={}", idUser, startSearch, finishSearch);
 				
 		return bookingRepository.findBookingsByUser(idUser, startSearch, finishSearch).stream()
 				.map(booking -> mapper.toResponseDto(booking, classroomsStore))
 				.toList();
-			
 	}
 
 	@Transactional
