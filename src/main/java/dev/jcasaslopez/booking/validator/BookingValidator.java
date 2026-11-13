@@ -43,17 +43,7 @@ public class BookingValidator {
 		LocalDateTime bookingStart = booking.start();
 		LocalDateTime bookingFinish = booking.finish();
 		
-		if(bookingStart.isBefore(LocalDateTime.now())) {
-			throw new InvalidBookingException("Booking a past period is not allowed");
-		}
-		
-		if(!bookingFinish.isAfter(bookingStart)) {
-			throw new InvalidBookingException("Finish must be after start");
-		}
-		
-		// Validates alignment with the grid and the time points fall within opening hours
-		TimePointValidator.validate(bookingStart, weeklySchedule, slotDuration);
-		TimePointValidator.validate(bookingFinish, weeklySchedule, slotDuration);
+		RangeValidator.validateTimeRange(bookingStart, bookingFinish, weeklySchedule, slotDuration);
 		
 		checkBookDoesNotExceedMaxAllowedTime(bookingStart, bookingFinish);
 		checkClassroomHasNoOverlappingBookings(booking.idClassroom(), bookingStart, bookingFinish);
