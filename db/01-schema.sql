@@ -15,3 +15,17 @@ CREATE TABLE IF NOT EXISTS watch_alerts (
     userEmail VARCHAR(255) NOT NULL,
     PRIMARY KEY (idWatchAlert)
 ) ENGINE=InnoDB;
+
+CREATE TABLE classroom_locks (
+    id_classroom INT NOT NULL,
+    PRIMARY KEY (id_classroom)
+) ENGINE=InnoDB;
+
+CREATE TABLE notification_outbox (
+    id_notification BIGINT NOT NULL AUTO_INCREMENT,
+    subject VARCHAR(255),
+    message TEXT,
+    email_address VARCHAR(255),
+    timestamp DATETIME,
+    PRIMARY KEY (id_notification)
+) ENGINE=InnoDB;

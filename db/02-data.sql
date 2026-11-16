@@ -1,6 +1,7 @@
 -- Clean up tables to ensure predictable IDs starting from 1
 TRUNCATE TABLE watch_alerts;
 TRUNCATE TABLE bookings;
+TRUNCATE TABLE classroom_locks;
 
 -- Insert bookings with dynamic dates relative to execution time
 -- Booking 1: ACTIVE (next Monday from 10 to 11)
@@ -25,3 +26,7 @@ VALUES (1, 1, '2026-02-01 10:00:00', '2026-02-01 12:00:00', 'CANCELLED');
 INSERT INTO watch_alerts (idBooking, userEmail) VALUES (1, 'user@example.com');
 INSERT INTO watch_alerts (idBooking, userEmail) VALUES (2, 'user@example.com');
 INSERT INTO watch_alerts (idBooking, userEmail) VALUES (3, 'user@example.com');
+
+-- Persist classrooms 1 and 2 (lock rows)
+INSERT INTO classroom_locks (idClassroom) VALUES (1);
+INSERT INTO classroom_locks (idClassroom) VALUES (2);
