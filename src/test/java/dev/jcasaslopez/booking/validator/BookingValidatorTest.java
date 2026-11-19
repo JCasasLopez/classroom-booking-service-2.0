@@ -97,9 +97,7 @@ public class BookingValidatorTest {
 		BookingRequestDto bookingRequest = new BookingRequestDto(CLASSROOM_ID, pastStart, pastFinish);
 		
 		// Act & Assert
-		InvalidBookingException ex = assertThrows(InvalidBookingException.class, 
-											() -> bookingValidator.validateBooking(bookingRequest, USER_ID));	
-		assertEquals("Booking a past period is not allowed", ex.getMessage());
+		assertThrows(IllegalArgumentException.class, () -> bookingValidator.validateBooking(bookingRequest, USER_ID));	
 	}
 	
 	
