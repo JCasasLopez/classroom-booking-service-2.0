@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 import dev.jcasaslopez.booking.util.BookingEndpoints;
 import dev.jcasaslopez.classroom.shared.dto.AuthResponse;
-import dev.jcasaslopez.classroom.shared.enums.TokenPurpose;
 import dev.jcasaslopez.classroom.shared.filter.AuthenticationFilterBase;
 import dev.jcasaslopez.classroom.shared.handler.StandardResponseHandler;
 import dev.jcasaslopez.classroom.shared.security.JwtService;
@@ -39,7 +38,7 @@ public class BookingAuthenticationFilter extends AuthenticationFilterBase {
 
 	    @Override
 	    protected AuthResponse validateToken(String authHeader) {
-	        return jwtService.validateJwt(authHeader, base64SecretKey, TokenPurpose.ACCESS);
+	        return jwtService.validateJwt(authHeader, base64SecretKey);
 	    }
 
 }

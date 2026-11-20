@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import dev.jcasaslopez.booking.util.BookingEndpoints;
-import dev.jcasaslopez.classroom.shared.enums.TokenPurpose;
 import dev.jcasaslopez.classroom.shared.handler.StandardResponseHandler;
 import dev.jcasaslopez.classroom.shared.security.JwtService;
 import dev.jcasaslopez.classroom.shared.utility.PublicSwaggerPaths;
@@ -74,6 +73,6 @@ public class AuthFilterUnitTest {
 	    filter.validateToken(authHeader);
 
 	    // Assert
-	    verify(jwtService).validateJwt(authHeader, secretKey, TokenPurpose.ACCESS);
+	    verify(jwtService).validateJwt(authHeader, secretKey);
 	}
 }
